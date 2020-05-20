@@ -1,5 +1,8 @@
 %option noyywrap yylineno caseless
 %{
+#define YYSTYPE char*
+#define DEBUG_LEXER 
+
 #include <cstring>
 #include "pascal.y.h"
 using namespace std;
@@ -7,60 +10,523 @@ using namespace std;
 #define YY_USER_ACTION yylloc->begin.line = yylloc->end.line = yylineno-1; \
     yylloc->begin.column = yycolumn; yylloc->end.column = yycolumn+yyleng-1; \
     yycolumn += yyleng;
+#undef YY_USER_ACTION
+
+#ifdef DEBUG_LEXER
+#define YY_RETURN_TOKEN(X) printf(#X); printf("\n");// return (X);
+#elif
+#define YY_RETURN_TOKEN(X) return(X);
+
+#endif
+
 %}
+
 
 /* TODO: Pascal reserved keywords, reference P13 1.3.1*/
 KWD_ABSOLUTE absolute
-KWD_AND and 
-KWD_ARRAY array 
-KWD_ASM asm 
-KWD_BEGIN begin 
+KWD_AND and
+KWD_ARRAY array
+KWD_ASM asm
+KWD_BEGIN begin
 KWD_CASE case
+KWD_CONST const
+KWD_CONSTRUCTOR constructor
+KWD_DESTRUCTOR destructor
+KWD_DIV div
+KWD_DO do
+KWD_DOWNTO downto
+KWD_ELSE else
+KWD_END end
+KWD_FILE file
+KWD_FOR for
+KWD_FUNCTION function
+KWD_GOTO goto
+KWD_IF if
+KWD_IMPLEMENTATION implementation
+KWD_IN in
+KWD_INHERITED inherited
+KWD_INLINE inline
+KWD_INTERFACE interface
+KWD_LABEL label
+KWD_MOD mod
+KWD_NIL nil
+KWD_NOT not
+KWD_OBJECT object
+KWD_OF of
+KWD_OPERATOR operator
+KWD_OR or
+KWD_PACKED packed
+KWD_PROCEDURE procedure
+KWD_PROGRAM program
+KWD_RECORD record
+KWD_REINTRODUCE reintroduce
+KWD_REPEAT repeat
+KWD_SELF self
+KWD_SET set
+KWD_SHL shl
+KWD_SHR shr
+KWD_THEN then
+KWD_TO to
+KWD_TYPE type
+KWD_UNIT unit
+KWD_UNTIL until
+KWD_USES uses
+KWD_VAR var
+KWD_WHILE while
+KWD_WITH with
+KWD_XOR xor
 
 /* TODO: Some of the Pascal base types here: P24 3.1*/
-TYPE_INT_32 int
-TYPE_INT_64 longint
-
-TYPE_FLOAT_32 float
+TYPE_INT integer
+TYPE_INT_8 short
+TYPE_INT_16 smallint
+TYPE_INT_32 longint
+TYPE_INT_64 int64
+TYPE_UNSIGNED_INT_8 byte
+TYPE_UNSIGNED_INT_16 word
+TYPE_UNSIGNED_INT_32 longword
+TYPE_UNSIGNED_INT_64 qword
+TYPE_BOOLEAN boolean
+TYPE_FLOAT real
+TYPE_FLOAT_16 single
+TYPE_FLOAT_32 double
+TYPE_CHAR char
+TYPE_STRING string
 /* Values here*/
 SIGN "+"|"-"
-VALUE_INT [0-9]+
-VALUE_FLOAT ([0-9]+\.[0-9]+)|([0-9]+\.[0-9]+e{SIGN}?[0-9]+)|([0-9]+e{SIGN}?[0-9]+)
-VALUE_CHAR \'.\'
-VALUE_ESC_CHAR '\'#\'
-VALUE_STR \'([^']|{VALUE_ESC_CHAR})*\'
+LITERAL_TRUE true 
+LITERAL_FALSE false 
+LITERAL_INT [0-9]+
+LITERAL_FLOAT ([0-9]+\.[0-9]+)|([0-9]+\.[0-9]+e{SIGN}?[0-9]+)|([0-9]+e{SIGN}?[0-9]+)
+LITERAL_CHAR \'.\'
+LITERAL_ESC_CHAR '\'#\'
+LITERAL_STR \'([^']|{LITERAL_ESC_CHAR})*\'
 
 /* TODO: Pascal symbols here: */
 SYM_ADD "+"
+SYM_SUB "-"
+SYM_MUL "*"
+SYM_DIV "/"
+SYM_EQ "="
+SYM_LT "<"
+SYM_GT ">"
+SYM_LBRAC "["
+SYM_RBRAC "]"
+SYM_PERIOD "."
+SYM_COMMA ","
+SYM_COLON ":"
+SYM_SEMICOLON ";"
+SYM_AT "@"
+SYM_CARET "^"
+SYM_LPAREN "("
+SYM_RPAREN ")"
+SYM_NE "<>"
+SYM_LE "<="
+SYM_GE ">="
+SYM_ASSIGN ":="
+SYM_RANGE ".."
 
 /* TODO: Other tokens */
 COMMENT "{"[^\}]*"}"
 IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 %%
 
-KWD_ABSOLUTE {
-    return KWD_ABSOLUTE;
+{KWD_ABSOLUTE} {
+    YY_RETURN_TOKEN(KWD_ABSOLUTE)
 }
 
-KWD_AND {
-    return KWD_AND;
+{KWD_AND} {
+    YY_RETURN_TOKEN(KWD_AND)
 }
 
-KWD_ARRAY {
-    return KWD_ARRAY;
+{KWD_ARRAY} {
+    YY_RETURN_TOKEN(KWD_ARRAY)
 }
 
-IDENTIFIER {
-    if (yyleng >= MAX_STR_LEN) {
-        fprintf(stderr, "Identifier too long\n");
-        yyerror(yytext);
-    }
-    else {
-        strcpy_s(yylval.str, yytext, yyleng);
-        yylval.str[yyleng] = '\0';
-    }
-    return IDENTIFIER;
+{KWD_ASM} {
+    YY_RETURN_TOKEN(KWD_ASM)
 }
+
+{KWD_BEGIN} {
+    YY_RETURN_TOKEN(KWD_BEGIN)
+}
+
+{KWD_CASE} {
+    YY_RETURN_TOKEN(KWD_CASE)
+}
+
+{KWD_CONST} {
+    YY_RETURN_TOKEN(KWD_CONST)
+}
+
+{KWD_CONSTRUCTOR} {
+    YY_RETURN_TOKEN(KWD_CONSTRUCTOR)
+}
+
+{KWD_DESTRUCTOR} {
+    YY_RETURN_TOKEN(KWD_DESTRUCTOR)
+}
+
+{KWD_DIV} {
+    YY_RETURN_TOKEN(KWD_DIV)
+}
+
+{KWD_DO} {
+    YY_RETURN_TOKEN(KWD_DO)
+}
+
+{KWD_DOWNTO} {
+    YY_RETURN_TOKEN(KWD_DOWNTO)
+}
+
+{KWD_ELSE} {
+    YY_RETURN_TOKEN(KWD_ELSE)
+}
+
+{KWD_END} {
+    YY_RETURN_TOKEN(KWD_END)
+}
+
+{KWD_FILE} {
+    YY_RETURN_TOKEN(KWD_FILE)
+}
+
+{KWD_FOR} {
+    YY_RETURN_TOKEN(KWD_FOR)
+}
+
+{KWD_FUNCTION} {
+    YY_RETURN_TOKEN(KWD_FUNCTION)
+}
+
+{KWD_GOTO} {
+    YY_RETURN_TOKEN(KWD_GOTO)
+}
+
+{KWD_IF} {
+    YY_RETURN_TOKEN(KWD_IF)
+}
+
+{KWD_IMPLEMENTATION} {
+    YY_RETURN_TOKEN(KWD_IMPLEMENTATION)
+}
+
+{KWD_IN} {
+    YY_RETURN_TOKEN(KWD_IN)
+}
+
+{KWD_INHERITED} {
+    YY_RETURN_TOKEN(KWD_INHERITED)
+}
+
+{KWD_INLINE} {
+    YY_RETURN_TOKEN(KWD_INLINE)
+}
+
+{KWD_INTERFACE} {
+    YY_RETURN_TOKEN(KWD_INTERFACE)
+}
+
+{KWD_LABEL} {
+    YY_RETURN_TOKEN(KWD_LABEL)
+}
+
+{KWD_MOD} {
+    YY_RETURN_TOKEN(KWD_MOD)
+}
+
+{KWD_NIL} {
+    YY_RETURN_TOKEN(KWD_NIL)
+}
+
+{KWD_NOT} {
+    YY_RETURN_TOKEN(KWD_NOT)
+}
+
+{KWD_OBJECT} {
+    YY_RETURN_TOKEN(KWD_OBJECT)
+}
+
+{KWD_OF} {
+    YY_RETURN_TOKEN(KWD_OF)
+}
+
+{KWD_OPERATOR} {
+    YY_RETURN_TOKEN(KWD_OPERATOR)
+}
+
+{KWD_OR} {
+    YY_RETURN_TOKEN(KWD_OR)
+}
+
+{KWD_PACKED} {
+    YY_RETURN_TOKEN(KWD_PACKED)
+}
+
+{KWD_PROCEDURE} {
+    YY_RETURN_TOKEN(KWD_PROCEDURE)
+}
+
+{KWD_PROGRAM} {
+    YY_RETURN_TOKEN(KWD_PROGRAM)
+}
+
+{KWD_RECORD} {
+    YY_RETURN_TOKEN(KWD_RECORD)
+}
+
+{KWD_REINTRODUCE} {
+    YY_RETURN_TOKEN(KWD_REINTRODUCE)
+}
+
+{KWD_REPEAT} {
+    YY_RETURN_TOKEN(KWD_REPEAT)
+}
+
+{KWD_SELF} {
+    YY_RETURN_TOKEN(KWD_SELF)
+}
+
+{KWD_SET} {
+    YY_RETURN_TOKEN(KWD_SET)
+}
+
+{KWD_SHL} {
+    YY_RETURN_TOKEN(KWD_SHL)
+}
+
+{KWD_SHR} {
+    YY_RETURN_TOKEN(KWD_SHR)
+}
+
+{KWD_THEN} {
+    YY_RETURN_TOKEN(KWD_THEN)
+}
+
+{KWD_TO} {
+    YY_RETURN_TOKEN(KWD_TO)
+}
+
+{KWD_TYPE} {
+    YY_RETURN_TOKEN(KWD_TYPE)
+}
+
+{KWD_UNIT} {
+    YY_RETURN_TOKEN(KWD_UNIT)
+}
+
+{KWD_UNTIL} {
+    YY_RETURN_TOKEN(KWD_UNTIL)
+}
+
+{KWD_USES} {
+    YY_RETURN_TOKEN(KWD_USES)
+}
+
+{KWD_VAR} {
+    YY_RETURN_TOKEN(KWD_VAR)
+}
+
+{KWD_WHILE} {
+    YY_RETURN_TOKEN(KWD_WHILE)
+}
+
+{KWD_WITH} {
+    YY_RETURN_TOKEN(KWD_WITH)
+}
+
+{KWD_XOR} {
+    YY_RETURN_TOKEN(KWD_XOR)
+}
+
+{TYPE_INT} {
+    YY_RETURN_TOKEN(TYPE_INT)
+}
+
+{TYPE_INT_8} {
+    YY_RETURN_TOKEN(TYPE_INT_8)
+}
+
+{TYPE_INT_16} {
+    YY_RETURN_TOKEN(TYPE_INT_16)
+}
+
+{TYPE_INT_32} {
+    YY_RETURN_TOKEN(TYPE_INT_32)
+}
+
+{TYPE_INT_64} {
+    YY_RETURN_TOKEN(TYPE_INT_64)
+}
+
+{TYPE_UNSIGNED_INT_8} {
+    YY_RETURN_TOKEN(TYPE_UNSIGNED_INT_8)
+}
+
+{TYPE_UNSIGNED_INT_16} {
+    YY_RETURN_TOKEN(TYPE_UNSIGNED_INT_16)
+}
+
+{TYPE_UNSIGNED_INT_32} {
+    YY_RETURN_TOKEN(TYPE_UNSIGNED_INT_32)
+}
+
+{TYPE_UNSIGNED_INT_64} {
+    YY_RETURN_TOKEN(TYPE_UNSIGNED_INT_64)
+}
+
+{TYPE_BOOLEAN} {
+    YY_RETURN_TOKEN(TYPE_BOOLEAN)
+}
+
+{TYPE_FLOAT} {
+    YY_RETURN_TOKEN(TYPE_FLOAT)
+}
+
+{TYPE_FLOAT_16} {
+    YY_RETURN_TOKEN(TYPE_FLOAT_16)
+}
+
+{TYPE_FLOAT_32} {
+    YY_RETURN_TOKEN(TYPE_FLOAT_32)
+}
+
+{TYPE_CHAR} {
+    YY_RETURN_TOKEN(TYPE_CHAR)
+}
+
+{TYPE_STRING} {
+    YY_RETURN_TOKEN(TYPE_STRING)
+}
+
+{LITERAL_INT} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(LITERAL_INT)
+}
+
+{LITERAL_FLOAT} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(LITERAL_FALSE)
+}
+
+{LITERAL_CHAR} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(LITERAL_CHAR)
+}
+
+{LITERAL_ESC_CHAR} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(LITERAL_ESC_CHAR)
+}
+
+{LITERAL_STR} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(LITERAL_STR)
+}
+
+{LITERAL_TRUE} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(LITERAL_TRUE)
+}
+
+{LITERAL_FALSE} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(LITERAL_FALSE)
+}
+
+{IDENTIFIER} {
+    yylval = strdup(yytext);
+    YY_RETURN_TOKEN(IDENTIFIER)
+}
+
+{SYM_ADD} {
+    YY_RETURN_TOKEN(SYM_ADD)
+}
+
+{SYM_SUB} {
+    YY_RETURN_TOKEN(SYM_SUB)
+}
+
+{SYM_MUL} {
+    YY_RETURN_TOKEN(SYM_MUL)
+}
+
+{SYM_DIV} {
+    YY_RETURN_TOKEN(SYM_DIV)
+}
+
+{SYM_EQ} {
+    YY_RETURN_TOKEN(SYM_EQ)
+}
+
+{SYM_LT} {
+    YY_RETURN_TOKEN(SYM_LT)
+}
+
+{SYM_GT} {
+    YY_RETURN_TOKEN(SYM_GT)
+}
+
+{SYM_LBRAC} {
+    YY_RETURN_TOKEN(SYM_LBRAC)
+}
+
+{SYM_RBRAC} {
+    YY_RETURN_TOKEN(SYM_RBRAC)
+}
+
+{SYM_PERIOD} {
+    YY_RETURN_TOKEN(SYM_PERIOD)
+}
+
+{SYM_COMMA} {
+    YY_RETURN_TOKEN(SYM_COMMA)
+}
+
+{SYM_COLON} {
+    YY_RETURN_TOKEN(SYM_COLON)
+}
+
+{SYM_SEMICOLON} {
+    YY_RETURN_TOKEN(SYM_SEMICOLON)
+}
+
+{SYM_AT} {
+    YY_RETURN_TOKEN(SYM_AT)
+}
+
+{SYM_CARET} {
+    YY_RETURN_TOKEN(SYM_CARET)
+}
+
+{SYM_LPAREN} {
+    YY_RETURN_TOKEN(SYM_LPAREN)
+}
+
+{SYM_RPAREN} {
+    YY_RETURN_TOKEN(SYM_RPAREN)
+}
+
+{SYM_NE} {
+    YY_RETURN_TOKEN(SYM_NE)
+}
+
+{SYM_LE} {
+    YY_RETURN_TOKEN(SYM_LE)
+}
+
+{SYM_GE} {
+    YY_RETURN_TOKEN(SYM_GE)
+}
+
+{SYM_ASSIGN} {
+    YY_RETURN_TOKEN(SYM_ASSIGN)
+}
+
+{SYM_RANGE} {
+    YY_RETURN_TOKEN(SYM_RANGE)
+}
+
 
 {COMMENT} {}
 
@@ -78,3 +544,12 @@ IDENTIFIER {
 void yyerror(const char *s) {
     fprintf(stderr, "LexError: %s (at Line %d, Column%d)\n", s, yylloc->begin.line, yylloc->end.line);
 }
+
+#ifdef DEBUG_LEXER
+
+int main() {
+    yylex();
+    return 0;
+}
+
+#endif
