@@ -21,8 +21,6 @@ using namespace std;
 %}
 
 
-/* TODO: Pascal reserved keywords, reference P13 1.3.1*/
-KWD_ABSOLUTE absolute
 KWD_AND and
 KWD_ARRAY array
 KWD_ASM asm
