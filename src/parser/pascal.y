@@ -514,8 +514,14 @@ compound_stmt:
 stmt_list:
     stmt_list stmt SYM_SEMICOLON{
         $$ = $1;
-        $$->addStmt($2);
+        if ($$ == nullptr)
+            $$ = new ASTStmtList($2);
+        else
+            $$->addStmt($2);
         SET_LOCATION($$);
+    }
+    | %empty{
+        $$ = nullptr;
     }
 ;
 
@@ -562,15 +568,18 @@ non_label_stmt:
 
 assign_stmt:
     IDENTIFIER SYM_ASSIGN expression{
-        $$ = new ASTAssignStmt(0, $1, $3);
+        ASTIDExpr *expr = new ASTIDExpr($1);
+        $$ = new ASTAssignStmt(expr, $3);
         SET_LOCATION($$);
     }
     | IDENTIFIER SYM_LBRAC expression SYM_RBRAC SYM_ASSIGN expression{
-        $$ = new ASTAssignStmt(1, $1, $3, $6);
+        ASTArrayExpr *expr = new ASTArrayExpr($1, $3);
+        $$ = new ASTAssignStmt(expr, $6);
         SET_LOCATION($$);
     }
     | IDENTIFIER SYM_PERIOD IDENTIFIER SYM_ASSIGN expression{
-        $$ = new ASTAssignStmt(2, $1, $3, $6);
+        ASTArrayExpr *expr = new ASTPropExpr($1, $3);
+        $$ = new ASTAssignStmt(expr, $5);
         SET_LOCATION($$);
     }
 ;
@@ -628,10 +637,10 @@ for_stmt:
 
 direction:
     KWD_TO {
-        $$ = ASTForStmt::ForDir::To;
+        $$ = ASTForStmt::ForDir::TO;
     }
     | KWD_DOWNTO {
-        $$ = ASTForStmt::ForDir::Downto;
+        $$ = ASTForStmt::ForDir::DOWNTO;
     }
 ;
 
@@ -649,7 +658,8 @@ case_expr_list:
         SET_LOCATION($$);
     }
     | case_expr {
-        $$ = new ASTCaseExprList($2);
+        $$ = new ASTCaseExprList();
+        $$->add_case_expr($1);
         SET_LOCATION($$); 
     }
 ;
