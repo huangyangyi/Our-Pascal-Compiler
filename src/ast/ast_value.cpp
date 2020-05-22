@@ -39,24 +39,23 @@ void ASTConstPart::Print(GraphGenerator* g) {
     g->Pop();
 }
 
-ASTConstExprList::ASTConstExprList(std::string id, ASTConstValue* const_value) {
-    const_id_list.clear();
-    const_value_list.clear();
-    const_id_list.push_back(id);
-    const_value_list.push_back(const_value);
-}
-void ASTConstExprList::add_const_expr(std::string id,
-                                      ASTConstValue* const_value) {
-    const_id_list.push_back(id);
-    const_value_list.push_back(const_value);
+ASTConstExprList::ASTConstExprList() = default;
+
+void ASTConstExprList::add_const_expr(ASTConstExpr* const_expr) {
+    const_expr_list.push_back(const_expr);
 }
 void ASTConstExprList::Print(GraphGenerator* g) {
     g->AddNode("const_expr_list", this->line(), this->col());
-    assert(const_id_list.size() == const_value_list.size());
-    for (int i = 0; i < const_id_list.size(); i++) {
-        g->AddIdentifier(const_id_list[i]);
-        const_value_list[i]->Print(g);
-    }
+    for (auto expr: const_expr_list) expr->Print(g);
+    g->Pop();
+}
+
+ASTConstExpr::ASTConstExpr(std::string id, ASTExpr* value):id(id), value(value){}
+
+void ASTConstExpr::Print(GraphGenerator* g) {
+    g->AddNode("const_expr", this->line(), this->col());
+    g->AddIdentifier(this->id);
+    this->value->Print(g);
     g->Pop();
 }
 

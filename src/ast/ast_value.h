@@ -5,6 +5,7 @@
 
 #include "ast_base.h"
 #include "ast_type.h"
+#include "ast_expr.h"
 
 class ASTConstValue;
 class ASTConstExprList;
@@ -27,13 +28,21 @@ class ASTConstValue : public ASTNode {
 
 class ASTConstExprList : public ASTNode {
    public:
-    ASTConstExprList(std::string, ASTConstValue*);
-    void add_const_expr(std::string, ASTConstValue*);
+    ASTConstExprList();
+    void add_const_expr(ASTConstExpr *);
     virtual void Print(GraphGenerator*);
 
    private:
-    std::vector<std::string> const_id_list;
-    std::vector<ASTConstValue*> const_value_list;
+    std::vector<ASTConstExpr*> const_expr_list;
+};
+
+class ASTConstExpr : public ASTNode {
+    public:
+        ASTConstExpr(std::string, ASTExpr*);
+        virtual void Print(GraphGenerator*);
+    private:
+        std::string id;
+        ASTExpr* value;
 };
 
 class ASTConstPart : public ASTNode {

@@ -99,10 +99,10 @@ void ASTPropExpr::Print(GraphGenerator* graph) {
     graph->Pop();
 }
 
-ASTConstExpr::ASTConstExpr(ASTConstValue* const_value)
+ASTConstValueExpr::ASTConstValueExpr(ASTConstValue* const_value)
     : const_value_(const_value) {}
 
-void ASTConstExpr::Print(GraphGenerator* graph) { const_value_->Print(graph); }
+void ASTConstValueExpr::Print(GraphGenerator* graph) { const_value_->Print(graph); }
 ASTFuncCall::ASTFuncCall(char* func_id, ASTExpressionList* arg_list)
     : func_id_(func_id), arg_list_(arg_list) {}
 

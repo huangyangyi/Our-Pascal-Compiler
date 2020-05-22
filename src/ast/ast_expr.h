@@ -7,7 +7,7 @@
 class ASTExpr;
 class ASTExpressionList;
 class ASTBinaryExpr;
-class ASTConstExpr;
+class ASTConstValueExpr;
 class ASTIDExpr;
 
 class ASTExpr : public ASTNode {};
@@ -72,12 +72,12 @@ class ASTPropExpr : public ASTExpr {
     virtual void Print(GraphGenerator*);
 };
 
-class ASTConstExpr : public ASTExpr {
+class ASTConstValueExpr : public ASTExpr {
    private:
     ASTConstValue* const_value_;
 
    public:
-    ASTConstExpr(ASTConstValue*);
+    ASTConstValueExpr(ASTConstValue*);
     virtual void Print(GraphGenerator*);
 };
 

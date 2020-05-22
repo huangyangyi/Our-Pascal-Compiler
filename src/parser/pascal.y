@@ -2,7 +2,6 @@
 #define MAX_LITERAL_LEN 256
 #define SET_LOCATION(dest) (dest)->set_location(yylloc.first_line, yylloc.first_column)
 #include "ast/ast.h"
-#include "ast/ast_stmt.h"
 
 %}
 
@@ -18,6 +17,7 @@
     ASTRoutineBody* ast_routine_body;
     ASTConstPart* ast_const_part;
     ASTConstExprList* ast_const_expr_list;
+    ASTConstExpr* ast_const_expr;
     ASTConstValue* ast_const_value;
     ASTTypePart* ast_type_part;
     ASTTypeDeclList* ast_type_decl_list;
@@ -94,6 +94,7 @@
 %type<ast_routine_head> routine_head
 %type<ast_const_part> const_part
 %type<ast_const_expr_list> const_expr_list
+%type<ast_const_expr> const_expr
 %type<ast_const_value> const_value
 %type<ast_type_part> type_part
 %type<ast_type_decl_list> type_decl_list
@@ -189,16 +190,25 @@ const_part:
 ;
 
 const_expr_list:
-    const_expr_list IDENTIFIER SYM_EQ const_value SYM_SEMICOLON {
-        ($1)->add_const_expr($2, $4);
+    const_expr_list const_expr {
+        ($1)->add_const_expr($2);
         $$ = $1;
         SET_LOCATION($$);
     }
-    | IDENTIFIER SYM_EQ const_value SYM_SEMICOLON {
-        $$ = new ASTConstExprList($1, $3);
+    | const_expr {
+        $$ = new ASTConstExprList();
+        $$->add_const_expr($1);
         SET_LOCATION($$);
     }
 ;
+
+const_expr:
+    IDENTIFIER SYM_EQ expression SYM_SEMICOLON {
+        $$ = new ASTConstExpr($1, $3);
+        SET_LOCATION($$);
+    }
+;
+
 
 const_value:
     LITERAL_INT {
@@ -286,7 +296,7 @@ TYPE:
         $$ = new ASTType(ASTType::Typename::INTERGER);
         SET_LOCATION($$);
     }
-    | TYPE_REAL{
+    | TYPE_FLOAT{
         $$ = new ASTType(ASTType::Typename::REAL);
         SET_LOCATION($$);
     }
@@ -750,7 +760,7 @@ factor:
         SET_LOCATION($$);   
     }
     | const_value {
-        $$ = new ASTConstExpr($1);
+        $$ = new ASTConstValueExpr($1);
         SET_LOCATION($$);
     }
     | SYM_LPAREN expression SYM_RPAREN {
