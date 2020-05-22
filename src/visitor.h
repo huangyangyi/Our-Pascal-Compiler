@@ -25,7 +25,6 @@ class Visitor {
   virtual void visitASTStmtList(Visitor*) = 0;
   virtual void visitASTAssignStmt(Visitor*) = 0;
   virtual void visitASTProcStmt(Visitor*) = 0;
-  virtual void visitASTCompoundStmt(Visitor*) = 0;
   virtual void visitASTIfStmt(Visitor*) = 0;
   virtual void visitASTElseClause(Visitor*) = 0;
   virtual void visitASTRepeatStmt(Visitor*) = 0;

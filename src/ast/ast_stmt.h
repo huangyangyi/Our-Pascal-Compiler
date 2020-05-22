@@ -1,3 +1,6 @@
+#ifndef OPC_AST_AST_STMT_H
+#define OPC_AST_AST_STMT_H
+
 #include "ast_base.h"
 #include "ast_expr.h"
 
@@ -6,7 +9,6 @@ class ASTStmt;
 class ASTStmtList;
 class ASTAssignStmt;
 class ASTProcStmt;
-class ASTCompoundStmt;
 class ASTIfStmt;
 class ASTElseClause;
 class ASTRepeatStmt;
@@ -18,17 +20,16 @@ class ASTCaseExpr;
 class ASTGotoStmt;
 
 class ASTNonLabelStmt : public ASTNode {
-  // virtual void Print(GraphGenerator *graph); //Do not implement print() in
-  // this class.
+  // virtual void Print(GraphGenerator *graph); //Do not implement print() in this class.
 };
 
 class ASTStmt : public ASTNode {
 private:
-  int label;
-  ASTNonLabelStmt non_label_stmt;
+  std::string label;
+  ASTNonLabelStmt* non_label_stmt;
 
 public:
-  ASTStmt(ASTNonLabelStmt *non_label_stmt, int label = -1);
+  ASTStmt(ASTNonLabelStmt *non_label_stmt, std::string label = "");
   virtual void Print(GraphGenerator *graph);
 };
 
@@ -39,7 +40,7 @@ public:
   virtual void Print(GraphGenerator *graph);
 
 private:
-  vector<ASTStmt *> stmt_list;
+  std::vector<ASTStmt *> stmt_list;
 };
 
 class ASTAssignStmt : public ASTNonLabelStmt {
@@ -54,21 +55,21 @@ private:
 
 class ASTProcStmt : public ASTNonLabelStmt {
 public:
-  ASTProcStmt(std::string *id, ASTExpressionList *);
+  ASTProcStmt(std::string id, ASTExpressionList *expr = nullptr);
   virtual void Print(GraphGenerator *);
 
 private:
   std::string id;
-  ASTExprList *expr_list;
+  ASTExpressionList *expr_list;
 };
 
 class ASTIfStmt : public ASTNonLabelStmt {
 public:
-  ASTIfStmt(ASTExpression *, ASTStmt *, ASTElseClause *);
+  ASTIfStmt(ASTExpr *, ASTStmt *, ASTElseClause *);
   virtual void Print(GraphGenerator *);
 
 private:
-  ASTExpression *expression;
+  ASTExpr *expr;
   ASTStmt *stmt;
   ASTElseClause *else_clause;
 };
@@ -111,7 +112,7 @@ public:
 
 private:
   std::string id_;
-  ASTExpr *for_expr_, to_expr_;
+  ASTExpr *for_expr_, *to_expr_;
   ForDir dir_;
   ASTStmt *stmt_;
 };
@@ -142,8 +143,8 @@ public:
   virtual void Print(GraphGenerator *);
 
 private:
-  ASTConstValue *const_value;
-  ASTStmt *stmt;
+  ASTConstValue *const_value_;
+  ASTStmt *stmt_;
 };
 
 class ASTGotoStmt : public ASTNode {
@@ -152,5 +153,7 @@ public:
   virtual void Print(GraphGenerator *);
 
 private:
-  int label_;
+  std::string label_;
 };
+
+#endif //OPC_AST_AST_STMT_H

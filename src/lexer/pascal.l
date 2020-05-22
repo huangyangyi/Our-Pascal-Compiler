@@ -1,7 +1,7 @@
 %option noyywrap yylineno caseless
 %{
 #define YYSTYPE char*
-#define DEBUG_LEXER 
+//#define DEBUG_LEXER 
 
 #include <cstring>
 #include "pascal.y.h"
@@ -127,10 +127,6 @@ SYM_RANGE ".."
 COMMENT "{"[^\}]*"}"
 IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 %%
-
-{KWD_ABSOLUTE} {
-    RETURN_TOKEN(KWD_ABSOLUTE)
-}
 
 {KWD_AND} {
     RETURN_TOKEN(KWD_AND)

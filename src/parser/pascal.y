@@ -90,7 +90,7 @@
 
 %type<ast_program> program
 %type<ast_program_head> program_head
-%type<ast_routine> routine sub_routine
+%type<ast_routine> routine
 %type<ast_routine_head> routine_head
 %type<ast_const_part> const_part
 %type<ast_const_expr_list> const_expr_list
@@ -100,6 +100,7 @@
 %type<ast_type_decl_list> type_decl_list
 %type<ast_type_definition> type_definition
 %type<ast_type_decl> type_decl
+%type<ast_type> TYPE
 %type<ast_simple_type_decl> simple_type_decl
 %type<ast_array_type_decl> array_type_decl 
 %type<ast_record_type_decl> record_type_decl
@@ -108,6 +109,7 @@
 %type<ast_val_para_list> val_para_list
 %type<ast_field_decl_list> field_decl_list
 %type<ast_field_decl> field_decl 
+%type<ast_var_part> var_part
 %type<ast_var_decl_list> var_decl_list 
 %type<ast_var_decl> var_decl 
 %type<ast_routine_part> routine_part
@@ -131,7 +133,7 @@
 %type<ast_case_expr_list> case_expr_list 
 %type<ast_case_expr> case_expr 
 %type<ast_goto_stmt> goto_stmt 
-%type<ast_expression_list> expression_list arg_list
+%type<ast_expression_list> expression_list
 %type<ast_expr> expression expr term factor
 
 %%
@@ -180,11 +182,11 @@ routine_body:
 
 
 const_part:
-    KWD_CONST const_expr_list{
+    KWD_CONST const_expr_list {
         $$ = new ASTConstPart($2);
         SET_LOCATION($$);
     }
-    %empty {
+    | %empty {
         $$ = nullptr;
     }
 ;
@@ -292,7 +294,7 @@ TYPE:
         $$ = new ASTType(ASTType::Typename::CHAR);
         SET_LOCATION($$);
     }
-    | TYPE_INTEGER{
+    | TYPE_INT{
         $$ = new ASTType(ASTType::Typename::INTERGER);
         SET_LOCATION($$);
     }
@@ -308,7 +310,7 @@ simple_type_decl:
         SET_LOCATION($$);
     }
     | IDENTIFIER{
-        /* need to be completed. */
+        /* TODO: need to be completed. */
     }
     | SYM_LPAREN name_list SYM_RPAREN {
 
@@ -377,7 +379,7 @@ var_part:
         $$ = new ASTVarPart($2);
         SET_LOCATION($$);
     }
-    %empty{
+    | %empty{
         $$ = nullptr;
     }
 ;
@@ -394,7 +396,7 @@ var_decl_list:
     }
 ;
 
-vec_decl:
+var_decl:
     name_list SYM_COLON type_decl SYM_SEMICOLON{
         $$ = new ASTVarDecl($1, $3);
         SET_LOCATION($$);
@@ -403,12 +405,12 @@ vec_decl:
 
 routine_part:
     routine_part function_decl {
-        ($1)->add_function_decl($2);
+        ($1)->addFuncProcDecl($2);
         $$ = $1;
         SET_LOCATION($$);
     }
     | routine_part procedure_decl {
-        ($1)->add_procedure_decl($2);
+        ($1)->addFuncProcDecl($2);
         $$ = $1;
         SET_LOCATION($$);
     }
@@ -456,9 +458,8 @@ procedure_head:
         SET_LOCATION($$);
     }
 ;
-
 parameters:
-    SYM_LPAREN para_dec_list SYM_RPAREN {
+    SYM_LPAREN para_decl_list SYM_RPAREN {
         $$ = $2;
         SET_LOCATION($$);
     }
@@ -469,7 +470,7 @@ parameters:
 
 para_decl_list:
     para_decl_list SYM_SEMICOLON para_type_list {
-        ($1)->add_para_type_list($3);
+        ($1)->addParaTypeList($3);
         $$ = $1;
         SET_LOCATION($$);
     }
@@ -568,17 +569,17 @@ non_label_stmt:
 
 assign_stmt:
     IDENTIFIER SYM_ASSIGN expression{
-        ASTIDExpr *expr = new ASTIDExpr($1);
+        ASTExpr *expr = new ASTIDExpr($1);
         $$ = new ASTAssignStmt(expr, $3);
         SET_LOCATION($$);
     }
     | IDENTIFIER SYM_LBRAC expression SYM_RBRAC SYM_ASSIGN expression{
-        ASTArrayExpr *expr = new ASTArrayExpr($1, $3);
+        ASTExpr *expr = new ASTArrayExpr($1, $3);
         $$ = new ASTAssignStmt(expr, $6);
         SET_LOCATION($$);
     }
     | IDENTIFIER SYM_PERIOD IDENTIFIER SYM_ASSIGN expression{
-        ASTArrayExpr *expr = new ASTPropExpr($1, $3);
+        ASTExpr *expr = new ASTPropExpr($1, $3);
         $$ = new ASTAssignStmt(expr, $5);
         SET_LOCATION($$);
     }
@@ -590,7 +591,7 @@ proc_stmt:
     IDENTIFIER{
         $$ = new ASTProcStmt($1);
     }
-    | IDENTIFIER SYM_LPAREN arg_list SYM_RPAREN{
+    | IDENTIFIER SYM_LPAREN expression_list SYM_RPAREN{
         $$ = new ASTProcStmt($1, $2);
         
     }
@@ -669,7 +670,7 @@ case_expr:
         $$ = new ASTCaseExpr($1, $3);
         SET_LOCATION($$);
     }
-    | ID SYM_COLON stmt SYM_SEMICOLON {
+    | IDENTIFIER SYM_COLON stmt SYM_SEMICOLON {
         $$ = new ASTCaseExpr($1, $3);
         SET_LOCATION($$);    
     }
@@ -739,19 +740,25 @@ expr:
         $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::OR, $1, $3);
         SET_LOCATION($$);
     }
-    | expr SYM_MUL factor {
+    | term {
+        $$ = $1;
+        SET_LOCATION($$);
+    }
+;
+term:
+    term SYM_MUL factor {
         $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::MUL, $1, $3);
         SET_LOCATION($$);
     }
-    | expr KWD_DIV factor {
+    | term KWD_DIV factor {
         $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::DIV, $1, $3);
         SET_LOCATION($$);
     }
-    | expr KWD_MOD factor {
+    | term KWD_MOD factor {
         $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::MOD, $1, $3);
         SET_LOCATION($$);
     }
-    | expr KWD_AND factor {
+    | term KWD_AND factor {
         $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::AND, $1, $3);
         SET_LOCATION($$);
     }
@@ -765,7 +772,7 @@ factor:
         $$ = new ASTIDExpr($1);
         SET_LOCATION($$);
     }
-    | IDENTIFIER SYM_LPAREN exprexpression_list SYM_RPAREN {
+    | IDENTIFIER SYM_LPAREN expression_list SYM_RPAREN {
         $$ = new ASTFuncCall($1, $3);
         SET_LOCATION($$);   
     }
@@ -785,6 +792,10 @@ factor:
         $$ = new ASTUnaryExpr(ASTUnaryExpr::Oper::SUB, $2);
         SET_LOCATION($$);
     }
+    | IDENTIFIER SYM_LBRAC expression SYM_RBRAC {
+        $$ = new ASTArrayExpr($1, $3);
+        SET_LOCATION($$);
+    }
     | IDENTIFIER SYM_PERIOD IDENTIFIER {
         $$ = new ASTPropExpr($1, $2);
         SET_LOCATION($$);
@@ -795,8 +806,4 @@ factor:
 void yyerror(char const char *str) {
     PrintError(str);
     ParseError = 1;
-}
-
-int main() {
-    return 0;
 }

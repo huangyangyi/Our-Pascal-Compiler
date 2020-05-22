@@ -1,2 +1,2 @@
 #include "ast.h"
-ASTNode *ast_root;
+ASTNode* ast_root;
