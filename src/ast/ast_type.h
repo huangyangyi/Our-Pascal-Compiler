@@ -1,67 +1,74 @@
-#include <ast.h>
+#include "ast_base.h"
 
-class Type_decl: public ASTNode{
-    
+class ASTType;
+class ASTTypeDecl;
+class ASTSimpleTypeDecl;
+class ASTArrayTypeDecl;
+class ASTFieldDecl;
+class ASTFieldDeclList;
+class ASTRecordTypeDecl;
+class ASTTypeDefinition;
+class ASTTypeDeclList;
+class ASTTypePart;
+
+class ASTType : public ASTNode {
+   public:
+    enum class TypeName { INTERGER, REAL, BOOLEAN, CHAR };
+    ASTType(TypeName type_name);
+
+   private:
+    TypeName type_name;
 };
 
-class ASTSimpleTypeDecl: public Type_decl{
-    ASTSimpleTypeDecl(ASTType);
+class ASTTypeDecl : public ASTNode {};
+
+class ASTSimpleTypeDecl : public ASTTypeDecl {
+   public:
+    ASTSimpleTypeDecl(ASTType);  // Now only implement the simple type.
+    virtual void Print(GraphGenerator* g);
+
+   private:
+    ASTType* type_name;
 };
 
-class ASTArrayTypeDecl: public Type_decl{
-public:
-    ASTArrayTypeDecl(ASTSimpleTypeDecl, Type_decl);
+class ASTArrayTypeDecl : public ASTTypeDecl {
+   public:
+    ASTArrayTypeDecl(ASTSimpleTypeDecl*, ASTTypeDecl*);
 };
 
-class ASTFieldDecl: public ASTNode{
-    ASTFieldDecl(ASTNameList, Type_decl);
+class ASTFieldDecl : public ASTNode {
+    ASTFieldDecl(ASTNameList*, ASTTypeDecl*);
 };
 
-class ASTFieldDeclList: public ASTNode{
-public:
-    ASTFieldDeclList(ASTFieldDecl);
-    void addASTFieldDecl(ASTFieldDecl);
-private:
+class ASTFieldDeclList : public ASTNode {
+   public:
+    ASTFieldDeclList(ASTFieldDecl*);
+    void addASTFieldDecl(ASTFieldDecl*);
+
+   private:
     std::vector<ASTFieldDecl*> fielddeclList;
 };
 
-class ASTRecordTypeDecl: public Type_decl{
-public:
-    ASTRecordTypeDecl(ASTFieldDeclList);
+class ASTRecordTypeDecl : public ASTTypeDecl {
+   public:
+    ASTRecordTypeDecl(ASTFieldDeclList*);
 };
 
 class ASTTypeDefinition : public ASTNode {
-public:
-    ASTTypeDefinition(char*, ASTTypeDec);
+   public:
+    ASTTypeDefinition(char*, ASTTypeDecl*);
 };
 
 class ASTTypeDeclList : public ASTNode {
-public:
-    ASTTypeDeclList(ASTTypeDefinition);
-    void addASTTypeDefinition(ASTTypeDefinition);
-private:
+   public:
+    ASTTypeDeclList(ASTTypeDefinition*);
+    void addASTTypeDefinition(ASTTypeDefinition*);
+
+   private:
     std::vector<ASTTypeDefinition*> typeList;
 };
 
-class ASTTypePart: public ASTNode{
-public:
-    ASTTypePart(ASTTypeDeclList);
-}
-
-class ASTVarDecl: public ASTNode{
-public:
-    VarDecl(ASTNameList, ASTTypeDecl);
-}
-
-class ASTVarDeclList: public ASTNode{
-public:
-    ASTVarDeclList(ASTVarDecl);
-    void addASTVarDecl(ASTVarDecl);
-private:
-    std::vector<ASTVarDecl*> vardeclList;
-}
-
-class ASTVarPart: public {
-public:
-    void ASTVarDeclList(ASTVarPart);
-}
+class ASTTypePart : public ASTNode {
+   public:
+    ASTTypePart(ASTTypeDeclList*);
+};

@@ -1,9 +1,8 @@
 %{
 #define MAX_LITERAL_LEN 256
 #define SET_LOCATION(dest) (dest)->set_location(yylloc.first_line, yylloc.first_column)
-#include "../ast/ast.h"
-#include "../ast/ast_stmt.h"
-using namespace AbstractSyntaxTree;
+#include "ast/ast.h"
+#include "ast/ast_stmt.h"
 
 %}
 
@@ -16,6 +15,8 @@ using namespace AbstractSyntaxTree;
     ASTProgramHead* ast_program_head;
     ASTRoutine* ast_routine;
     ASTRoutineHead* ast_routine_head;
+    ASTRoutineBody* ast_routine_body;
+    ASTConstPart* ast_const_part;
     ASTConstExprList* ast_const_expr_list;
     ASTConstValue* ast_const_value;
     ASTTypePart* ast_type_part;
@@ -35,7 +36,6 @@ using namespace AbstractSyntaxTree;
     ASTVarDeclList* ast_var_decl_list;
     ASTVarDecl* ast_var_decl;
     ASTRoutinePart* ast_routine_part;
-    ASTRoutineBody* ast_routine_body;
     ASTFunctionDecl* ast_function_decl;
     ASTFunctionHead* ast_function_head;
     ASTProcedureDecl* ast_procedure_decl;
@@ -44,7 +44,7 @@ using namespace AbstractSyntaxTree;
     ASTParaTypeList* ast_para_type_list;
     ASTStmtList* ast_stmt_list;
     ASTStmt* ast_stmt;
-    ASTNonLableStmt* ast_non_label_stmt;
+    ASTNonLabelStmt* ast_non_label_stmt;
     ASTElseClause* ast_else_clause;
     ASTAssignStmt* ast_assign_stmt;
     ASTProcStmt* ast_proc_stmt;
@@ -52,6 +52,7 @@ using namespace AbstractSyntaxTree;
     ASTRepeatStmt* ast_repeat_stmt;
     ASTWhileStmt* ast_while_stmt;
     ASTForStmt* ast_for_stmt;
+    ASTForStmt::ForDir ast_for_stmt_dir;
     ASTCaseStmt* ast_case_stmt;
     ASTCaseExpr* ast_case_expr;
     ASTCaseExprList* ast_case_expr_list;
@@ -91,10 +92,13 @@ using namespace AbstractSyntaxTree;
 %type<ast_program_head> program_head
 %type<ast_routine> routine sub_routine
 %type<ast_routine_head> routine_head
-%type<ast_const_expr_list> const_expr_list const_part
+%type<ast_const_part> const_part
+%type<ast_const_expr_list> const_expr_list
 %type<ast_const_value> const_value
-%type<ast_type_decl_list> type_part type_decl_list
-%type<ast_type_decl> type_definition type_decl
+%type<ast_type_part> type_part
+%type<ast_type_decl_list> type_decl_list
+%type<ast_type_definition> type_definition
+%type<ast_type_decl> type_decl
 %type<ast_simple_type_decl> simple_type_decl
 %type<ast_array_type_decl> array_type_decl 
 %type<ast_record_type_decl> record_type_decl
@@ -121,6 +125,7 @@ using namespace AbstractSyntaxTree;
 %type<ast_repeat_stmt> repeat_stmt 
 %type<ast_while_stmt> while_stmt 
 %type<ast_for_stmt> for_stmt
+%type<ast_for_stmt_dir> direction
 %type<ast_case_stmt> case_stmt 
 %type<ast_case_expr_list> case_expr_list 
 %type<ast_case_expr> case_expr 
@@ -133,7 +138,8 @@ using namespace AbstractSyntaxTree;
 
 program: 
     program_head routine SYM_PERIOD {
-        $$ = new ASTProgram($1, $2);
+        //root of ast, a global variable
+        ast_root = new ASTProgram($1, $2); 
         SET_LOCATION($$);
     }
 ;
@@ -163,9 +169,18 @@ routine_head:
     }
 ;
 
+
+routine_body:
+    compound_stmt{
+        $$ = new ASTRoutineBody($1);
+        SET_LOCATION($$);
+    }
+;
+
+
 const_part:
     KWD_CONST const_expr_list{
-        $$ = new ASTConstExprList($2);
+        $$ = new ASTConstPart($2);
         SET_LOCATION($$);
     }
     %empty {
@@ -187,28 +202,28 @@ const_expr_list:
 
 const_value:
     LITERAL_INT {
-        $$ = new ASTConstValue($1, ValueType::INT);
+        $$ = new ASTConstValue($1, ASTConstValue::ValueType::INTEGER);
         SET_LOCATION($$);
     }
     | LITERAL_FLOAT {
-        $$ = new ASTConstValue($1, ValueType::FLOAT);
+        $$ = new ASTConstValue($1, ASTConstValue::ValueType::FLOAT);
         SET_LOCATION($$);
     }
     | LITERAL_CHAR {
-        $$ = new ASTConstValue($1, ValueType::CHAR);
+        $$ = new ASTConstValue($1, ASTConstValue::ValueType::CHAR);
         SET_LOCATION($$);
     } 
     | LITERAL_STR {
-        $$ = new ASTConstValue($1, ValueType::STRING);
+        $$ = new ASTConstValue($1, ASTConstValue::ValueType::STRING);
         SET_LOCATION($$);
     }
     | LITERAL_FALSE {
-        $$ = new ASTConstValue($1, ValueType::BOOL);
+        $$ = new ASTConstValue($1, ASTConstValue::ValueType::BOOL);
         SET_LOCATION($$);
         /* */
     }
     | LITERAL_TRUE {
-        $$ = new ASTConstValue($1, ValueType::BOOL);
+        $$ = new ASTConstValue($1, ASTConstValue::ValueType::BOOL);
         SET_LOCATION($$);
     }
 ;
@@ -479,13 +494,6 @@ val_para_list:
     }
 ;
 
-routine_body:
-    compound_stmt{
-        $$ = new ASTRoutineBody($1);
-        SET_LOCATION($$);
-    }
-;
-
 compound_stmt:
     KWD_BEGIN stmt_list KWD_END{
         $$ = new ASTStmtList($2);
@@ -610,10 +618,10 @@ for_stmt:
 
 direction:
     KWD_TO {
-        $$ = ForDir::To;
+        $$ = ASTForStmt::ForDir::To;
     }
     | KWD_DOWNTO {
-        $$ = ForDir::Downto;
+        $$ = ASTForStmt::ForDir::Downto;
     }
 ;
 
@@ -738,7 +746,7 @@ factor:
         SET_LOCATION($$);
     }
     | IDENTIFIER SYM_LPAREN exprexpression_list SYM_RPAREN {
-        $$ = new ASTFuncCall($1);
+        $$ = new ASTFuncCall($1, $3);
         SET_LOCATION($$);   
     }
     | const_value {
