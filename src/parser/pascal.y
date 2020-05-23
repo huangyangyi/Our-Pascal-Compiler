@@ -152,8 +152,8 @@ void yyerror(const char *str);
 program: 
     program_head routine SYM_PERIOD {
         //root of ast, a global variable
-        $$ = ast_root = new ASTProgram($1, $2); 
-        SET_LOCATION($$);
+        ast_root = new ASTProgram($1, $2); 
+        SET_LOCATION(ast_root);
     }
 ;
 
