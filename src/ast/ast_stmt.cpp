@@ -143,3 +143,29 @@ void ASTGotoStmt::Print(GraphGenerator *g) {
     g->AddNode(ss.str(), this->line(), this->col());
     g->Pop();
 }
+
+void ASTStmt::Accept(Visitor* visitor){visitor->VisitASTStmt(this); }
+
+void ASTStmtList::Accept(Visitor* visitor){visitor->VisitASTStmtList(this); }
+
+void ASTAssignStmt::Accept(Visitor* visitor){visitor->VisitASTAssignStmt(this); }
+
+void ASTProcStmt::Accept(Visitor* visitor){visitor->VisitASTProcStmt(this); }
+
+void ASTIfStmt::Accept(Visitor* visitor){visitor->VisitASTIfStmt(this); }
+
+void ASTElseClause::Accept(Visitor* visitor){visitor->VisitASTElseClause(this); }
+
+void ASTRepeatStmt::Accept(Visitor* visitor){visitor->VisitASTRepeatStmt(this); }
+
+void ASTWhileStmt::Accept(Visitor* visitor){visitor->VisitASTWhileStmt(this); }
+
+void ASTForStmt::Accept(Visitor* visitor){visitor->VisitASTForStmt(this); }
+
+void ASTCaseStmt::Accept(Visitor* visitor){visitor->VisitASTCaseStmt(this); }
+
+void ASTCaseExprList::Accept(Visitor* visitor){visitor->VisitASTCaseExprList(this); }
+
+void ASTCaseExpr::Accept(Visitor* visitor){visitor->VisitASTCaseExpr(this); }
+
+void ASTGotoStmt::Accept(Visitor* visitor){visitor->VisitASTGotoStmt(this); }

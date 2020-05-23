@@ -4,6 +4,9 @@
 #include "ast_base.h"
 #include "ast_value.h"
 
+class Visitor;
+class ASTNode;
+
 class ASTExpr;
 class ASTExpressionList;
 class ASTBinaryExpr;
@@ -13,13 +16,15 @@ class ASTArrayExpr;
 
 class ASTConstValue;
 
-class ASTExpr : public ASTNode {};
+class ASTExpr : public ASTNode {
+};
 
 class ASTExpressionList : public ASTExpr {
    public:
     ASTExpressionList(ASTExpr *expr);
     void AddExpr(ASTExpr *expr);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     std::vector<ASTExpr *> expr_list_;
@@ -51,6 +56,7 @@ class ASTBinaryExpr : public ASTExpr {
    public:
     ASTBinaryExpr(Oper op, ASTExpr *l_expr, ASTExpr *r_expr);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 };
 
 class ASTUnaryExpr : public ASTExpr {
@@ -64,6 +70,7 @@ class ASTUnaryExpr : public ASTExpr {
    public:
     ASTUnaryExpr(Oper, ASTExpr *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 };
 
 class ASTPropExpr : public ASTExpr {
@@ -73,6 +80,7 @@ class ASTPropExpr : public ASTExpr {
    public:
     ASTPropExpr(std::string id, std::string prop_id);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 };
 
 class ASTConstValueExpr : public ASTExpr {
@@ -82,6 +90,7 @@ class ASTConstValueExpr : public ASTExpr {
    public:
     ASTConstValueExpr(ASTConstValue *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 };
 
 class ASTFuncCall : public ASTExpr {
@@ -92,6 +101,7 @@ class ASTFuncCall : public ASTExpr {
    public:
     ASTFuncCall(std::string func_id, ASTExpressionList *arg_list);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 };
 
 class ASTIDExpr : public ASTExpr {
@@ -101,6 +111,7 @@ class ASTIDExpr : public ASTExpr {
    public:
     ASTIDExpr(std::string id);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 };
 
 class ASTArrayExpr : public ASTExpr {
@@ -111,6 +122,7 @@ class ASTArrayExpr : public ASTExpr {
    public:
     ASTArrayExpr(std::string id, ASTExpr *expr);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 };
 
 #endif  // OPC_AST_AST_EXPR_H

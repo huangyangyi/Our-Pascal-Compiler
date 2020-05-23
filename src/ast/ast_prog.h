@@ -7,6 +7,9 @@
 #include "ast_type.h"
 #include "ast_value.h"
 
+class Visitor;
+class ASTNode;
+
 class ASTProgramHead;
 class ASTRoutineHead;
 class ASTRoutineBody;
@@ -26,6 +29,7 @@ class ASTProgramHead : public ASTNode {
    public:
     ASTProgramHead(std::string id);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     std::string id;
@@ -36,6 +40,7 @@ class ASTRoutineHead : public ASTNode {
     ASTRoutineHead(ASTConstPart *const_part, ASTTypePart *type_part,
                    ASTVarPart *var_part, ASTRoutinePart *routine_part);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTConstPart *const_part;
@@ -48,6 +53,7 @@ class ASTRoutineBody : public ASTNode {
    public:
     ASTRoutineBody(ASTStmtList *compound_stmt);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTStmtList *compound_stmt;
@@ -57,6 +63,7 @@ class ASTRoutine : public ASTNode {
    public:
     ASTRoutine(ASTRoutineHead *routine_head, ASTRoutineBody *routine_body);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTRoutineHead *routine_head;
@@ -67,6 +74,7 @@ class ASTProgram : public ASTNode {
    public:
     ASTProgram(ASTProgramHead *, ASTRoutine *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTProgramHead *program_head;
@@ -78,6 +86,7 @@ class ASTRoutinePart : public ASTNode {
     ASTRoutinePart(ASTFuncProcBase *);
     virtual void Print(GraphGenerator *);
     void addFuncProcDecl(ASTFuncProcBase *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     std::vector<ASTFuncProcBase *> routine_list;
@@ -89,12 +98,14 @@ class ASTFuncProcBase : public ASTNode {
     FuncType iam;
     ASTFuncProcBase(FuncType whoami) : iam(whoami) {}
     virtual void Print(GraphGenerator *) {}
+    virtual void Accept(Visitor *visitor);
 };
 
 class ASTFunctionDecl : public ASTFuncProcBase {
    public:
     ASTFunctionDecl(ASTFunctionHead *, ASTRoutine *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTFunctionHead *function_head;
@@ -105,6 +116,7 @@ class ASTFunctionHead : public ASTNode {
    public:
     ASTFunctionHead(std::string, ASTParaDeclList *, ASTSimpleTypeDecl *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     std::string func_name;
@@ -116,6 +128,7 @@ class ASTProcedureDecl : public ASTFuncProcBase {
    public:
     ASTProcedureDecl(ASTProcedureHead *, ASTRoutine *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTProcedureHead *procedure_head;
@@ -126,6 +139,7 @@ class ASTProcedureHead : public ASTNode {
    public:
     ASTProcedureHead(std::string proc_name, ASTParaDeclList *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     std::string proc_name;
@@ -150,6 +164,7 @@ class ASTParaDeclList : public ASTNode {
     ASTParaDeclList(ASTParaTypeList *);
     void addParaTypeList(ASTParaTypeList *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     std::vector<ASTParaTypeList *> para_decl_list;
@@ -159,6 +174,7 @@ class ASTParaTypeList : public ASTNode {
    public:
     ASTParaTypeList(ASTParaList *, ASTSimpleTypeDecl *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTParaList *para_list;
@@ -175,6 +191,7 @@ class ASTVarParaList : public ASTParaList {
    public:
     ASTVarParaList(ASTNameList *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTNameList *name_list;
@@ -184,6 +201,7 @@ class ASTValParaList : public ASTParaList {
    public:
     ASTValParaList(ASTNameList *);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 
    private:
     ASTNameList *name_list;

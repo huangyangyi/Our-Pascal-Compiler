@@ -9,6 +9,8 @@ void ASTNode::set_location(int line,int col) {
     this->col_ = col;
 }
 
+void ASTNode::Accept(Visitor* visitor){visitor->VisitASTNode(this); }
+
 void ASTNameList::AddIdentifier(std::string id) {
     this->identifier_list_.push_back(id);
 }
@@ -20,3 +22,4 @@ void ASTNameList::Print(GraphGenerator *g) {
     }
     g->Pop();
 }
+void ASTNameList::Accept(Visitor* visitor){visitor->VisitASTNameList(this); }

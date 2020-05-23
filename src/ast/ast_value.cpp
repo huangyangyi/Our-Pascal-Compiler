@@ -92,3 +92,17 @@ void ASTVarDecl::Print(GraphGenerator* g) {
     type_decl->Print(g);
     g->Pop();
 }
+
+void ASTConstValue::Accept(Visitor* visitor){visitor->VisitASTConstValue(this); }
+
+void ASTConstExprList::Accept(Visitor* visitor){visitor->VisitASTConstExprList(this); }
+
+void ASTConstExpr::Accept(Visitor* visitor){visitor->VisitASTConstExpr(this); }
+
+void ASTConstPart::Accept(Visitor* visitor){visitor->VisitASTConstPart(this); }
+
+void ASTVarPart::Accept(Visitor* visitor){visitor->VisitASTVarPart(this); }
+
+void ASTVarDeclList::Accept(Visitor* visitor){visitor->VisitASTVarDeclList(this); }
+
+void ASTVarDecl::Accept(Visitor* visitor){visitor->VisitASTVarDecl(this); }

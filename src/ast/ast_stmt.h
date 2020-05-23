@@ -4,6 +4,9 @@
 #include "ast_base.h"
 #include "ast_expr.h"
 
+class Visitor;
+class ASTNode;
+
 class ASTNonLabelStmt;
 class ASTStmt;
 class ASTStmtList;
@@ -31,6 +34,7 @@ private:
 public:
   ASTStmt(ASTNonLabelStmt *non_label_stmt, std::string label = "");
   virtual void Print(GraphGenerator *graph);
+  virtual void Accept(Visitor *visitor);
 };
 
 class ASTStmtList : public ASTNonLabelStmt {
@@ -38,6 +42,7 @@ public:
   ASTStmtList(ASTStmt *);
   void addStmt(ASTStmt *);
   virtual void Print(GraphGenerator *graph);
+  virtual void Accept(Visitor *visitor);
 
 private:
   std::vector<ASTStmt *> stmt_list;
@@ -47,6 +52,7 @@ class ASTAssignStmt : public ASTNonLabelStmt {
 public:
   ASTAssignStmt(ASTExpr *, ASTExpr *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   ASTExpr *expr1;
@@ -57,6 +63,7 @@ class ASTProcStmt : public ASTNonLabelStmt {
 public:
   ASTProcStmt(std::string id, ASTExpressionList *expr = nullptr);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   std::string id;
@@ -67,6 +74,7 @@ class ASTIfStmt : public ASTNonLabelStmt {
 public:
   ASTIfStmt(ASTExpr *, ASTStmt *, ASTElseClause *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   ASTExpr *expr;
@@ -78,6 +86,7 @@ class ASTElseClause : public ASTNonLabelStmt {
 public:
   ASTElseClause(ASTStmt *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   ASTStmt *stmt;
@@ -87,6 +96,7 @@ class ASTRepeatStmt : public ASTNonLabelStmt {
 public:
   ASTRepeatStmt(ASTStmtList *, ASTExpr *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   ASTStmtList *stmt_list_;
@@ -97,6 +107,7 @@ class ASTWhileStmt : public ASTNonLabelStmt {
 public:
   ASTWhileStmt(ASTExpr *, ASTStmt *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   ASTExpr *expr_;
@@ -109,6 +120,7 @@ public:
   ASTForStmt(std::string id, ASTExpr *for_expr, ForDir dir, ASTExpr *to_expr,
              ASTStmt *stmt);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   std::string id_;
@@ -121,6 +133,7 @@ class ASTCaseStmt : public ASTNonLabelStmt {
 public:
   ASTCaseStmt(ASTExpr *, ASTCaseExprList *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   ASTExpr *expr_;
@@ -132,6 +145,7 @@ public:
   ASTCaseExprList();
   void add_case_expr(ASTCaseExpr *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   std::vector<ASTCaseExpr *> case_expr_list_;
@@ -141,6 +155,7 @@ class ASTCaseExpr : public ASTNonLabelStmt {
 public:
   ASTCaseExpr(ASTExpr *, ASTStmt *);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   ASTExpr *expr_;
@@ -151,6 +166,7 @@ class ASTGotoStmt : public ASTNonLabelStmt {
 public:
   ASTGotoStmt(std::string label);
   virtual void Print(GraphGenerator *);
+  virtual void Accept(Visitor *visitor);
 
 private:
   std::string label_;

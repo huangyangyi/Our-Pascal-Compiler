@@ -4,7 +4,7 @@ ASTExpressionList::ASTExpressionList(ASTExpr *expr) {
   expr_list_.push_back(expr);
 }
 
-void ASTExpressionList::AddExpr(ASTExpr *expr) { expr_list_.push_back(expr); }
+voisd ASTExpressionList::AddExpr(ASTExpr *expr) { expr_list_.push_back(expr); }
 
 void ASTExpressionList::Print(GraphGenerator *graph) {
   graph->AddNode("expression_list", this->line(), this->col());
@@ -133,3 +133,19 @@ void ASTArrayExpr::Print(GraphGenerator *graph) {
   this->expr_->Print(graph);
   graph->Pop();
 }
+
+void ASTExpressionList::Accept(Visitor* visitor){visitor->VisitASTExpressionList(this); }
+
+void ASTBinaryExpr::Accept(Visitor* visitor){visitor->VisitASTBinaryExpr(this); }
+
+void ASTUnaryExpr::Accept(Visitor* visitor){visitor->VisitASTUnaryExpr(this); }
+
+void ASTPropExpr::Accept(Visitor* visitor){visitor->VisitASTPropExpr(this); }
+
+void ASTConstValueExpr::Accept(Visitor* visitor){visitor->VisitASTConstValueExpr(this); }
+
+void ASTFuncCall::Accept(Visitor* visitor){visitor->VisitASTFuncCall(this); }
+
+void ASTIDExpr::Accept(Visitor* visitor){visitor->VisitASTIDExpr(this); }
+
+void ASTArrayExpr::Accept(Visitor* visitor){visitor->VisitASTArrayExpr(this); }

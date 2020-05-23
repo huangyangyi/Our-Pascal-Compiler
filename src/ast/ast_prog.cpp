@@ -162,3 +162,33 @@ void ASTValParaList::Print(GraphGenerator* g) {
     name_list->Print(g);
     g->Pop();
 }
+
+void ASTProgramHead::Accept(Visitor* visitor){visitor->VisitASTProgramHead(this); }
+
+void ASTRoutineHead::Accept(Visitor* visitor){visitor->VisitASTRoutineHead(this); }
+
+void ASTRoutineBody::Accept(Visitor* visitor){visitor->VisitASTRoutineBody(this); }
+
+void ASTRoutine::Accept(Visitor* visitor){visitor->VisitASTRoutine(this); }
+
+void ASTProgram::Accept(Visitor* visitor){visitor->VisitASTProgram(this); }
+
+void ASTRoutinePart::Accept(Visitor* visitor){visitor->VisitASTRoutinePart(this); }
+
+void ASTFuncProcBase::Accept(Visitor* visitor){visitor->VisitASTFuncProcBase(this); }
+
+void ASTFunctionDecl::Accept(Visitor* visitor){visitor->VisitASTFunctionDecl(this); }
+
+void ASTFunctionHead::Accept(Visitor* visitor){visitor->VisitASTFunctionHead(this); }
+
+void ASTProcedureDecl::Accept(Visitor* visitor){visitor->VisitASTProcedureDecl(this); }
+
+void ASTProcedureHead::Accept(Visitor* visitor){visitor->VisitASTProcedureHead(this); }
+
+void ASTParaDeclList::Accept(Visitor* visitor){visitor->VisitASTParaDeclList(this); }
+
+void ASTParaTypeList::Accept(Visitor* visitor){visitor->VisitASTParaTypeList(this); }
+
+void ASTVarParaList::Accept(Visitor* visitor){visitor->VisitASTVarParaList(this); }
+
+void ASTValParaList::Accept(Visitor* visitor){visitor->VisitASTValParaList(this); }

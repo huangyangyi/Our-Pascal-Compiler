@@ -5,6 +5,10 @@
 #include <string>
 #include <assert.h>
 #include "graph_generator.h"
+#include "../visitor.h"
+
+class Visitor;
+class ASTNode;
 
 class ASTNode;
 class ASTNameList;
@@ -19,6 +23,7 @@ public:
     int line();
     int col();
     virtual void Print(GraphGenerator *) = 0;
+    virtual void Accept(Visitor *) = 0;
 };
 
 class ASTNameList: public ASTNode{
@@ -26,6 +31,7 @@ public:
     ASTNameList() = default;
     void AddIdentifier(std::string);
     virtual void Print(GraphGenerator *);
+    virtual void Accept(Visitor *visitor);
 private:
     std::vector<std::string> identifier_list_;
 };
