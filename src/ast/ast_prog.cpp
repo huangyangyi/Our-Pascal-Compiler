@@ -160,12 +160,5 @@ ASTValParaList::ASTValParaList(ASTNameList* name_list)
 void ASTValParaList::Print(GraphGenerator* g) {
     g->AddNode("val_para_list", this->line(), this->col());
     name_list->Print(g);
-    name_list->Print(g);
-    name_list->Print(g);
-    name_list->Print(g);
-    name_list->Print(g);
-    name_list->Print(g);
-    name_list->Print(g);
-    name_list->Print(g);
     g->Pop();
 }
