@@ -68,3 +68,36 @@ void ASTRecordTypeDecl::Print(GraphGenerator* g) {
     field_decl_list->Print(g);
     g->Pop();
 }
+
+ASTTypePart::ASTTypePart(ASTTypeDeclList *type_decl_list):type_decl_list_(type_decl_list){}
+
+void ASTTypePart::Print(GraphGenerator *g) {
+    g->AddNode("type_part", this->line(), this->col());
+    this->type_decl_list_->Print(g);
+    g->Pop();
+}
+
+ASTTypeDefinition::ASTTypeDefinition(std::string id , ASTTypeDecl* type_decl):id_(id), type_decl_(type_decl){}
+
+void ASTTypeDefinition::Print(GraphGenerator *g) {
+    g->AddNode("type_definition", this->line(), this->col());
+    g->AddIdentifier(this->id_);
+    this->type_decl_->Print(g);
+    g->Pop();
+}
+
+ASTTypeDeclList::ASTTypeDeclList(ASTTypeDefinition* defi) {
+    this->typeList.push_back(defi);
+}
+
+void ASTTypeDeclList::addASTTypeDefinition(ASTTypeDefinition* defi) {
+    this->typeList.push_back(defi);
+}
+
+void ASTTypeDeclList::Print(GraphGenerator *g) {
+    g->AddNode("type_decl_list", line(), col());
+    for (auto defi: this->typeList){
+        defi->Print(g);
+    }
+    g->Pop();
+}

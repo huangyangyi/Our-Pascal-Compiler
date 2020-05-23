@@ -33,7 +33,7 @@ public:
   virtual void Print(GraphGenerator *graph);
 };
 
-class ASTStmtList : public ASTNode {
+class ASTStmtList : public ASTNonLabelStmt {
 public:
   ASTStmtList(ASTStmt *);
   void addStmt(ASTStmt *);
@@ -83,7 +83,7 @@ private:
   ASTStmt *stmt;
 };
 
-class ASTRepeatStmt : public ASTNode {
+class ASTRepeatStmt : public ASTNonLabelStmt {
 public:
   ASTRepeatStmt(ASTStmtList *, ASTExpr *);
   virtual void Print(GraphGenerator *);
@@ -93,7 +93,7 @@ private:
   ASTExpr *expr_;
 };
 
-class ASTWhileStmt : public ASTNode {
+class ASTWhileStmt : public ASTNonLabelStmt {
 public:
   ASTWhileStmt(ASTExpr *, ASTStmt *);
   virtual void Print(GraphGenerator *);
@@ -117,7 +117,7 @@ private:
   ASTStmt *stmt_;
 };
 
-class ASTCaseStmt : public ASTNode {
+class ASTCaseStmt : public ASTNonLabelStmt {
 public:
   ASTCaseStmt(ASTExpr *, ASTCaseExprList *);
   virtual void Print(GraphGenerator *);
@@ -127,7 +127,7 @@ private:
   ASTCaseExprList *case_expr_list_;
 };
 
-class ASTCaseExprList : public ASTNode {
+class ASTCaseExprList : public ASTNonLabelStmt {
 public:
   ASTCaseExprList();
   void add_case_expr(ASTCaseExpr *);
@@ -137,17 +137,17 @@ private:
   std::vector<ASTCaseExpr *> case_expr_list_;
 };
 
-class ASTCaseExpr : public ASTNode {
+class ASTCaseExpr : public ASTNonLabelStmt {
 public:
-  ASTCaseExpr(ASTConstValue *, ASTStmt *);
+  ASTCaseExpr(ASTExpr *, ASTStmt *);
   virtual void Print(GraphGenerator *);
 
 private:
-  ASTConstValue *const_value_;
+  ASTExpr *expr_;
   ASTStmt *stmt_;
 };
 
-class ASTGotoStmt : public ASTNode {
+class ASTGotoStmt : public ASTNonLabelStmt {
 public:
   ASTGotoStmt(std::string label);
   virtual void Print(GraphGenerator *);

@@ -7,8 +7,10 @@
 #include "ast_type.h"
 #include "ast_expr.h"
 
+class ASTExpr;
 class ASTConstValue;
 class ASTConstExprList;
+class ASTConstExpr;
 class ASTConstPart;
 class ASTVarPart;
 class ASTVarDeclList;

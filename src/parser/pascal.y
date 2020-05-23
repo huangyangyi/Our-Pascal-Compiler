@@ -1,11 +1,20 @@
+
+%locations
+%define parse.error verbose
+
+%code requires {
+#include "ast/ast.h"
+#include "iostream"
+}
+
 %{
 #define MAX_LITERAL_LEN 256
 #define SET_LOCATION(dest) (dest)->set_location(yylloc.first_line, yylloc.first_column)
-#include "ast/ast.h"
+extern int yylex(void);
+void yyerror(const char *str);
 
 %}
 
-%locations
 
 %union{
     int token_type;
@@ -74,17 +83,17 @@
 %token KWD_THEN KWD_TO KWD_TYPE KWD_UNIT KWD_UNTIL KWD_USES KWD_VAR KWD_WHILE KWD_WITH KWD_XOR
 %token SIGN
 
-%type<tok> TYPE_INT TYPE_INT_8 TYPE_INT_16 TYPE_INT_32 TYPE_INT_64
-%type<tok> TYPE_UNSIGNED_INT_8 TYPE_UNSIGNED_INT_16 TYPE_UNSIGNED_INT_32 TYPE_UNSIGNED_INT_64 
-%type<tok> TYPE_BOOLEAN TYPE_FLOAT TYPE_FLOAT_16 TYPE_FLOAT_32 TYPE_CHAR TYPE_STRING
-%type<tok> SYM_ADD SYM_SUB SYM_MUL SYM_DIV SYM_EQ SYM_LT SYM_GT SYM_LBRAC SYM_RBRAC SYM_PERIOD SYM_COMMA SYM_COLON
-%type<tok> SYM_SEMICOLON SYM_AT SYM_CARET SYM_LPAREN SYM_RPAREN SYM_NE SYM_LE SYM_GE SYM_ASSIGN SYM_RANGE COMMENT
-%type<tok> KWD_AND KWD_ARRAY KWD_ASM KWD_BEGIN KWD_CASE KWD_CONST KWD_CONSTRUCTOR KWD_DESTRUCTOR KWD_DIV
-%type<tok> KWD_DO KWD_DOWNTO KWD_ELSE KWD_END KWD_FILE KWD_FOR KWD_FUNCTION KWD_GOTO KWD_IF KWD_IMPLEMENTATION KWD_IN 
-%type<tok> KWD_INHERITED KWD_INLINE KWD_INTERFACE KWD_LABEL KWD_MOD KWD_NIL KWD_NOT KWD_OBJECT KWD_OF KWD_OPERATOR KWD_OR
-%type<tok> KWD_PACKED KWD_PROCEDURE KWD_PROGRAM KWD_RECORD KWD_REINTRODUCE KWD_REPEAT KWD_SELF KWD_SET KWD_SHL KWD_SHR
-%type<tok> KWD_THEN KWD_TO KWD_TYPE KWD_UNIT KWD_UNTIL KWD_USES KWD_VAR KWD_WHILE KWD_WITH KWD_XOR
-%type<tok> SIGN
+%type<token_type> TYPE_INT TYPE_INT_8 TYPE_INT_16 TYPE_INT_32 TYPE_INT_64
+%type<token_type> TYPE_UNSIGNED_INT_8 TYPE_UNSIGNED_INT_16 TYPE_UNSIGNED_INT_32 TYPE_UNSIGNED_INT_64 
+%type<token_type> TYPE_BOOLEAN TYPE_FLOAT TYPE_FLOAT_16 TYPE_FLOAT_32 TYPE_CHAR TYPE_STRING
+%type<token_type> SYM_ADD SYM_SUB SYM_MUL SYM_DIV SYM_EQ SYM_LT SYM_GT SYM_LBRAC SYM_RBRAC SYM_PERIOD SYM_COMMA SYM_COLON
+%type<token_type> SYM_SEMICOLON SYM_AT SYM_CARET SYM_LPAREN SYM_RPAREN SYM_NE SYM_LE SYM_GE SYM_ASSIGN SYM_RANGE COMMENT
+%type<token_type> KWD_AND KWD_ARRAY KWD_ASM KWD_BEGIN KWD_CASE KWD_CONST KWD_CONSTRUCTOR KWD_DESTRUCTOR KWD_DIV
+%type<token_type> KWD_DO KWD_DOWNTO KWD_ELSE KWD_END KWD_FILE KWD_FOR KWD_FUNCTION KWD_GOTO KWD_IF KWD_IMPLEMENTATION KWD_IN 
+%type<token_type> KWD_INHERITED KWD_INLINE KWD_INTERFACE KWD_LABEL KWD_MOD KWD_NIL KWD_NOT KWD_OBJECT KWD_OF KWD_OPERATOR KWD_OR
+%type<token_type> KWD_PACKED KWD_PROCEDURE KWD_PROGRAM KWD_RECORD KWD_REINTRODUCE KWD_REPEAT KWD_SELF KWD_SET KWD_SHL KWD_SHR
+%type<token_type> KWD_THEN KWD_TO KWD_TYPE KWD_UNIT KWD_UNTIL KWD_USES KWD_VAR KWD_WHILE KWD_WITH KWD_XOR
+%type<token_type> SIGN
 
 %type<str> LITERAL_INT LITERAL_FLOAT LITERAL_CHAR LITERAL_ESC_CHAR LITERAL_STR LITERAL_TRUE LITERAL_FALSE IDENTIFIER
 
@@ -92,6 +101,7 @@
 %type<ast_program_head> program_head
 %type<ast_routine> routine
 %type<ast_routine_head> routine_head
+%type<ast_routine_body> routine_body
 %type<ast_const_part> const_part
 %type<ast_const_expr_list> const_expr_list
 %type<ast_const_expr> const_expr
@@ -119,8 +129,9 @@
 %type<ast_procedure_head> procedure_head 
 %type<ast_para_decl_list> parameters para_decl_list
 %type<ast_para_type_list> para_type_list 
-%type<ast_stmt_list> routine_body compound_stmt stmt_list
-%type<ast_stmt> stmt non_label_stmt 
+%type<ast_stmt_list> compound_stmt stmt_list
+%type<ast_stmt> stmt
+%type<ast_non_label_stmt> non_label_stmt
 %type<ast_else_clause> else_clause
 %type<ast_assign_stmt> assign_stmt 
 %type<ast_proc_stmt> proc_stmt 
@@ -287,19 +298,19 @@ type_decl:
 
 TYPE:
     TYPE_BOOLEAN{
-        $$ = new ASTType(ASTType::Typename::BOOLEAN);
+        $$ = new ASTType(ASTType::TypeName::BOOLEAN);
         SET_LOCATION($$);
     }
     | TYPE_CHAR{
-        $$ = new ASTType(ASTType::Typename::CHAR);
+        $$ = new ASTType(ASTType::TypeName::CHAR);
         SET_LOCATION($$);
     }
     | TYPE_INT{
-        $$ = new ASTType(ASTType::Typename::INTERGER);
+        $$ = new ASTType(ASTType::TypeName::INTERGER);
         SET_LOCATION($$);
     }
     | TYPE_FLOAT{
-        $$ = new ASTType(ASTType::Typename::REAL);
+        $$ = new ASTType(ASTType::TypeName::REAL);
         SET_LOCATION($$);
     }
 ;
@@ -346,11 +357,11 @@ record_type_decl:
 field_decl_list:
     field_decl_list field_decl{
         $$ = $1;
-        $$->addASTFieldDecl($2);
+        $$->addFieldDecl($2);
         SET_LOCATION($$);
     }
     | field_decl{
-        $$ = new addASTFieldDecl($1);
+        $$ = new ASTFieldDeclList($1);
         SET_LOCATION($$);
     }
 ;
@@ -365,11 +376,12 @@ field_decl:
 name_list:
     name_list SYM_COMMA IDENTIFIER{
         $$ = $1;
-        $$->addIDENTIFIER($3);
+        $$->AddIdentifier($3);
         SET_LOCATION($$);
     }
     | IDENTIFIER{
-        $$ = new ASTNameList($1);
+        $$ = new ASTNameList();
+        $$->AddIdentifier($1);
         SET_LOCATION($$);
     }
 ;
@@ -507,7 +519,7 @@ val_para_list:
 
 compound_stmt:
     KWD_BEGIN stmt_list KWD_END{
-        $$ = new ASTStmtList($2);
+        $$ = $2;
         SET_LOCATION($$);
     }
 ;
@@ -592,7 +604,7 @@ proc_stmt:
         $$ = new ASTProcStmt($1);
     }
     | IDENTIFIER SYM_LPAREN expression_list SYM_RPAREN{
-        $$ = new ASTProcStmt($1, $2);
+        $$ = new ASTProcStmt($1, $3);
         
     }
 ;
@@ -667,11 +679,13 @@ case_expr_list:
 
 case_expr:
     const_value SYM_COLON stmt SYM_SEMICOLON {
-        $$ = new ASTCaseExpr($1, $3);
+        ASTConstValueExpr *temp_const_value = new ASTConstValueExpr($1);
+        $$ = new ASTCaseExpr(temp_const_value, $3);
         SET_LOCATION($$);
     }
     | IDENTIFIER SYM_COLON stmt SYM_SEMICOLON {
-        $$ = new ASTCaseExpr($1, $3);
+        ASTIDExpr *temp_id = new ASTIDExpr($1);
+        $$ = new ASTCaseExpr(temp_id, $3);
         SET_LOCATION($$);    
     }
 ;
@@ -687,7 +701,7 @@ goto_stmt:
 expression_list:
     expression_list SYM_COMMA expression {
         $$ = $1;
-        $$ -> AddExpr($2);
+        $$ -> AddExpr($3);
         SET_LOCATION($$);
     }
     | expression {
@@ -797,13 +811,8 @@ factor:
         SET_LOCATION($$);
     }
     | IDENTIFIER SYM_PERIOD IDENTIFIER {
-        $$ = new ASTPropExpr($1, $2);
+        $$ = new ASTPropExpr($1, $3);
         SET_LOCATION($$);
     }
 ;
 %%
-
-void yyerror(char const char *str) {
-    PrintError(str);
-    ParseError = 1;
-}

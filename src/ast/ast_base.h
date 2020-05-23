@@ -14,18 +14,20 @@ class ASTNode {
     int line_, col_;
 
 public:
-    ASTNode();
+    ASTNode() = default;
     void set_location(int line, int col);
     int line();
     int col();
-    virtual void Print(GraphGenerator *) const = 0;
+    virtual void Print(GraphGenerator *) = 0;
 };
 
 class ASTNameList: public ASTNode{
 public:
-    void addIDENTIFIER(char *);
+    ASTNameList() = default;
+    void AddIdentifier(std::string);
+    virtual void Print(GraphGenerator *);
 private:
-    std::vector< char *> identifierList;
+    std::vector<std::string> identifier_list_;
 };
 
 #endif //OPC_AST_AST_BASE_H

@@ -10,11 +10,16 @@
 class ASTProgramHead;
 class ASTRoutineHead;
 class ASTRoutineBody;
+class ASTRoutinePart;
 class ASTRoutine;
+class ASTFuncProcBase;
 class ASTProgram;
 class ASTFunctionDecl;
+class ASTFunctionHead;
 class ASTProcedureDecl;
+class ASTProcedureHead;
 class ASTParaTypeList;
+class ASTParaList;
 class ASTParaDeclList;
 
 class ASTProgramHead : public ASTNode {
@@ -163,7 +168,7 @@ class ASTParaTypeList : public ASTNode {
 class ASTParaList : public ASTNode {
    public:
     bool isVar;
-    ASTParaList::ASTParaList(bool isVar) : isVar(isVar) {}
+    ASTParaList(bool isVar) : isVar(isVar) {}
 };
 
 class ASTVarParaList : public ASTParaList {

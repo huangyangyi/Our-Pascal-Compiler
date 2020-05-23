@@ -72,8 +72,11 @@ class ASTRecordTypeDecl : public ASTTypeDecl {
 
 class ASTTypeDefinition : public ASTNode {
    public:
-    ASTTypeDefinition(char*, ASTTypeDecl*);
+    ASTTypeDefinition(std::string, ASTTypeDecl*);
     virtual void Print(GraphGenerator *);
+   private:
+    std::string id_;
+    ASTTypeDecl *type_decl_;
 };
 
 class ASTTypeDeclList : public ASTNode {
@@ -90,6 +93,10 @@ class ASTTypePart : public ASTNode {
    public:
     ASTTypePart(ASTTypeDeclList*);
     virtual void Print(GraphGenerator *);
+
+   private:
+    ASTTypeDeclList* type_decl_list_;
+
 };
 
 #endif //OPC_AST_AST_TYPE_H

@@ -4,18 +4,17 @@
 //#define DEBUG_LEXER 
 
 #include <cstring>
-#include "pascal.y.h"
+#include "pascal.y.hpp"
 using namespace std;
-
-#define YY_USER_ACTION yylloc->begin.line = yylloc->end.line = yylineno-1; \
-    yylloc->begin.column = yycolumn; yylloc->end.column = yycolumn+yyleng-1; \
+int yycolumn = 1;
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
+	yylloc.first_column = yycolumn; yylloc.last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
 
 #ifdef DEBUG_LEXER
 #define RETURN_TOKEN(X) printf(#X); printf("\n");// return (X);
-#elif
+#else
 #define RETURN_TOKEN(X) return(X);
-
 #endif
 
 %}
@@ -535,7 +534,7 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 %%
 
 void yyerror(const char *s) {
-    fprintf(stderr, "LexError: %s (at Line %d, Column%d)\n", s, yylloc->begin.line, yylloc->end.line);
+    fprintf(stderr, "LexError: %s (at Line %d, Column%d)\n", s, yylloc.first_line, yylloc.first_column);
 }
 
 #ifdef DEBUG_LEXER

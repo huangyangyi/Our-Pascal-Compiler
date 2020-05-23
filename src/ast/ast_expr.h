@@ -11,6 +11,8 @@ class ASTConstValueExpr;
 class ASTIDExpr;
 class ASTArrayExpr;
 
+class ASTConstValue;
+
 class ASTExpr : public ASTNode {};
 
 class ASTExpressionList : public ASTExpr {
@@ -66,7 +68,7 @@ class ASTUnaryExpr : public ASTExpr {
 
 class ASTPropExpr : public ASTExpr {
    private:
-    std::string id_, *prop_id_;
+    std::string id_, prop_id_;
 
    public:
     ASTPropExpr(std::string id, std::string prop_id);

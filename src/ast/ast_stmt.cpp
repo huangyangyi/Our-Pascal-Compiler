@@ -13,7 +13,7 @@ void ASTStmtList::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-ASTStmt::ASTStmt(ASTNonLabelStmt *non_label_stmt, std::string label = "")
+ASTStmt::ASTStmt(ASTNonLabelStmt *non_label_stmt, std::string label)
     : non_label_stmt(non_label_stmt), label(label) {}
 void ASTStmt::Print(GraphGenerator *g) {
     if (label == "") {
@@ -34,7 +34,7 @@ void ASTAssignStmt::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-ASTProcStmt::ASTProcStmt(std::string id, ASTExpressionList *expr_list =nullptr)
+ASTProcStmt::ASTProcStmt(std::string id, ASTExpressionList *expr_list)
     : id(id), expr_list(expr_list) {}
 void ASTProcStmt::Print(GraphGenerator *g) {
     g->AddNode("proc_stmt", this->line(), this->col());
@@ -125,12 +125,12 @@ void ASTCaseExprList::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-ASTCaseExpr::ASTCaseExpr(ASTConstValue *const_value, ASTStmt *stmt)
-    : const_value_(const_value), stmt_(stmt) {}
+ASTCaseExpr::ASTCaseExpr(ASTExpr *expr, ASTStmt *stmt)
+    : expr_(expr), stmt_(stmt) {}
 
 void ASTCaseExpr::Print(GraphGenerator *g) {
     g->AddNode("case_expr", this->line(), this->col());
-    this->const_value_->Print(g);
+    this->expr_->Print(g);
     this->stmt_->Print(g);
     g->Pop();
 }
