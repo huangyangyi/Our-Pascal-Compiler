@@ -152,7 +152,7 @@ void yyerror(const char *str);
 program: 
     program_head routine SYM_PERIOD {
         //root of ast, a global variable
-        ast_root = new ASTProgram($1, $2); 
+        $$ = ast_root = new ASTProgram($1, $2); 
         SET_LOCATION($$);
     }
 ;
@@ -600,10 +600,11 @@ proc_stmt:
     /* SYS_PROC | SYS_PROC  LP  expression_list  RP |  READ  LP  factor  RP */
     IDENTIFIER{
         $$ = new ASTProcStmt($1);
+        SET_LOCATION($$);
     }
     | IDENTIFIER SYM_LPAREN expression_list SYM_RPAREN{
         $$ = new ASTProcStmt($1, $3);
-        
+        SET_LOCATION($$);
     }
 ;
 
