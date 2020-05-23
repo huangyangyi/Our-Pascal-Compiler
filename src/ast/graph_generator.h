@@ -1,7 +1,7 @@
 #ifndef OPC_AST_GRAPH_GENERATOR_H
 #define OPC_AST_GRAPH_GENERATOR_H
-#include<string>
-#include<stack>
+#include <string>
+#include <stack>
 #include "ast_value.h"
 
 class GraphGenerator {

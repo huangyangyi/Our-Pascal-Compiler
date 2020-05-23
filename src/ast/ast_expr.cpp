@@ -116,7 +116,7 @@ void ASTFuncCall::Print(GraphGenerator *graph) {
   graph->Pop();
 }
 
-ASTIDExpr::ASTIDExpr(std::string id) id_(id) {}
+ASTIDExpr::ASTIDExpr(std::string id) :id_(id) {}
 
 void ASTIDExpr::Print(GraphGenerator *g) {
   g->AddNode("ID_expr", this->line(), this->col());
