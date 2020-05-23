@@ -8,7 +8,7 @@ void GraphGenerator::AddNode(std::string label, int line, int col) {
     ostr << "node_" << id << "[";
     ostr << "label=\"" << label << "\\n";
     ostr << "[" << line << ", " << col << "]";
-    ostr << "];";
+    ostr << "\"];";
     std::string node_str = ostr.str();
     nodes_.push_back(node_str);
     std::stringstream ostr1("");
