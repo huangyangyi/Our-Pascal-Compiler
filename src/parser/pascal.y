@@ -4,7 +4,6 @@
 
 %code requires {
 #include "ast/ast.h"
-#include "iostream"
 }
 
 %{
@@ -258,7 +257,6 @@ type_part:
     }
     | %empty{
         $$ = nullptr;
-        SET_LOCATION($$);
     }
 ;
 

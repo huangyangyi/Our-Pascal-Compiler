@@ -11,11 +11,12 @@ void GraphGenerator::AddNode(std::string label, int line, int col) {
     ostr << "];";
     std::string node_str = ostr.str();
     nodes_.push_back(node_str);
-    ostr.clear();
+    std::stringstream ostr1("");
+    ostr1.clear();
     if (id != 0) {
-        ostr << "node_" << stk_.top() << "->"
+        ostr1 << "node_" << stk_.top() << "->"
              << "node_" << id << ";";
-        std::string edge_str = ostr.str();
+        std::string edge_str = ostr1.str();
         edges_.push_back(edge_str);
     }
     stk_.push(id);
@@ -29,11 +30,12 @@ void GraphGenerator::AddIdentifier(std::string content) {
     ostr << "];";
     std::string node_str = ostr.str();
     nodes_.push_back(node_str);
-    ostr.clear();
+    std::stringstream ostr1("");
+    ostr1.clear();
     if (id != 0) {
-        ostr << "node_" << stk_.top() << "->"
+        ostr1 << "node_" << stk_.top() << "->"
              << "node_" << id << ";";
-        std::string edge_str = ostr.str();
+        std::string edge_str = ostr1.str();
         edges_.push_back(edge_str);
     }
 }
@@ -46,11 +48,11 @@ void GraphGenerator::AddValue(std::string t, std::string content) {
     ostr << "];";
     std::string node_str = ostr.str();
     nodes_.push_back(node_str);
-    ostr.clear();
+    std::stringstream ostr1("");
     if (id != 0) {
-        ostr << "node_" << stk_.top() << "->"
+        ostr1 << "node_" << stk_.top() << "->"
              << "node_" << id << ";";
-        std::string edge_str = ostr.str();
+        std::string edge_str = ostr1.str();
         edges_.push_back(edge_str);
     }
 }
