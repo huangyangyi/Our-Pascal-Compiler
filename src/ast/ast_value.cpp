@@ -93,16 +93,16 @@ void ASTVarDecl::Print(GraphGenerator* g) {
     g->Pop();
 }
 
-void ASTConstValue::Accept(Visitor* visitor){ return visitor->VisitASTConstValue(this); }
+std::shared_ptr<VisitorResult> ASTConstValue::Accept(Visitor* visitor){ return visitor->VisitASTConstValue(this); }
 
-void ASTConstExprList::Accept(Visitor* visitor){ return visitor->VisitASTConstExprList(this); }
+std::shared_ptr<VisitorResult> ASTConstExprList::Accept(Visitor* visitor){ return visitor->VisitASTConstExprList(this); }
 
-void ASTConstExpr::Accept(Visitor* visitor){ return visitor->VisitASTConstExpr(this); }
+std::shared_ptr<VisitorResult> ASTConstExpr::Accept(Visitor* visitor){ return visitor->VisitASTConstExpr(this); }
 
-void ASTConstPart::Accept(Visitor* visitor){ return visitor->VisitASTConstPart(this); }
+std::shared_ptr<VisitorResult> ASTConstPart::Accept(Visitor* visitor){ return visitor->VisitASTConstPart(this); }
 
-void ASTVarPart::Accept(Visitor* visitor){ return visitor->VisitASTVarPart(this); }
+std::shared_ptr<VisitorResult> ASTVarPart::Accept(Visitor* visitor){ return visitor->VisitASTVarPart(this); }
 
-void ASTVarDeclList::Accept(Visitor* visitor){ return visitor->VisitASTVarDeclList(this); }
+std::shared_ptr<VisitorResult> ASTVarDeclList::Accept(Visitor* visitor){ return visitor->VisitASTVarDeclList(this); }
 
-void ASTVarDecl::Accept(Visitor* visitor){ return visitor->VisitASTVarDecl(this); }
+std::shared_ptr<VisitorResult> ASTVarDecl::Accept(Visitor* visitor){ return visitor->VisitASTVarDecl(this); }

@@ -4,7 +4,7 @@ ASTExpressionList::ASTExpressionList(ASTExpr *expr) {
   expr_list_.push_back(expr);
 }
 
-voisd ASTExpressionList::AddExpr(ASTExpr *expr) { expr_list_.push_back(expr); }
+void ASTExpressionList::AddExpr(ASTExpr *expr) { expr_list_.push_back(expr); }
 
 void ASTExpressionList::Print(GraphGenerator *graph) {
   graph->AddNode("expression_list", this->line(), this->col());
@@ -134,18 +134,18 @@ void ASTArrayExpr::Print(GraphGenerator *graph) {
   graph->Pop();
 }
 
-void ASTExpressionList::Accept(Visitor* visitor){ return visitor->VisitASTExpressionList(this); }
+std::shared_ptr<VisitorResult> ASTExpressionList::Accept(Visitor* visitor){ return visitor->VisitASTExpressionList(this); }
 
-void ASTBinaryExpr::Accept(Visitor* visitor){ return visitor->VisitASTBinaryExpr(this); }
+std::shared_ptr<VisitorResult> ASTBinaryExpr::Accept(Visitor* visitor){ return visitor->VisitASTBinaryExpr(this); }
 
-void ASTUnaryExpr::Accept(Visitor* visitor){ return visitor->VisitASTUnaryExpr(this); }
+std::shared_ptr<VisitorResult> ASTUnaryExpr::Accept(Visitor* visitor){ return visitor->VisitASTUnaryExpr(this); }
 
-void ASTPropExpr::Accept(Visitor* visitor){ return visitor->VisitASTPropExpr(this); }
+std::shared_ptr<VisitorResult> ASTPropExpr::Accept(Visitor* visitor){ return visitor->VisitASTPropExpr(this); }
 
-void ASTConstValueExpr::Accept(Visitor* visitor){ return visitor->VisitASTConstValueExpr(this); }
+std::shared_ptr<VisitorResult> ASTConstValueExpr::Accept(Visitor* visitor){ return visitor->VisitASTConstValueExpr(this); }
 
-void ASTFuncCall::Accept(Visitor* visitor){ return visitor->VisitASTFuncCall(this); }
+std::shared_ptr<VisitorResult> ASTFuncCall::Accept(Visitor* visitor){ return visitor->VisitASTFuncCall(this); }
 
-void ASTIDExpr::Accept(Visitor* visitor){ return visitor->VisitASTIDExpr(this); }
+std::shared_ptr<VisitorResult> ASTIDExpr::Accept(Visitor* visitor){ return visitor->VisitASTIDExpr(this); }
 
-void ASTArrayExpr::Accept(Visitor* visitor){ return visitor->VisitASTArrayExpr(this); }
+std::shared_ptr<VisitorResult> ASTArrayExpr::Accept(Visitor* visitor){ return visitor->VisitASTArrayExpr(this); }

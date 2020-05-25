@@ -144,28 +144,28 @@ void ASTGotoStmt::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-void ASTStmt::Accept(Visitor* visitor){ return visitor->VisitASTStmt(this); }
+std::shared_ptr<VisitorResult> ASTStmt::Accept(Visitor* visitor){ return visitor->VisitASTStmt(this); }
 
-void ASTStmtList::Accept(Visitor* visitor){ return visitor->VisitASTStmtList(this); }
+std::shared_ptr<VisitorResult> ASTStmtList::Accept(Visitor* visitor){ return visitor->VisitASTStmtList(this); }
 
-void ASTAssignStmt::Accept(Visitor* visitor){ return visitor->VisitASTAssignStmt(this); }
+std::shared_ptr<VisitorResult> ASTAssignStmt::Accept(Visitor* visitor){ return visitor->VisitASTAssignStmt(this); }
 
-void ASTProcStmt::Accept(Visitor* visitor){ return visitor->VisitASTProcStmt(this); }
+std::shared_ptr<VisitorResult> ASTProcStmt::Accept(Visitor* visitor){ return visitor->VisitASTProcStmt(this); }
 
-void ASTIfStmt::Accept(Visitor* visitor){ return visitor->VisitASTIfStmt(this); }
+std::shared_ptr<VisitorResult> ASTIfStmt::Accept(Visitor* visitor){ return visitor->VisitASTIfStmt(this); }
 
-void ASTElseClause::Accept(Visitor* visitor){ return visitor->VisitASTElseClause(this); }
+std::shared_ptr<VisitorResult> ASTElseClause::Accept(Visitor* visitor){ return visitor->VisitASTElseClause(this); }
 
-void ASTRepeatStmt::Accept(Visitor* visitor){ return visitor->VisitASTRepeatStmt(this); }
+std::shared_ptr<VisitorResult> ASTRepeatStmt::Accept(Visitor* visitor){ return visitor->VisitASTRepeatStmt(this); }
 
-void ASTWhileStmt::Accept(Visitor* visitor){ return visitor->VisitASTWhileStmt(this); }
+std::shared_ptr<VisitorResult> ASTWhileStmt::Accept(Visitor* visitor){ return visitor->VisitASTWhileStmt(this); }
 
-void ASTForStmt::Accept(Visitor* visitor){ return visitor->VisitASTForStmt(this); }
+std::shared_ptr<VisitorResult> ASTForStmt::Accept(Visitor* visitor){ return visitor->VisitASTForStmt(this); }
 
-void ASTCaseStmt::Accept(Visitor* visitor){ return visitor->VisitASTCaseStmt(this); }
+std::shared_ptr<VisitorResult> ASTCaseStmt::Accept(Visitor* visitor){ return visitor->VisitASTCaseStmt(this); }
 
-void ASTCaseExprList::Accept(Visitor* visitor){ return visitor->VisitASTCaseExprList(this); }
+std::shared_ptr<VisitorResult> ASTCaseExprList::Accept(Visitor* visitor){ return visitor->VisitASTCaseExprList(this); }
 
-void ASTCaseExpr::Accept(Visitor* visitor){ return visitor->VisitASTCaseExpr(this); }
+std::shared_ptr<VisitorResult> ASTCaseExpr::Accept(Visitor* visitor){ return visitor->VisitASTCaseExpr(this); }
 
-void ASTGotoStmt::Accept(Visitor* visitor){ return visitor->VisitASTGotoStmt(this); }
+std::shared_ptr<VisitorResult> ASTGotoStmt::Accept(Visitor* visitor){ return visitor->VisitASTGotoStmt(this); }
