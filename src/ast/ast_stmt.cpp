@@ -144,28 +144,28 @@ void ASTGotoStmt::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-void ASTStmt::Accept(Visitor* visitor){visitor->VisitASTStmt(this); }
+void ASTStmt::Accept(Visitor* visitor){ return visitor->VisitASTStmt(this); }
 
-void ASTStmtList::Accept(Visitor* visitor){visitor->VisitASTStmtList(this); }
+void ASTStmtList::Accept(Visitor* visitor){ return visitor->VisitASTStmtList(this); }
 
-void ASTAssignStmt::Accept(Visitor* visitor){visitor->VisitASTAssignStmt(this); }
+void ASTAssignStmt::Accept(Visitor* visitor){ return visitor->VisitASTAssignStmt(this); }
 
-void ASTProcStmt::Accept(Visitor* visitor){visitor->VisitASTProcStmt(this); }
+void ASTProcStmt::Accept(Visitor* visitor){ return visitor->VisitASTProcStmt(this); }
 
-void ASTIfStmt::Accept(Visitor* visitor){visitor->VisitASTIfStmt(this); }
+void ASTIfStmt::Accept(Visitor* visitor){ return visitor->VisitASTIfStmt(this); }
 
-void ASTElseClause::Accept(Visitor* visitor){visitor->VisitASTElseClause(this); }
+void ASTElseClause::Accept(Visitor* visitor){ return visitor->VisitASTElseClause(this); }
 
-void ASTRepeatStmt::Accept(Visitor* visitor){visitor->VisitASTRepeatStmt(this); }
+void ASTRepeatStmt::Accept(Visitor* visitor){ return visitor->VisitASTRepeatStmt(this); }
 
-void ASTWhileStmt::Accept(Visitor* visitor){visitor->VisitASTWhileStmt(this); }
+void ASTWhileStmt::Accept(Visitor* visitor){ return visitor->VisitASTWhileStmt(this); }
 
-void ASTForStmt::Accept(Visitor* visitor){visitor->VisitASTForStmt(this); }
+void ASTForStmt::Accept(Visitor* visitor){ return visitor->VisitASTForStmt(this); }
 
-void ASTCaseStmt::Accept(Visitor* visitor){visitor->VisitASTCaseStmt(this); }
+void ASTCaseStmt::Accept(Visitor* visitor){ return visitor->VisitASTCaseStmt(this); }
 
-void ASTCaseExprList::Accept(Visitor* visitor){visitor->VisitASTCaseExprList(this); }
+void ASTCaseExprList::Accept(Visitor* visitor){ return visitor->VisitASTCaseExprList(this); }
 
-void ASTCaseExpr::Accept(Visitor* visitor){visitor->VisitASTCaseExpr(this); }
+void ASTCaseExpr::Accept(Visitor* visitor){ return visitor->VisitASTCaseExpr(this); }
 
-void ASTGotoStmt::Accept(Visitor* visitor){visitor->VisitASTGotoStmt(this); }
+void ASTGotoStmt::Accept(Visitor* visitor){ return visitor->VisitASTGotoStmt(this); }

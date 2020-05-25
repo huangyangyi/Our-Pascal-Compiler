@@ -23,7 +23,7 @@ public:
     int line();
     int col();
     virtual void Print(GraphGenerator *) = 0;
-    virtual void Accept(Visitor *) = 0;
+    virtual std::shared_ptr<VisitorResult> std::shared_ptr<VisitorResult> void Accept(Visitor *) = 0;
 };
 
 class ASTNameList: public ASTNode{
@@ -31,7 +31,7 @@ public:
     ASTNameList() = default;
     void AddIdentifier(std::string);
     virtual void Print(GraphGenerator *);
-    virtual void Accept(Visitor *visitor);
+    virtual std::shared_ptr<VisitorResult> std::shared_ptr<VisitorResult> void Accept(Visitor *visitor);
 private:
     std::vector<std::string> identifier_list_;
 };

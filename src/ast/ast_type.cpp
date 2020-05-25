@@ -102,20 +102,20 @@ void ASTTypeDeclList::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-void ASTType::Accept(Visitor* visitor){visitor->VisitASTType(this); }
+void ASTType::Accept(Visitor* visitor){ return visitor->VisitASTType(this); }
 
-void ASTSimpleTypeDecl::Accept(Visitor* visitor){visitor->VisitASTSimpleTypeDecl(this); }
+void ASTSimpleTypeDecl::Accept(Visitor* visitor){ return visitor->VisitASTSimpleTypeDecl(this); }
 
-void ASTArrayTypeDecl::Accept(Visitor* visitor){visitor->VisitASTArrayTypeDecl(this); }
+void ASTArrayTypeDecl::Accept(Visitor* visitor){ return visitor->VisitASTArrayTypeDecl(this); }
 
-void ASTFieldDecl::Accept(Visitor* visitor){visitor->VisitASTFieldDecl(this); }
+void ASTFieldDecl::Accept(Visitor* visitor){ return visitor->VisitASTFieldDecl(this); }
 
-void ASTFieldDeclList::Accept(Visitor* visitor){visitor->VisitASTFieldDeclList(this); }
+void ASTFieldDeclList::Accept(Visitor* visitor){ return visitor->VisitASTFieldDeclList(this); }
 
-void ASTRecordTypeDecl::Accept(Visitor* visitor){visitor->VisitASTRecordTypeDecl(this); }
+void ASTRecordTypeDecl::Accept(Visitor* visitor){ return visitor->VisitASTRecordTypeDecl(this); }
 
-void ASTTypeDefinition::Accept(Visitor* visitor){visitor->VisitASTTypeDefinition(this); }
+void ASTTypeDefinition::Accept(Visitor* visitor){ return visitor->VisitASTTypeDefinition(this); }
 
-void ASTTypeDeclList::Accept(Visitor* visitor){visitor->VisitASTTypeDeclList(this); }
+void ASTTypeDeclList::Accept(Visitor* visitor){ return visitor->VisitASTTypeDeclList(this); }
 
-void ASTTypePart::Accept(Visitor* visitor){visitor->VisitASTTypePart(this); }
+void ASTTypePart::Accept(Visitor* visitor){ return visitor->VisitASTTypePart(this); }

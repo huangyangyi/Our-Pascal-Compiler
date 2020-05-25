@@ -134,18 +134,18 @@ void ASTArrayExpr::Print(GraphGenerator *graph) {
   graph->Pop();
 }
 
-void ASTExpressionList::Accept(Visitor* visitor){visitor->VisitASTExpressionList(this); }
+void ASTExpressionList::Accept(Visitor* visitor){ return visitor->VisitASTExpressionList(this); }
 
-void ASTBinaryExpr::Accept(Visitor* visitor){visitor->VisitASTBinaryExpr(this); }
+void ASTBinaryExpr::Accept(Visitor* visitor){ return visitor->VisitASTBinaryExpr(this); }
 
-void ASTUnaryExpr::Accept(Visitor* visitor){visitor->VisitASTUnaryExpr(this); }
+void ASTUnaryExpr::Accept(Visitor* visitor){ return visitor->VisitASTUnaryExpr(this); }
 
-void ASTPropExpr::Accept(Visitor* visitor){visitor->VisitASTPropExpr(this); }
+void ASTPropExpr::Accept(Visitor* visitor){ return visitor->VisitASTPropExpr(this); }
 
-void ASTConstValueExpr::Accept(Visitor* visitor){visitor->VisitASTConstValueExpr(this); }
+void ASTConstValueExpr::Accept(Visitor* visitor){ return visitor->VisitASTConstValueExpr(this); }
 
-void ASTFuncCall::Accept(Visitor* visitor){visitor->VisitASTFuncCall(this); }
+void ASTFuncCall::Accept(Visitor* visitor){ return visitor->VisitASTFuncCall(this); }
 
-void ASTIDExpr::Accept(Visitor* visitor){visitor->VisitASTIDExpr(this); }
+void ASTIDExpr::Accept(Visitor* visitor){ return visitor->VisitASTIDExpr(this); }
 
-void ASTArrayExpr::Accept(Visitor* visitor){visitor->VisitASTArrayExpr(this); }
+void ASTArrayExpr::Accept(Visitor* visitor){ return visitor->VisitASTArrayExpr(this); }
