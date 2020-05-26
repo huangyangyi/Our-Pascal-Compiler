@@ -1,15 +1,15 @@
 #include "ast_base.h"
 
-int ASTNode::line(){ return this->line_;}
+int ASTNode::line() { return this->line_; }
 
-int ASTNode::col(){ return this->col_;}
+int ASTNode::col() { return this->col_; }
 
-void ASTNode::set_location(int line,int col) {
+void ASTNode::set_location(int line, int col) {
     this->line_ = line;
     this->col_ = col;
 }
 
-std::shared_ptr<VisitorResult> ASTNode::Accept(Visitor* visitor){ return visitor->VisitASTNode(this); }
+std::shared_ptr<VisitorResult> ASTNode::Accept(Visitor *visitor) { return visitor->VisitASTNode(this); }
 
 void ASTNameList::AddIdentifier(std::string id) {
     this->identifier_list_.push_back(id);
@@ -23,6 +23,6 @@ void ASTNameList::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-std::shared_ptr<VisitorResult> ASTNameList::Accept(Visitor* visitor){ return visitor->VisitASTNameList(this); }
+std::shared_ptr<VisitorResult> ASTNameList::Accept(Visitor *visitor) { return visitor->VisitASTNameList(this); }
 
-const std::vector<std::string> &ASTNameList::get_identifier_list(){ return this->identifier_list_; }
+const std::vector<std::string> &ASTNameList::GetIdentifierList() { return this->identifier_list_; }

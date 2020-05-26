@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+
 void GraphGenerator::AddNode(std::string label, int line, int col) {
     int id = id_cnt_++;
     std::stringstream ostr("");
@@ -15,7 +16,7 @@ void GraphGenerator::AddNode(std::string label, int line, int col) {
     ostr1.clear();
     if (id != 0) {
         ostr1 << "node_" << stk_.top() << "->"
-             << "node_" << id << ";";
+              << "node_" << id << ";";
         std::string edge_str = ostr1.str();
         edges_.push_back(edge_str);
     }
@@ -34,7 +35,7 @@ void GraphGenerator::AddIdentifier(std::string content) {
     ostr1.clear();
     if (id != 0) {
         ostr1 << "node_" << stk_.top() << "->"
-             << "node_" << id << ";";
+              << "node_" << id << ";";
         std::string edge_str = ostr1.str();
         edges_.push_back(edge_str);
     }
@@ -51,7 +52,7 @@ void GraphGenerator::AddValue(std::string t, std::string content) {
     std::stringstream ostr1("");
     if (id != 0) {
         ostr1 << "node_" << stk_.top() << "->"
-             << "node_" << id << ";";
+              << "node_" << id << ";";
         std::string edge_str = ostr1.str();
         edges_.push_back(edge_str);
     }

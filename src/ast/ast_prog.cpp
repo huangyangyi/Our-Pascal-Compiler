@@ -1,21 +1,22 @@
 #include "ast_prog.h"
 
 ASTProgramHead::ASTProgramHead(std::string id) : id(id) {}
-void ASTProgramHead::Print(GraphGenerator* g) {
+
+void ASTProgramHead::Print(GraphGenerator *g) {
     g->AddNode("program_head", this->line(), this->col());
     g->AddIdentifier(id);
     g->Pop();
 }
 
-ASTRoutineHead::ASTRoutineHead(ASTConstPart* const_part, ASTTypePart* type_part,
-                               ASTVarPart* var_part,
-                               ASTRoutinePart* routine_part)
-    : const_part(const_part),
-      type_part(type_part),
-      var_part(var_part),
-      routine_part(routine_part) {}
+ASTRoutineHead::ASTRoutineHead(ASTConstPart *const_part, ASTTypePart *type_part,
+                               ASTVarPart *var_part,
+                               ASTRoutinePart *routine_part)
+        : const_part(const_part),
+          type_part(type_part),
+          var_part(var_part),
+          routine_part(routine_part) {}
 
-void ASTRoutineHead::Print(GraphGenerator* g) {
+void ASTRoutineHead::Print(GraphGenerator *g) {
     g->AddNode("routine_head", this->line(), this->col());
     if (const_part != nullptr) const_part->Print(g);
     if (type_part != nullptr) type_part->Print(g);
@@ -24,53 +25,58 @@ void ASTRoutineHead::Print(GraphGenerator* g) {
     g->Pop();
 }
 
-ASTRoutineBody::ASTRoutineBody(ASTStmtList* compound_stmt)
-    : compound_stmt(compound_stmt) {}
-void ASTRoutineBody::Print(GraphGenerator* g) {
+ASTRoutineBody::ASTRoutineBody(ASTStmtList *compound_stmt)
+        : compound_stmt(compound_stmt) {}
+
+void ASTRoutineBody::Print(GraphGenerator *g) {
     g->AddNode("routine_body", this->line(), this->col());
     this->compound_stmt->Print(g);
     g->Pop();
 }
 
-ASTRoutine::ASTRoutine(ASTRoutineHead* routine_head,
-                       ASTRoutineBody* routine_body)
-    : routine_head(routine_head), routine_body(routine_body) {}
-void ASTRoutine::Print(GraphGenerator* g) {
+ASTRoutine::ASTRoutine(ASTRoutineHead *routine_head,
+                       ASTRoutineBody *routine_body)
+        : routine_head(routine_head), routine_body(routine_body) {}
+
+void ASTRoutine::Print(GraphGenerator *g) {
     g->AddNode("routine", this->line(), this->col());
     routine_head->Print(g);
     routine_body->Print(g);
     g->Pop();
 }
 
-ASTProgram::ASTProgram(ASTProgramHead* program_head, ASTRoutine* routine)
-    : program_head(program_head), routine(routine) {}
+ASTProgram::ASTProgram(ASTProgramHead *program_head, ASTRoutine *routine)
+        : program_head(program_head), routine(routine) {}
 
-void ASTProgram::Print(GraphGenerator* g) {
+void ASTProgram::Print(GraphGenerator *g) {
     g->AddNode("program", this->line(), this->col());
     program_head->Print(g);
     routine->Print(g);
     g->Pop();
 }
 
-ASTRoutinePart::ASTRoutinePart(ASTFuncProcBase* func_proc) {
+ASTRoutinePart::ASTRoutinePart(ASTFuncProcBase *func_proc) {
     this->routine_list.clear();
     this->routine_list.push_back(func_proc);
 }
-void ASTRoutinePart::addFuncProcDecl(ASTFuncProcBase* func_proc) {
+
+void ASTRoutinePart::addFuncProcDecl(ASTFuncProcBase *func_proc) {
     this->routine_list.push_back(func_proc);
 }
-void ASTRoutinePart::Print(GraphGenerator* g) {
+
+void ASTRoutinePart::Print(GraphGenerator *g) {
     g->AddNode("routine_part", this->line(), this->col());
     for (auto fp : this->routine_list) fp->Print(g);
     g->Pop();
 }
 
-ASTFunctionDecl::ASTFunctionDecl(ASTFunctionHead* function_head,
-                                 ASTRoutine* routine)
-    : function_head(function_head),
-      routine(routine),
-      ASTFuncProcBase(ASTFuncProcBase::FuncType::FUNCTION) {}
-void ASTFunctionDecl::Print(GraphGenerator* g) {
+ASTFunctionDecl::ASTFunctionDecl(ASTFunctionHead *function_head,
+                                 ASTRoutine *routine)
+        : function_head(function_head),
+          routine(routine),
+          ASTFuncProcBase(ASTFuncProcBase::FuncType::FUNCTION) {}
+
+void ASTFunctionDecl::Print(GraphGenerator *g) {
     g->AddNode("function_decl", this->line(), this->col());
     if (function_head != nullptr) function_head->Print(g);
     if (routine != nullptr) routine->Print(g);
@@ -78,12 +84,13 @@ void ASTFunctionDecl::Print(GraphGenerator* g) {
 }
 
 ASTFunctionHead::ASTFunctionHead(std::string func_name,
-                                 ASTParaDeclList* parameters,
-                                 ASTSimpleTypeDecl* simple_type_decl)
-    : func_name(func_name),
-      parameters(parameters),
-      simple_type_decl(simple_type_decl) {}
-void ASTFunctionHead::Print(GraphGenerator* g) {
+                                 ASTParaDeclList *parameters,
+                                 ASTSimpleTypeDecl *simple_type_decl)
+        : func_name(func_name),
+          parameters(parameters),
+          simple_type_decl(simple_type_decl) {}
+
+void ASTFunctionHead::Print(GraphGenerator *g) {
     g->AddNode("function_head of " + this->func_name, this->line(),
                this->col());
     if (this->parameters != nullptr) this->parameters->Print(g);
@@ -91,12 +98,13 @@ void ASTFunctionHead::Print(GraphGenerator* g) {
     g->Pop();
 }
 
-ASTProcedureDecl::ASTProcedureDecl(ASTProcedureHead* procedure_head,
-                                   ASTRoutine* routine)
-    : procedure_head(procedure_head),
-      routine(routine),
-      ASTFuncProcBase(ASTFuncProcBase::FuncType::PROCEDURE) {}
-void ASTProcedureDecl::Print(GraphGenerator* g) {
+ASTProcedureDecl::ASTProcedureDecl(ASTProcedureHead *procedure_head,
+                                   ASTRoutine *routine)
+        : procedure_head(procedure_head),
+          routine(routine),
+          ASTFuncProcBase(ASTFuncProcBase::FuncType::PROCEDURE) {}
+
+void ASTProcedureDecl::Print(GraphGenerator *g) {
     g->AddNode("procedure_decl", this->line(), this->col());
     if (this->procedure_head != nullptr) this->procedure_head->Print(g);
     if (this->routine != nullptr) this->routine->Print(g);
@@ -104,9 +112,10 @@ void ASTProcedureDecl::Print(GraphGenerator* g) {
 }
 
 ASTProcedureHead::ASTProcedureHead(std::string proc_name,
-                                   ASTParaDeclList* parameters)
-    : proc_name(proc_name), parameters(parameters) {}
-void ASTProcedureHead::Print(GraphGenerator* g) {
+                                   ASTParaDeclList *parameters)
+        : proc_name(proc_name), parameters(parameters) {}
+
+void ASTProcedureHead::Print(GraphGenerator *g) {
     g->AddNode("procedure_head of " + this->proc_name, this->line(),
                this->col());
     if (this->parameters != nullptr) this->parameters->Print(g);
@@ -123,72 +132,180 @@ void ASTParameters::Print(GraphGenerator* g) {
 }
 */
 
-ASTParaDeclList::ASTParaDeclList(ASTParaTypeList* para_type_list) {
+ASTParaDeclList::ASTParaDeclList(ASTParaTypeList *para_type_list) {
     this->para_decl_list.clear();
     this->para_decl_list.push_back(para_type_list);
 }
-void ASTParaDeclList::addParaTypeList(ASTParaTypeList* para_type_list) {
+
+void ASTParaDeclList::addParaTypeList(ASTParaTypeList *para_type_list) {
     this->para_decl_list.push_back(para_type_list);
 }
-void ASTParaDeclList::Print(GraphGenerator* g) {
+
+void ASTParaDeclList::Print(GraphGenerator *g) {
     g->AddNode("para_decl_list", this->line(), this->col());
     for (auto type_list : para_decl_list) type_list->Print(g);
     g->Pop();
 }
 
-ASTParaTypeList::ASTParaTypeList(ASTParaList* para_list,
-                                 ASTSimpleTypeDecl* simple_type_decl)
-    : para_list(para_list), simple_type_decl(simple_type_decl) {}
+ASTParaTypeList::ASTParaTypeList(ASTParaList *para_list,
+                                 ASTSimpleTypeDecl *simple_type_decl)
+        : para_list(para_list), simple_type_decl(simple_type_decl) {}
 
-void ASTParaTypeList::Print(GraphGenerator* g) {
+void ASTParaTypeList::Print(GraphGenerator *g) {
     g->AddNode("para_type_list", this->line(), this->col());
     para_list->Print(g);
     simple_type_decl->Print(g);
     g->Pop();
 }
 
-ASTVarParaList::ASTVarParaList(ASTNameList* name_list)
-    : name_list(name_list), ASTParaList(true) {}
-void ASTVarParaList::Print(GraphGenerator* g) {
+ASTVarParaList::ASTVarParaList(ASTNameList *name_list)
+        : name_list(name_list), ASTParaList(true) {}
+
+void ASTVarParaList::Print(GraphGenerator *g) {
     g->AddNode("var_para_list", this->line(), this->col());
     name_list->Print(g);
     g->Pop();
 }
 
-ASTValParaList::ASTValParaList(ASTNameList* name_list)
-    : name_list(name_list), ASTParaList(false) {}
-void ASTValParaList::Print(GraphGenerator* g) {
+ASTValParaList::ASTValParaList(ASTNameList *name_list)
+        : name_list(name_list), ASTParaList(false) {}
+
+void ASTValParaList::Print(GraphGenerator *g) {
     g->AddNode("val_para_list", this->line(), this->col());
     name_list->Print(g);
     g->Pop();
 }
 
-std::shared_ptr<VisitorResult> ASTProgramHead::Accept(Visitor* visitor){ return visitor->VisitASTProgramHead(this); }
+std::shared_ptr<VisitorResult> ASTProgramHead::Accept(Visitor *visitor) { return visitor->VisitASTProgramHead(this); }
 
-std::shared_ptr<VisitorResult> ASTRoutineHead::Accept(Visitor* visitor){ return visitor->VisitASTRoutineHead(this); }
+const string &ASTProgramHead::getId() const {
+    return id;
+}
 
-std::shared_ptr<VisitorResult> ASTRoutineBody::Accept(Visitor* visitor){ return visitor->VisitASTRoutineBody(this); }
+std::shared_ptr<VisitorResult> ASTRoutineHead::Accept(Visitor *visitor) { return visitor->VisitASTRoutineHead(this); }
 
-std::shared_ptr<VisitorResult> ASTRoutine::Accept(Visitor* visitor){ return visitor->VisitASTRoutine(this); }
+ASTConstPart *ASTRoutineHead::getConstPart() const {
+    return const_part;
+}
 
-std::shared_ptr<VisitorResult> ASTProgram::Accept(Visitor* visitor){ return visitor->VisitASTProgram(this); }
+ASTTypePart *ASTRoutineHead::getTypePart() const {
+    return type_part;
+}
 
-std::shared_ptr<VisitorResult> ASTRoutinePart::Accept(Visitor* visitor){ return visitor->VisitASTRoutinePart(this); }
+ASTVarPart *ASTRoutineHead::getVarPart() const {
+    return var_part;
+}
 
-std::shared_ptr<VisitorResult> ASTFuncProcBase::Accept(Visitor* visitor){ return visitor->VisitASTFuncProcBase(this); }
+ASTRoutinePart *ASTRoutineHead::getRoutinePart() const {
+    return routine_part;
+}
 
-std::shared_ptr<VisitorResult> ASTFunctionDecl::Accept(Visitor* visitor){ return visitor->VisitASTFunctionDecl(this); }
+std::shared_ptr<VisitorResult> ASTRoutineBody::Accept(Visitor *visitor) { return visitor->VisitASTRoutineBody(this); }
 
-std::shared_ptr<VisitorResult> ASTFunctionHead::Accept(Visitor* visitor){ return visitor->VisitASTFunctionHead(this); }
+std::shared_ptr<VisitorResult> ASTRoutine::Accept(Visitor *visitor) { return visitor->VisitASTRoutine(this); }
 
-std::shared_ptr<VisitorResult> ASTProcedureDecl::Accept(Visitor* visitor){ return visitor->VisitASTProcedureDecl(this); }
+ASTRoutineHead *ASTRoutine::getRoutineHead() const {
+    return routine_head;
+}
 
-std::shared_ptr<VisitorResult> ASTProcedureHead::Accept(Visitor* visitor){ return visitor->VisitASTProcedureHead(this); }
+ASTRoutineBody *ASTRoutine::getRoutineBody() const {
+    return routine_body;
+}
 
-std::shared_ptr<VisitorResult> ASTParaDeclList::Accept(Visitor* visitor){ return visitor->VisitASTParaDeclList(this); }
+std::shared_ptr<VisitorResult> ASTProgram::Accept(Visitor *visitor) { return visitor->VisitASTProgram(this); }
 
-std::shared_ptr<VisitorResult> ASTParaTypeList::Accept(Visitor* visitor){ return visitor->VisitASTParaTypeList(this); }
+ASTProgramHead *ASTProgram::getProgramHead() const {
+    return program_head;
+}
 
-std::shared_ptr<VisitorResult> ASTVarParaList::Accept(Visitor* visitor){ return visitor->VisitASTVarParaList(this); }
+ASTRoutine *ASTProgram::getRoutine() const {
+    return routine;
+}
 
-std::shared_ptr<VisitorResult> ASTValParaList::Accept(Visitor* visitor){ return visitor->VisitASTValParaList(this); }
+std::shared_ptr<VisitorResult> ASTRoutinePart::Accept(Visitor *visitor) { return visitor->VisitASTRoutinePart(this); }
+
+const vector<ASTFuncProcBase *> &ASTRoutinePart::getRoutineList() const {
+    return routine_list;
+}
+
+std::shared_ptr<VisitorResult> ASTFuncProcBase::Accept(Visitor *visitor) { return visitor->VisitASTFuncProcBase(this); }
+
+ASTFuncProcBase::FuncType ASTFuncProcBase::getIam() const {
+    return iam;
+}
+
+std::shared_ptr<VisitorResult> ASTFunctionDecl::Accept(Visitor *visitor) { return visitor->VisitASTFunctionDecl(this); }
+
+ASTFunctionHead *ASTFunctionDecl::getFunctionHead() const {
+    return function_head;
+}
+
+ASTRoutine *ASTFunctionDecl::getRoutine() const {
+    return routine;
+}
+
+std::shared_ptr<VisitorResult> ASTFunctionHead::Accept(Visitor *visitor) { return visitor->VisitASTFunctionHead(this); }
+
+const string &ASTFunctionHead::getFuncName() const {
+    return func_name;
+}
+
+ASTParaDeclList *ASTFunctionHead::getParameters() const {
+    return parameters;
+}
+
+ASTSimpleTypeDecl *ASTFunctionHead::getSimpleTypeDecl() const {
+    return simple_type_decl;
+}
+
+std::shared_ptr<VisitorResult> ASTProcedureDecl::Accept(Visitor *visitor) {
+    return visitor->VisitASTProcedureDecl(this);
+}
+
+ASTProcedureHead *ASTProcedureDecl::getProcedureHead() const {
+    return procedure_head;
+}
+
+ASTRoutine *ASTProcedureDecl::getRoutine() const {
+    return routine;
+}
+
+std::shared_ptr<VisitorResult> ASTProcedureHead::Accept(Visitor *visitor) {
+    return visitor->VisitASTProcedureHead(this);
+}
+
+const string &ASTProcedureHead::getProcName() const {
+    return proc_name;
+}
+
+ASTParaDeclList *ASTProcedureHead::getParameters() const {
+    return parameters;
+}
+
+std::shared_ptr<VisitorResult> ASTParaDeclList::Accept(Visitor *visitor) { return visitor->VisitASTParaDeclList(this); }
+
+const vector<ASTParaTypeList *> &ASTParaDeclList::getParaDeclList() const {
+    return para_decl_list;
+}
+
+std::shared_ptr<VisitorResult> ASTParaTypeList::Accept(Visitor *visitor) { return visitor->VisitASTParaTypeList(this); }
+
+ASTParaList *ASTParaTypeList::getParaList() const {
+    return para_list;
+}
+
+ASTSimpleTypeDecl *ASTParaTypeList::getSimpleTypeDecl() const {
+    return simple_type_decl;
+}
+
+std::shared_ptr<VisitorResult> ASTVarParaList::Accept(Visitor *visitor) { return visitor->VisitASTVarParaList(this); }
+
+ASTNameList *ASTVarParaList::getNameList() const {
+    return name_list;
+}
+
+std::shared_ptr<VisitorResult> ASTValParaList::Accept(Visitor *visitor) { return visitor->VisitASTValParaList(this); }
+
+ASTNameList *ASTValParaList::getNameList() const {
+    return name_list;
+}

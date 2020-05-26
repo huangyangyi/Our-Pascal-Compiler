@@ -6,7 +6,9 @@ ASTStmtList::ASTStmtList(ASTStmt *stmt) {
     stmt_list.clear();
     stmt_list.push_back(stmt);
 }
+
 void ASTStmtList::addStmt(ASTStmt *stmt) { stmt_list.push_back(stmt); }
+
 void ASTStmtList::Print(GraphGenerator *g) {
     g->AddNode("stmt_list", this->line(), this->col());
     for (int i = 0; i < stmt_list.size(); i++) stmt_list[i]->Print(g);
@@ -14,7 +16,8 @@ void ASTStmtList::Print(GraphGenerator *g) {
 }
 
 ASTStmt::ASTStmt(ASTNonLabelStmt *non_label_stmt, std::string label)
-    : non_label_stmt(non_label_stmt), label(label) {}
+        : non_label_stmt(non_label_stmt), label(label) {}
+
 void ASTStmt::Print(GraphGenerator *g) {
     if (label == "") {
         non_label_stmt->Print(g);
@@ -26,7 +29,8 @@ void ASTStmt::Print(GraphGenerator *g) {
 }
 
 ASTAssignStmt::ASTAssignStmt(ASTExpr *expr1, ASTExpr *expr2)
-    : expr1(expr1), expr2(expr2){};
+        : expr1(expr1), expr2(expr2) {};
+
 void ASTAssignStmt::Print(GraphGenerator *g) {
     g->AddNode("assign_stmt", this->line(), this->col());
     expr1->Print(g);
@@ -35,7 +39,8 @@ void ASTAssignStmt::Print(GraphGenerator *g) {
 }
 
 ASTProcStmt::ASTProcStmt(std::string id, ASTExpressionList *expr_list)
-    : id(id), expr_list(expr_list) {}
+        : id(id), expr_list(expr_list) {}
+
 void ASTProcStmt::Print(GraphGenerator *g) {
     g->AddNode("proc_stmt", this->line(), this->col());
     g->AddIdentifier(id);
@@ -45,7 +50,8 @@ void ASTProcStmt::Print(GraphGenerator *g) {
 
 ASTIfStmt::ASTIfStmt(ASTExpr *expr, ASTStmt *stmt,
                      ASTElseClause *else_clause = nullptr)
-    : expr(expr), stmt(stmt), else_clause(else_clause) {}
+        : expr(expr), stmt(stmt), else_clause(else_clause) {}
+
 void ASTIfStmt::Print(GraphGenerator *g) {
     g->AddNode("if_stmt", this->line(), this->col());
     expr->Print(g);
@@ -55,6 +61,7 @@ void ASTIfStmt::Print(GraphGenerator *g) {
 }
 
 ASTElseClause::ASTElseClause(ASTStmt *stmt) : stmt(stmt) {}
+
 void ASTElseClause::Print(GraphGenerator *g) {
     g->AddNode("else_clause", this->line(), this->col());
     stmt->Print(g);
@@ -62,7 +69,7 @@ void ASTElseClause::Print(GraphGenerator *g) {
 }
 
 ASTRepeatStmt::ASTRepeatStmt(ASTStmtList *stmt_list, ASTExpr *expr)
-    : stmt_list_(stmt_list), expr_(expr) {}
+        : stmt_list_(stmt_list), expr_(expr) {}
 
 void ASTRepeatStmt::Print(GraphGenerator *g) {
     g->AddNode("repeat_stmt", line(), col());
@@ -72,7 +79,7 @@ void ASTRepeatStmt::Print(GraphGenerator *g) {
 }
 
 ASTWhileStmt::ASTWhileStmt(ASTExpr *expr, ASTStmt *stmt)
-    : expr_(expr), stmt_(stmt) {}
+        : expr_(expr), stmt_(stmt) {}
 
 void ASTWhileStmt::Print(GraphGenerator *g) {
     g->AddNode("while_stmt", line(), col());
@@ -83,7 +90,7 @@ void ASTWhileStmt::Print(GraphGenerator *g) {
 
 ASTForStmt::ASTForStmt(std::string id, ASTExpr *for_expr, ForDir dir,
                        ASTExpr *to_expr, ASTStmt *stmt)
-    : id_(id), for_expr_(for_expr), dir_(dir), to_expr_(to_expr), stmt_(stmt) {}
+        : id_(id), for_expr_(for_expr), dir_(dir), to_expr_(to_expr), stmt_(stmt) {}
 
 void ASTForStmt::Print(GraphGenerator *g) {
     std::string dir_name;
@@ -104,7 +111,7 @@ void ASTForStmt::Print(GraphGenerator *g) {
 }
 
 ASTCaseStmt::ASTCaseStmt(ASTExpr *expr, ASTCaseExprList *case_expr_list)
-    : expr_(expr), case_expr_list_(case_expr_list) {}
+        : expr_(expr), case_expr_list_(case_expr_list) {}
 
 void ASTCaseStmt::Print(GraphGenerator *g) {
     g->AddNode("case_stmt", this->line(), this->col());
@@ -126,7 +133,7 @@ void ASTCaseExprList::Print(GraphGenerator *g) {
 }
 
 ASTCaseExpr::ASTCaseExpr(ASTExpr *expr, ASTStmt *stmt)
-    : expr_(expr), stmt_(stmt) {}
+        : expr_(expr), stmt_(stmt) {}
 
 void ASTCaseExpr::Print(GraphGenerator *g) {
     g->AddNode("case_expr", this->line(), this->col());
@@ -135,7 +142,7 @@ void ASTCaseExpr::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-ASTGotoStmt::ASTGotoStmt(std::string label):label_(label) {} 
+ASTGotoStmt::ASTGotoStmt(std::string label) : label_(label) {}
 
 void ASTGotoStmt::Print(GraphGenerator *g) {
     std::stringstream ss;
@@ -144,28 +151,132 @@ void ASTGotoStmt::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-std::shared_ptr<VisitorResult> ASTStmt::Accept(Visitor* visitor){ return visitor->VisitASTStmt(this); }
+std::shared_ptr<VisitorResult> ASTStmt::Accept(Visitor *visitor) { return visitor->VisitASTStmt(this); }
 
-std::shared_ptr<VisitorResult> ASTStmtList::Accept(Visitor* visitor){ return visitor->VisitASTStmtList(this); }
+const string &ASTStmt::getLabel() const {
+    return label;
+}
 
-std::shared_ptr<VisitorResult> ASTAssignStmt::Accept(Visitor* visitor){ return visitor->VisitASTAssignStmt(this); }
+ASTNonLabelStmt *ASTStmt::getNonLabelStmt() const {
+    return non_label_stmt;
+}
 
-std::shared_ptr<VisitorResult> ASTProcStmt::Accept(Visitor* visitor){ return visitor->VisitASTProcStmt(this); }
+std::shared_ptr<VisitorResult> ASTStmtList::Accept(Visitor *visitor) { return visitor->VisitASTStmtList(this); }
 
-std::shared_ptr<VisitorResult> ASTIfStmt::Accept(Visitor* visitor){ return visitor->VisitASTIfStmt(this); }
+const vector<ASTStmt *> &ASTStmtList::getStmtList() const {
+    return stmt_list;
+}
 
-std::shared_ptr<VisitorResult> ASTElseClause::Accept(Visitor* visitor){ return visitor->VisitASTElseClause(this); }
+std::shared_ptr<VisitorResult> ASTAssignStmt::Accept(Visitor *visitor) { return visitor->VisitASTAssignStmt(this); }
 
-std::shared_ptr<VisitorResult> ASTRepeatStmt::Accept(Visitor* visitor){ return visitor->VisitASTRepeatStmt(this); }
+ASTExpr *ASTAssignStmt::getExpr1() const {
+    return expr1;
+}
 
-std::shared_ptr<VisitorResult> ASTWhileStmt::Accept(Visitor* visitor){ return visitor->VisitASTWhileStmt(this); }
+ASTExpr *ASTAssignStmt::getExpr2() const {
+    return expr2;
+}
 
-std::shared_ptr<VisitorResult> ASTForStmt::Accept(Visitor* visitor){ return visitor->VisitASTForStmt(this); }
+std::shared_ptr<VisitorResult> ASTProcStmt::Accept(Visitor *visitor) { return visitor->VisitASTProcStmt(this); }
 
-std::shared_ptr<VisitorResult> ASTCaseStmt::Accept(Visitor* visitor){ return visitor->VisitASTCaseStmt(this); }
+const string &ASTProcStmt::getId() const {
+    return id;
+}
 
-std::shared_ptr<VisitorResult> ASTCaseExprList::Accept(Visitor* visitor){ return visitor->VisitASTCaseExprList(this); }
+ASTExpressionList *ASTProcStmt::getExprList() const {
+    return expr_list;
+}
 
-std::shared_ptr<VisitorResult> ASTCaseExpr::Accept(Visitor* visitor){ return visitor->VisitASTCaseExpr(this); }
+std::shared_ptr<VisitorResult> ASTIfStmt::Accept(Visitor *visitor) { return visitor->VisitASTIfStmt(this); }
 
-std::shared_ptr<VisitorResult> ASTGotoStmt::Accept(Visitor* visitor){ return visitor->VisitASTGotoStmt(this); }
+ASTExpr *ASTIfStmt::getExpr() const {
+    return expr;
+}
+
+ASTStmt *ASTIfStmt::getStmt() const {
+    return stmt;
+}
+
+ASTElseClause *ASTIfStmt::getElseClause() const {
+    return else_clause;
+}
+
+std::shared_ptr<VisitorResult> ASTElseClause::Accept(Visitor *visitor) { return visitor->VisitASTElseClause(this); }
+
+ASTStmt *ASTElseClause::getStmt() const {
+    return stmt;
+}
+
+std::shared_ptr<VisitorResult> ASTRepeatStmt::Accept(Visitor *visitor) { return visitor->VisitASTRepeatStmt(this); }
+
+ASTStmtList *ASTRepeatStmt::getStmtList() const {
+    return stmt_list_;
+}
+
+ASTExpr *ASTRepeatStmt::getExpr() const {
+    return expr_;
+}
+
+std::shared_ptr<VisitorResult> ASTWhileStmt::Accept(Visitor *visitor) { return visitor->VisitASTWhileStmt(this); }
+
+ASTExpr *ASTWhileStmt::getExpr() const {
+    return expr_;
+}
+
+ASTStmt *ASTWhileStmt::getStmt() const {
+    return stmt_;
+}
+
+std::shared_ptr<VisitorResult> ASTForStmt::Accept(Visitor *visitor) { return visitor->VisitASTForStmt(this); }
+
+const string &ASTForStmt::getId() const {
+    return id_;
+}
+
+ASTExpr *ASTForStmt::getForExpr() const {
+    return for_expr_;
+}
+
+ASTExpr *ASTForStmt::getToExpr() const {
+    return to_expr_;
+}
+
+ASTForStmt::ForDir ASTForStmt::getDir() const {
+    return dir_;
+}
+
+ASTStmt *ASTForStmt::getStmt() const {
+    return stmt_;
+}
+
+std::shared_ptr<VisitorResult> ASTCaseStmt::Accept(Visitor *visitor) { return visitor->VisitASTCaseStmt(this); }
+
+ASTExpr *ASTCaseStmt::getExpr() const {
+    return expr_;
+}
+
+ASTCaseExprList *ASTCaseStmt::getCaseExprList() const {
+    return case_expr_list_;
+}
+
+std::shared_ptr<VisitorResult> ASTCaseExprList::Accept(Visitor *visitor) { return visitor->VisitASTCaseExprList(this); }
+
+const vector<ASTCaseExpr *> &ASTCaseExprList::getCaseExprList() const {
+    return case_expr_list_;
+}
+
+std::shared_ptr<VisitorResult> ASTCaseExpr::Accept(Visitor *visitor) { return visitor->VisitASTCaseExpr(this); }
+
+ASTExpr *ASTCaseExpr::getExpr() const {
+    return expr_;
+}
+
+ASTStmt *ASTCaseExpr::getStmt() const {
+    return stmt_;
+}
+
+std::shared_ptr<VisitorResult> ASTGotoStmt::Accept(Visitor *visitor) { return visitor->VisitASTGotoStmt(this); }
+
+const string &ASTGotoStmt::getLabel() const {
+    return label_;
+}

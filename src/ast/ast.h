@@ -8,6 +8,6 @@
 #include "ast_type.h"
 #include "ast_value.h"
 
-extern ASTNode* ast_root;
+extern ASTNode *ast_root;
 
 #endif //AST_H
