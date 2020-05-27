@@ -2,15 +2,30 @@
 #define OPC_GENERATOR_H
 
 #include "../visitor.h"
+#include "../type/type.hpp"
 #include<llvm/IR/IRBuilder.h>
+
+
+
+class CodeBlock {
+    public:
+    std::map<string, llvm::Value*> named_values;
+    std::map<string, PascalType*> named_types;
+    bool isType(std::string id){
+        return named_types.find(id) != named_types.end() && named_values.find(id) == named_values.end();
+    }
+    bool isValue(std::string id){
+        return named_values.find(id) != named_values.end();
+    }
+};
+
 
 class Generator : Visitor {
 private:
     llvm::IRBuilder<> builder;
     llvm::LLVMContext context;
     std::unique_ptr<llvm::Module> module;
-    std::map<std::string, llvm::Value *> named_values;
-
+    std::vector<CodeBlock*> block_stack;
 public:
     Generator();
 

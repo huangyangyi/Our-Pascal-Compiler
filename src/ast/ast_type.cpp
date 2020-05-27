@@ -1,4 +1,5 @@
 #include "ast_type.h"
+#include "../visitor.h"
 
 ASTType::ASTType(TypeName type_name) : type_name(type_name) {}
 

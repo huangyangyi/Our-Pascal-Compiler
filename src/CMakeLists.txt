@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(CMAKE_CXX_STANDARD 14)
 
 aux_source_directory(ast AST_SOURCE)
+aux_source_directory(generator GEN_SOURCE)
 
 add_custom_command(
     OUTPUT pascal.l.cpp
@@ -19,7 +20,7 @@ add_custom_command(
 
 add_executable(
     mpc
-    main.cpp ${AST_SOURCE} pascal.l.cpp 
+    main.cpp ${AST_SOURCE} {GEN_SOURCE} pascal.l.cpp
     pascal.y.cpp pascal.y.hpp
 )
 

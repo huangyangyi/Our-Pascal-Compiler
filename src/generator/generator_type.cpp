@@ -1,11 +1,17 @@
 
 #include "generator.h"
 
-std::shared_ptr<VisitorResult> Generator::VisitASTType(ASTType *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTType(ASTType *node) {
 
-std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDecl *node) {}
+}
 
-std::shared_ptr<VisitorResult> Generator::VisitASTArrayTypeDecl(ASTArrayTypeDecl *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDecl *node) {
+
+}
+
+std::shared_ptr<VisitorResult> Generator::VisitASTArrayTypeDecl(ASTArrayTypeDecl *node) {
+
+}
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFieldDecl(ASTFieldDecl *node) {}
 

@@ -1,4 +1,5 @@
 #include "ast_base.h"
+#include "../visitor.h"
 
 int ASTNode::line() { return this->line_; }
 

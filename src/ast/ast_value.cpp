@@ -1,4 +1,5 @@
 #include "ast_value.h"
+#include "../visitor.h"
 
 ASTConstValue::ASTConstValue(std::string content,
                              ASTConstValue::ValueType value_type)

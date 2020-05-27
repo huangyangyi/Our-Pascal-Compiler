@@ -1,4 +1,5 @@
 #include "ast_prog.h"
+#include "../visitor.h"
 
 ASTProgramHead::ASTProgramHead(std::string id) : id(id) {}
 

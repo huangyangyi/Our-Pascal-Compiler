@@ -763,6 +763,10 @@ term:
         $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::MUL, $1, $3);
         SET_LOCATION($$);
     }
+    | term SYM_DIV factor {
+        $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::REALDIV, $1, $3);
+        SET_LOCATION($$);
+    }
     | term KWD_DIV factor {
         $$ = new ASTBinaryExpr(ASTBinaryExpr::Oper::DIV, $1, $3);
         SET_LOCATION($$);

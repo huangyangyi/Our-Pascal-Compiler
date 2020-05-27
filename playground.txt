@@ -1,0 +1,54 @@
+Hello everyone!
+
+创建本地变量： ai = IR.CreateAlloca(llvm_type, nullptr, name)   AllocInst* (Value*)
+创建全局变量： new llvm::GlobalVariable(llvm_module, llvm_type, false, llvm::GlobalValue::InternalLinkage,
+                llvm::ConstantAggregateZero::get(llvm_type), id
+获取name的值: IR.CreateLoad(ai, name) - 本地变量
+             IR.CreateLoad(llvm::GlobalVariable) LoadInst* (Value*) 
+
+Type* -> PointerType* : AllocInst* (CreateAlloca 的结果)
+
+Type* -> Int32Type* : 传入 CreateLoad的结果
+
+声明函数：CreateFunc()
+std::vector<llvm::Type *> args_type;
+llvm::FunctionType *func_type = llvm::FunctionType::get(get_llvm_type(ret_type), args_type, false);
+llvm::Function *func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, sign.id, &llvm_module);
+
+调用函数：CreateCall(....)
+
+struct func_sign {
+    std::string id;
+    std::vector<sem_type> param_type_vec;
+};
+
+const std::vector<llvm::Value *> &args_vec 
+    = get_converted_llvm_args(sign.param_type_vec, args);
+const sem_type &ret_type = sem::get_ret_type(sign);
+if (ret_type == built_in_type::VOID_TYPE) {
+    return ir_builder.CreateCall(func, args_vec);
+} else {
+    return ir_builder.CreateCall(func, args_vec, "call_" + sign.id);
+}
+
+
+AllocInst* : CreateAlloca的结果
+
+std::vector<std::map<std::string, llvm::Value *>> layers; (是不是很像我们的CodeBlock::named_values)
+Value* 存的就是AllocInst*
+
+llvm::Value *gen_id_context::get_mem(const std::string &id) const {
+    for (auto it = layers.rbegin(); it != layers.rend(); it++) {
+        if ((*it).find(id) != (*it).end()) {
+            return (*it).at(id);
+            // == return (*it)[id];
+        }
+    }
+    throw std::invalid_argument("[gen_id_context::get_llvm_mem] Unknown identifier");
+}
+
+AllocInst* 本地变量的指针 => 存着这个本地变量指针的一个寄存器
+CreateCall 把 AllocInst* 扔进去的时候，会给他安排一个新的寄存器来存放这个指针值
+如果在别的RunningBlock里面访问之前的AllocInst*，你会得到一个寄存器，但现在这个寄存器里放着别的东西
+
+所以如果所有的AllocInst* 是用传参一路传下去的，就可以用

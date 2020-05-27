@@ -54,6 +54,7 @@ public:
         MINUS,
         OR,
         MUL,
+        REALDIV,
         DIV,
         MOD,
         AND

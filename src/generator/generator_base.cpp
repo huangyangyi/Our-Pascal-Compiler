@@ -3,7 +3,7 @@
 
 
 std::shared_ptr<VisitorResult> VisitASTNode(ASTNode *node) {
-    return std::make_shared<VisitorResult>();
+    return nullptr;
 }
 
 std::shared_ptr<VisitorResult> VisitASTNameList(ASTNameList *node) {

@@ -1,4 +1,5 @@
 #include "ast_expr.h"
+#include "../visitor.h"
 
 ASTExpressionList::ASTExpressionList(ASTExpr *expr) {
     expr_list_.push_back(expr);
@@ -48,6 +49,9 @@ std::string ASTBinaryExpr::_op_name(Oper op_) {
             break;
         case Oper::MUL:
             return "MUL";
+            break;
+        case Oper::REALDIV:
+            return "REALDIV";
             break;
         case Oper::DIV:
             return "DIV";

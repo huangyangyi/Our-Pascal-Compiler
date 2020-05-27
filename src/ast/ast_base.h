@@ -5,7 +5,6 @@
 #include <string>
 #include <assert.h>
 #include "graph_generator.h"
-#include "../visitor.h"
 
 class Visitor;
 
@@ -30,7 +29,7 @@ public:
 
     virtual void Print(GraphGenerator *) = 0;
 
-    virtual std::shared_ptr<VisitorResult> Accept(Visitor *) = 0;
+    virtual std::shared_ptr<VisitorResult> Accept(Visitor *);
 };
 
 class ASTNameList : public ASTNode {
