@@ -21,13 +21,27 @@ void ASTType::Print(GraphGenerator *g) {
     }
 }
 
-ASTSimpleTypeDecl::ASTSimpleTypeDecl(ASTType *type) : type_name(type) {}
+ASTSimpleTypeDecl::ASTSimpleTypeDecl(ASTType *type) : type_name(type), my_type(MyType::BUILTIN_TYPE) {}
+
+ASTSimpleTypeDecl::ASTSimpleTypeDecl(ASTConstValue *low, bool neg_low, ASTConstValue* high, bool neg_high):
+    my_type(MyType::VALUE_RANGE), low(low), neg_low(neg_low), high(high), neg_high(neg_high)
+{ }
+
+ASTSimpleTypeDecl::ASTSimpleTypeDecl(std::string low_name, std::string high_name):
+    my_type(MyType::ID_RANGE), low_name(low_name), high_name(high_name)
+{ }
+
+ASTSimpleTypeDecl::ASTSimpleTypeDecl(std::string defined_id):
+    my_type(MyType::DEFINED_ID), defined_id(defined_id) {}
+
+ASTSimpleTypeDecl::ASTSimpleTypeDecl(ASTNameList *name_list): name_list(name_list), my_type{MyType::ENUM} {}
 
 void ASTSimpleTypeDecl::Print(GraphGenerator *g) {
     g->AddNode("simple_type_decl", this->line(), this->col());
     type_name->Print(g);
     g->Pop();
 }
+
 
 ASTArrayTypeDecl::ASTArrayTypeDecl(ASTSimpleTypeDecl *simple_type_decl,
                                    ASTTypeDecl *type_decl)
@@ -41,7 +55,7 @@ void ASTArrayTypeDecl::Print(GraphGenerator *g) {
 }
 
 ASTFieldDecl::ASTFieldDecl(ASTNameList *name_list, ASTTypeDecl *type_decl)
-        : name_list(name_list), type_decl(type_decl) {}
+        : name_list(name_list), type_decl(type_decl) { }
 
 void ASTFieldDecl::Print(GraphGenerator *g) {
     g->AddNode("field_decl", this->line(), this->col());
@@ -54,6 +68,15 @@ ASTFieldDeclList::ASTFieldDeclList(ASTFieldDecl *field_decl) {
     fielddeclList.clear();
     fielddeclList.push_back(field_decl);
 }
+
+/*
+void ASTFieldDeclList::setBelongToRecord(bool _) {
+    this->belong_to_record = _;
+    for(auto fd : this->fielddeclList) {
+        fd->setBelongToRecord(_);
+    }
+}
+*/
 
 void ASTFieldDeclList::addFieldDecl(ASTFieldDecl *field_decl) {
     fielddeclList.push_back(field_decl);

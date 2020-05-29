@@ -48,6 +48,7 @@ private:
 };
 
 class ASTTypeDecl : public ASTNode {
+
 };
 
 class ASTSimpleTypeDecl : public ASTTypeDecl {
@@ -107,11 +108,12 @@ public:
 
     ASTTypeDecl *getTypeDecl() const;
 
-    void setBelongToRecord(bool _);
+    //void setBelongToRecord(bool _) { belong_to_record = _; }
+    //void getBelongToRecord() { return belong_to_record; }
 private:
     ASTNameList *name_list;
     ASTTypeDecl *type_decl;
-    bool belong_to_record = false;
+    //bool belong_to_record = false;
 };
 
 class ASTFieldDeclList : public ASTNode {
@@ -126,11 +128,11 @@ public:
 
     const vector<ASTFieldDecl *> &getFielddeclList() const;
 
-    void setBelongToRecord(bool _);
-    void getBelongToRecord()
+    //void setBelongToRecord(bool _);
+    //void getBelongToRecord() { return this->belong_to_record; }
 private:
     std::vector<ASTFieldDecl *> fielddeclList;
-    bool belong_to_record = false;
+    //bool belong_to_record = false;
 };
 
 class ASTRecordTypeDecl : public ASTTypeDecl {

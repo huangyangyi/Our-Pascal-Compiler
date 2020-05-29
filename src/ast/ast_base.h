@@ -27,6 +27,8 @@ public:
 
     int col();
 
+    std::string get_location();
+
     virtual void Print(GraphGenerator *) = 0;
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *);

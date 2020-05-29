@@ -4,13 +4,13 @@
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Type.h>
 
-
+using namespace OurType;
 
 std::shared_ptr<VisitorResult> Generator::VisitASTExpressionList(ASTExpressionList *node) {
     auto expr_list = node->getExprList();
-    std::vector<llvm::Value*> ret;
+    std::vector<ValueResult*> ret;
     for (auto expr_node: expr_list){
-        auto val = static_pointer_cast<ValueResult>(expr_node->Accept(this));
+        ValueResult* val = static_pointer_cast<ValueResult>(expr_node->Accept(this));
         if (val == nullptr) return nullptr;
         ret.push_back(val);
     }
@@ -46,7 +46,7 @@ bool check_cmp(PascalType *l, PascalType *r,,PascalType *retl)
     if (isEqual(l, CHAR_TYPE) && isEqual(r, CHAR_TYPE)) return true;
     if (isEqual(l, CHAR_TYPE) || isEqual(r, CHAR_TYPE)) return false;
 
-   if (isEqual(l, REAL_TYPE)) ret = l;
+    if (isEqual(l, REAL_TYPE)) ret = l;
     if (isEqual(r, REAL_TYPE)) ret = r;;
     return true;
 }
@@ -72,67 +72,52 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     }
     else{
         if (!check_arith(l->getType(), r->getType(),retl)) return nullptr; 
-    
-    bool is_real = isEqual(ret, REAL_TYPE);}
+    }
+    bool is_real = isEqual(ret, REAL_TYPE);
     auto L = l->getValue(), R = r->getValue();
     switch (nowOp)
     {
         case Op(GE):
-            return std::make_shared<ValueResult>ret), is_real ? this->builder.CreateFCmpOGE(L, R, "cmpftmp") 
-                                                              : this->builder.CreateICmpSGE(L, R, "cmptmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOGE(L, R, "cmpftmp") 
+                                                             : this->builder.CreateICmpSGE(L, R, "cmptmp"));
         case Op(GT):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFCmpOGT(L, R, "cmpftmp"
-                                                              :  this->builder.CreateICmpSGT(L, R, "cmptmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOGT(L, R, "cmpftmp")
+                                                             :  this->builder.CreateICmpSGT(L, R, "cmptmp"));
         case Op(LE):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFCmpOLE(L, R, "cmpftmp"
-                                                              :  this->builder.CreateICmpSLE(L, R, "cmptmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOLE(L, R, "cmpftmp")
+                                                             :  this->builder.CreateICmpSLE(L, R, "cmptmp"));
         case Op(LT):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFCmpOLT(L, R, "cmpftmp"
-                                                                 this->builder.CreateICmpSLT(L, R, "cmptmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOLT(L, R, "cmpftmp")
+                                                             : this->builder.CreateICmpSLT(L, R, "cmptmp"));
         case Op(EQUAL):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFCmpOEQ(L, R, "cmpftmp"
-                                                              :  this->builder.CreateICmpEQ(L, R, "cmptmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOEQ(L, R, "cmpftmp")
+                                                             : this->builder.CreateICmpEQ(L, R, "cmptmp"));
         case Op(UNEQUAL):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFCmpONE(L, R, "cmpftmp"
-                                                              :  this->builder.CreateICmpNE(L, R, "cmptmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpONE(L, R, "cmpftmp")
+                                                              : this->builder.CreateICmpNE(L, R, "cmptmp"));
         case Op(PLUS):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFAdd(L, R, "addftmp")
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFAdd(L, R, "addftmp")
                                                                : this->builder.CreateAdd(L, R, "addtmp"));
-            break;
         case Op(MINUS):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFSub(L, R, "subftmp"
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFSub(L, R, "subftmp")
                                                                : this->builder.CreateSub(L, R, "subtmp"));
-            break;
         case Op(MUL):
-            return std::make_shared<ValueResult>ret, (is_real ? this->builder.CreateFMul(L, R, "mulftmp"
+            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFMul(L, R, "mulftmp")
                                                               :  this->builder.CreateMul(L, R, "multmp"));
-            break;
         case Op(DIV):
             if (is_real) return nullptr;
-            return std::make_shared<ValueResult>ret, (this->builder.CreateSDiv(L, R, "divtmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, this->builder.CreateSDiv(L, R, "divtmp"));
         case Op(MOD):
             if (is_real) return nullptr;
-            return std::make_shared<ValueResult>ret, (this->builder.CreateSRem(L, R, "modtmp"));
-            break;
+            return std::make_shared<ValueResult>(ret, this->builder.CreateSRem(L, R, "modtmp"));
         case Op(REALDIV):
-            return std::make_shared<ValueResult>REAL_TYPE, (this->builder.CreateFDiv(L, R, "divftmp"));
-            break 
+            return std::make_shared<ValueResult>(REAL_TYPE, this->builder.CreateFDiv(L, R, "divftmp"));
         case Op(OR):
-            return std::make_shared<ValueResult>BOOLEAN_TYPE, (this->builder.CreateOr(L, R, "ortmp"));
-            break;
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, this->builder.CreateOr(L, R, "ortmp"));
         case Op(AND):
-            return std::make_shared<ValueResult>BOOLEAN_TYPE, thiss->builder.CreateAnd(L, R, "andtmp"));
-            break;
-        default:
-            return nullptr;
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, this->builder.CreateAnd(L, R, "andtmp")); 
     }
+    return nullptr;
 }
 
 #undef Op(x)
@@ -143,17 +128,17 @@ std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) 
     if (node->getOp() == ASTUnaryExpr::Oper::NOT){
         if (isEqual(t->getType(), BOOLEAN_TYPE)))
             return nullptr;
-        return std::make_shared<ValueResult>(this->builder.CreateNot(zero, val, "nottmp"));
+        return std::make_shared<ValueResult>(t->getType(), this->builder.CreateNot(zero, val, "nottmp"));
     }
     else if (node->getOp() ==ASTUnaryExpr::Oper::SUB){
         if (isEqual(t->getType(), INT_TYPE)) && isEqual(t->getType(), REAL_TYPE)))
             return nullptr;
         llvm::Type *tp =tl-getllvmTypee();
         llvm::Value *zero = llvm::ConstantInt::get(tp, (uint64_t) 0, true);
-        if (val->getType()->isFloatingPointTy())
-            return std::make_shared<ValueResult>(this->builder.CreateFSub(zero, val, "negaftmp"));
+        if (isEqual(t->getType(), REAL_TYPE))
+            return std::make_shared<ValueResult>(this->builder.CreateFSub(zero, t->getType(), "negaftmp"));
         else
-            return std::make_shared<ValueResult>(this->builder.CreateSub(zero, val, "negatmp"));
+            return std::make_shared<ValueResult>(this->builder.CreateSub(zero, t->getType(), "negatmp"));
     }
 }
 

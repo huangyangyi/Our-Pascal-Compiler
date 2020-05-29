@@ -319,22 +319,28 @@ simple_type_decl:
         SET_LOCATION($$);
     }
     | IDENTIFIER{
-        /* TODO: need to be completed. */
+        $$ = new ASTSimpleTypeDecl($1);
+        SET_LOCATION($$);
     }
     | SYM_LPAREN name_list SYM_RPAREN {
-
+        $$ = new ASTSimpleTypeDecl($2);
+        SET_LOCATION($$);
     }
     |  const_value  SYM_RANGE  const_value{
-
+        $$ = new ASTSimpleTypeDecl($1, false, $3, false);
+        SET_LOCATION($$);
     }
     |  SYM_SUB  const_value  SYM_RANGE  const_value{
-
+        $$ = new ASTSimpleTypeDecl($1, true, $3, false);
+        SET_LOCATION($$);
     }
     |  SYM_SUB  const_value  SYM_RANGE  SYM_SUB  const_value{
-
+        $$ = new ASTSimpleTypeDecl($1, true, $3, true);
+        SET_LOCATION($$);
     }
     |  IDENTIFIER  SYM_RANGE  IDENTIFIER{
-
+        $$ = new ASTSimpleTypeDecl($1, $3);
+        SET_LOCATION($$);
     }
 ;
 

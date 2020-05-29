@@ -4,17 +4,26 @@
 #include <vector>
 #include <map>
 #include <llvm/IR/Type.h>
+#include "../generator/generator.h"
 
-namespace PascalType {
+namespace OurType {
 class PascalType {
 public:
     enum class TypeGroup { BUILT_IN, ENUM, SUBRANGE, ARRAY, STR, RECORD };
     TypeGroup tg;
     PascalType(TypeGroup tg):tg(tg){}
     bool isSimple(){return tg == TypeGroup::BUILT_IN;}
+    bool isIntegerTy() const;
+    bool isCharTy() const;
+    bool isFloatingPointTy() const;
+    bool isBuiltInTy() const;
+    bool isStringTy() const;
+    bool isSubRangeTy() const;
+    bool isRecordTy() const;
+    bool isArrayTy() const;
 };
 
-class BuiltinType : PascalType {
+class BuiltinType : public PascalType {
 public:
     enum class BasicTypes { INT, REAL, CHAR, BOOLEAN, VOID };
     BasicTypes type;
@@ -26,51 +35,81 @@ const BuiltinType REAL_TYPE_INST(BuiltinType::BasicTypes::REAL);
 const BuiltinType CHAR_TYPE_INST(BuiltinType::BasicTypes::CHAR);
 const BuiltinType BOOLEAN_TYPE_INST(BuiltinType::BasicTypes::BOOLEAN);
 const BuiltinType VOID_TYPE_INST(BuiltinType::BasicTypes::VOID);
-const PascalType* INT_TYPE = std::static_pointer_cast<PascalType>(&INT_TYPE_INST);
-const PascalType* REAL_TYPE = std::static_pointer_cast<PascalType>(&REAL_TYPE_INST);
-const PascalType* CHAR_TYPE = std::static_pointer_cast<PascalType>(&CHAR_TYPE_INST);
-const PascalType* BOOLEAN_TYPE = std::static_pointer_cast<PascalType>(&BOOLEAN_TYPE_INST);
-const PascalType* VOID_TYPE = std::static_pointer_cast<PascalType>(&VOID_TYPE_INST);
+PascalType* const INT_TYPE = (PascalType *)(&INT_TYPE_INST);
+PascalType* const REAL_TYPE = (PascalType *)(&REAL_TYPE_INST);
+PascalType* const CHAR_TYPE = (PascalType *)(&CHAR_TYPE_INST);
+PascalType* const BOOLEAN_TYPE = (PascalType *)(&BOOLEAN_TYPE_INST);
+PascalType* const VOID_TYPE = (PascalType *)(&VOID_TYPE_INST);
 
+bool PascalType::isIntegerTy() const {return isEqual(this, INT_TYPE);}
+bool PascalType::isFloatingPointTy() const {return isEqual(this, REAL_TYPE);}
+bool PascalType::isCharTy() const {return isEqual(this, CHAR_TYPE);}
+bool PascalType::isStringTy() const {return this->tg == TypeGroup::STR;};
+bool PascalType::isSubRangeTy() const {return this->tg == TypeGroup::SUBRANGE;};
+bool PascalType::isRecordTy() const {return this->tg == TypeGroup::RECORD;};
+bool PascalType::isArrayTy() const {return this->tg == TypeGroup::ARRAY;};
 
-
-class EnumType : PascalType {
+class SubRangeType : public PascalType {
 public:
-    std::string type_name;
-    std::vector<std::string> enum_names;
-    EnumType(const std::string &type_name, const std::vector<std::string> &enum_names): type_name(type_name), enum_names(enum_names),PascalType(PascalType::TypeGroup::ENUM) {}
-};
-
-class SubRangeType : PascalType {
-public:
-    std::string type_name;
+//    std::string type_name;
     int low;
     int high;
-    SubRangeType(const std::string &type_name, int low, int high): type_name(type_name), low(low), high(high), PascalType(PascalType::TypeGroup::SUBRANGE) {}
+    SubRangeType(int low, int high): low(low), high(high), PascalType(PascalType::TypeGroup::SUBRANGE) {}
 };
 
-class ArrayType : PascalType {
+
+class ArrayType : public PascalType {
 public:
-    int dim;
-    PascalType* type;
-    ArrayType(int dim, PascalType *): dim(dim), type(type), PascalType(PascalType::TypeGroup::ARRAY) {}
+    std::pair<int, int> range; // pair(low, high)
+    PascalType* element_type;
+    ArrayType(std::pair<int, int> > range, PascalType *type): 
+        range(range), element_type(type), PascalType(PascalType::TypeGroup::ARRAY) {}
 };
 
-class StrType : PascalType {
+class StrType : public PascalType {
 public:
     int dim;
     StrType(int dim): dim(dim), PascalType(PascalType::TypeGroup::STR) {}
 };
 
-bool isEqual(PascalType *a, PascalType *b){
+class RecordType : public PascalType {
+public:
+    int size;
+    std::vector<std::string> name_vec;
+    std::vector<PascalType *> type_vec;
+    RecordType(std::vector<std::string> name_vec, std::vector<PascalType *> type_vec):
+        name_vec(name_vec), type_vec(type_vec), PascalType(PascalType::TypeGroup::RECORD) {
+        this->size = name_vec.size();
+    }
+};
+
+class EnumType : public PascalType {
+public:
+    std::vector<std::string> names_;
+    EnumType(std::vector<std::string> names, Generator *g): 
+        names_(names), PascalType(PascalType::TypeGroup::ENUM) {
+        for (int i = 0; i < names.size(); i++) {
+            if (g->named_constants.find(names[i]) != g->named_constants.end()) {
+                // multiple constant
+                continue;
+            } else {
+                g->named_constants[names[i]] = llvm::ConstantInt::get(
+                    llvm::Type::getInt32Ty(g->context), i, true);
+            }
+        }
+    }
+};
+
+bool isEqual(const PascalType *a, const PascalType *b){
     if (a->tg != b->tg) return false;
     if (a->tg == PascalType::TypeGroup::BUILT_IN)
         return ((BuiltinType *)a)->type == ((BuiltinType *)b)->type;
-    
 }
 
-llvm::Type* getLLVMType(llvm::LLVMContext context, PascalType *p_type) {
+
+llvm::Type *getLLVMType(llvm::LLVMContext &context, const PascalType *p_type) {
     if (p_type->tg == PascalType::TypeGroup::BUILT_IN) {
+
         if (isEqual(p_type, INT_TYPE))
             return llvm::Type::getInt32Ty(context);
         else if (isEqual(p_type, REAL_TYPE))
@@ -83,19 +122,41 @@ llvm::Type* getLLVMType(llvm::LLVMContext context, PascalType *p_type) {
             return llvm::Type::getVoidTy(context);
         else
             return nullptr;
+
     } else if (p_type->tg == PascalType::TypeGroup::STR) {
 
+        StrType *str = (StrType *)p_type;
+        return llvm::ArrayType::get(getLLVMType(context, CHAR_TYPE), (uint64_t)str->dim);
+
     } else if (p_type->tg == PascalType::TypeGroup::ARRAY) {
-        
+
+        ArrayType *array = (ArrayType *)p_type;
+        llvm::ArrayType *ret = nullptr;
+        int len = array->range.second - array->range.first;
+        ret = llvm::ArrayType::get(getLLVMType(context, array->element_type), (uint64_t)len);
+        return ret;
+
     } else if (p_type->tg == PascalType::TypeGroup::RECORD) {
+        
+        RecordType *record = (RecordType *)p_type;
+        std::vector<llvm::Type *> llvm_type_vec;
+        for (auto t : record->type_vec) {
+            llvm_type_vec.push_back(getLLVMType(context, t));
+        }
+        return llvm::StructType::get(context, llvm_type_vec);
 
     } else if (p_type->tg == PascalType::TypeGroup::ENUM) {
+        
+        // does not mean that enum type does not exist
+        // it means that we do not consider it as a basic type
+        return nullptr;
 
     } else if (p_type->tg == PascalType::TypeGroup::SUBRANGE) {
-    
+        // not implemented
+        return nullptr;
     }
 }
 
-}; // namespace PascalType
+}; // namespace Type
 
 #endif //OPC_TYPE_H

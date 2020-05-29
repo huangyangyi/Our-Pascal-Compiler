@@ -6,16 +6,46 @@
 #include<llvm/IR/IRBuilder.h>
 
 
+struct FuncSign{
+public:
+    FuncSign(std::vector<std::string> name_list, std::vector<PascalType*> type_list, std::vector<bool> is_var, PascalType* return_type = nullptr)
+        :name_list_(name_list), type_list_(type_list), is_var_(is_var), return_type_(return_type){
+            if (return_type == nullptr)
+                return_type_ = VOID_TYPE;
+        }
+    std::vector<PascalType*> getTypeList(){return type_list_;}
+    std::vector<std::string> getNameList(){return name_list_;}
+    std::vector<bool> getIsVar(){return is_var_;}
+    PascalType* getReturnType(){return return_type_;}
+private:
+    std::vector<PascalType*> type_list_;
+    std::vector<std::string> name_list_;
+    std::vector<bool> is_var_;
+    PascalType* return_type_;
+};
 
 class CodeBlock {
     public:
     std::map<string, llvm::Value*> named_values;
-    std::map<string, PascalType*> named_types;
+    std::map<string, Type::PascalType*> named_types;
+    std::map<std::string, llvm::Function*> named_functions;
+    std::map<std::string, FuncSign*> function_parameters;
+    std::map<int, llvm::BasicBlock *> labels;
     bool isType(std::string id){
         return named_types.find(id) != named_types.end() && named_values.find(id) == named_values.end();
     }
     bool isValue(std::string id){
         return named_values.find(id) != named_values.end();
+    }
+    llvm::Function *find_function(std::string id){
+        if (named_functions.find(id) == named_functions.end())
+            return nullptr;
+        return named_functions[id];
+    }
+    FuncSign *find_function_parameters(std::string id){
+        if (function_parameters.find(id) == function_parameters.end())
+            return nullptr;
+        return function_parameters[id];
     }
 };
 
@@ -26,10 +56,25 @@ private:
     llvm::LLVMContext context;
     std::unique_ptr<llvm::Module> module;
     std::vector<CodeBlock*> block_stack;
+    std::map<string, llvm::Constant*> named_constants;
+    
+    friend class OurType::EnumType;
 public:
     Generator();
 
     ~Generator();
+
+    CodeBlock* getCurrentBlock(void) { return *(this->block_stack.rbegin()); }
+
+    void genAssign(llvm::Value* dest_ptr, OurType::PascalType *dest_type, llvm::Value* src, OurType::PascalType *src_type);
+
+    llvm::Value* genMatch(llvm::Value* dest, OurType::PascalType *dest_type, llvm::Value* src, OurType::PascalType *src_type);
+    
+    llvm::Value* genFuncCall(std::string id, const std::vector<ValueResult *> &args_list);
+
+    llvm::Value* genSysFunc(std::string id, const std::vector<ValueResult *> &args_list);
+
+    bool isSysFunc(std::string id);
 
     virtual std::shared_ptr<VisitorResult> VisitASTNode(ASTNode *node);
 

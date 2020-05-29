@@ -5,6 +5,11 @@ int ASTNode::line() { return this->line_; }
 
 int ASTNode::col() { return this->col_; }
 
+std::string ASTNode::get_location() {
+    return "line " + string(this->line_) + 
+           " , col " + string(this->col_) + " : ";
+}
+
 void ASTNode::set_location(int line, int col) {
     this->line_ = line;
     this->col_ = col;
