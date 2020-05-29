@@ -2,15 +2,47 @@
 #include <string>
 #include <unistd.h>
 #include <fcntl.h>
+#include <getopt.h>
 #include <sys/stat.h>
 #include "pascal.y.hpp"
 #include "ast/graph_generator.h"
 
 using namespace std;
-string input_fname;
+string input_fname = "";
+string output_dot_fname = "";
+string output_ll_fname = "";
+bool gen_graph = false;
+bool gen_ir = true;
 
 void parse_arg(int argc, char *argv[]) {
-    input_fname = argv[0];
+    for (int i=0;i < argc;i++) {
+        string arg = argv[i];
+        if (arg == "--ir") {
+            gen_ir = true;
+            string nxt_arg = argv[i + 1];
+            if (nxt_arg[0] != '-') {
+                output_ll_fname = nxt_arg;
+                i ++;
+            }
+        } else
+        if (arg == "--noir") {
+            gen_ir = false;
+        } else
+        if (arg == "--graph") {
+            gen_graph = true;
+            string nxt_arg = argv[i + 1];
+            if (nxt_arg[0] != '-') {
+                output_dot_fname = nxt_arg;
+                i ++;
+            }
+        }
+        else if (input_fname == "") {
+            input_fname = arg;
+        }
+        else printf("\
+            Usage: opc input_file [--ir [ir_fname]] [--noir] [--graph [graph_fname]] \n\
+        ");
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -42,11 +74,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     std::cout << "parsed!" << endl;
-
-    GraphGenerator *g = new GraphGenerator();
-    ast_root->Print(g);
-    g->Save(input_fname + ".dot");
-    delete g;
-
+    if (gen_graph) {
+        GraphGenerator *g = new GraphGenerator();
+        ast_root->Print(g);
+        if (output_dot_fname == "") output_dot_fname = input_fname + ".dot";
+        g->Save(output_dot_fname);
+        delete g;
+    }
+    if (gen_ir) {
+        
+    }
     return 0;
 }

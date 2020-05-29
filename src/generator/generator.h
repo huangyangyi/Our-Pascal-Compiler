@@ -26,13 +26,14 @@ private:
 
 class CodeBlock {
     public:
-    std::map<string, llvm::Value*> named_values;
-    std::map<string, Type::PascalType*> named_types;
+    std::map<std::string, llvm::Value*> named_values;
+    std::map<std::string, OurType::PascalType*> named_types;
     std::map<std::string, llvm::Function*> named_functions;
-    std::map<std::string, FuncSign*> function_parameters;
+    std::map<std::string, FuncSign*> named_funcsigns;
     std::map<int, llvm::BasicBlock *> labels;
-    bool isType(std::string id){
-        return named_types.find(id) != named_types.end() && named_values.find(id) == named_values.end();
+    bool isType(std::string id, bool check_defined=false){
+        return named_types.find(id) != named_types.end() && 
+             ( named_values.find(id) == named_values.end() || check_defined );
     }
     bool isValue(std::string id){
         return named_values.find(id) != named_values.end();
@@ -42,37 +43,69 @@ class CodeBlock {
             return nullptr;
         return named_functions[id];
     }
-    FuncSign *find_function_parameters(std::string id){
-        if (function_parameters.find(id) == function_parameters.end())
+    FuncSign *find_funcsign(std::string id){
+        if (named_funcsigns.find(id) == named_funcsigns.end())
             return nullptr;
-        return function_parameters[id];
+        return named_funcsigns[id];
+    }
+    void set_function(std::string id, FuncSign *funcsign){
+        named_funcsigns[id] = funcsign;
     }
 };
 
-
 class Generator : Visitor {
 private:
-    llvm::IRBuilder<> builder;
+    int temp_variable_count = 0;
     llvm::LLVMContext context;
+    llvm::IRBuilder<> builder;
+    llvm::DataLayout data_layout;
     std::unique_ptr<llvm::Module> module;
     std::vector<CodeBlock*> block_stack;
-    std::map<string, llvm::Constant*> named_constants;
-    
+    std::map<std::string, llvm::Constant*> named_constants;
     friend class OurType::EnumType;
 public:
     Generator();
 
     ~Generator();
+    
+    void Save(std::string path);
 
     CodeBlock* getCurrentBlock(void) { return *(this->block_stack.rbegin()); }
+
+    std::pair<std::vector<std::string>, std::vector<OurType::PascalType *> > getAllLocalVarNameType() {        
+        std::vector<std::string> name_list;
+        std::vector<OurType::PascalType *> type_list;
+
+        if (this->block_stack.size() == 1)
+            return make_pair(name_list, type_list);
+        
+        for(auto it : this->getCurrentBlock()->named_values) {
+            std::string name = (*it).first;
+            OurType::PascalType *type = nullptr;
+            for(int i = this->block_stack.size()-1; i >= 1; i--) {
+                // do not count global variable
+                if (this->block_stack[i]->isType(name, true)) {
+                    type = this->block_stack[i]->named_types[name];
+                    break;
+                }
+            }
+            
+            std::assert(type != nullptr);
+
+            name_list.push_back(name);
+            type_list.push_back(type);
+        }
+        return std::make_pair(name_list, type_list);
+    }
 
     void genAssign(llvm::Value* dest_ptr, OurType::PascalType *dest_type, llvm::Value* src, OurType::PascalType *src_type);
 
     llvm::Value* genMatch(llvm::Value* dest, OurType::PascalType *dest_type, llvm::Value* src, OurType::PascalType *src_type);
     
-    llvm::Value* genFuncCall(std::string id, const std::vector<ValueResult *> &args_list);
+    llvm::Value* genFuncCall(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
 
-    llvm::Value* genSysFunc(std::string id, const std::vector<ValueResult *> &args_list);
+    llvm::Value* genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
+
 
     bool isSysFunc(std::string id);
 

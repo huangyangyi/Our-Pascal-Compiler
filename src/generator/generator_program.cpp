@@ -2,7 +2,9 @@
 #include "../ast/ast_prog.h"
 #include "generator_result.hpp"
 
-std::shared_ptr<VisitorResult> Generator::VisitASTProgramHead(ASTProgramHead *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTProgramHead(ASTProgramHead *node) {
+    return nullptr;
+}
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutineHead(ASTRoutineHead *node) {}
 
@@ -15,7 +17,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTProgram(ASTProgram *node) {}
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutinePart(ASTRoutinePart *node) {}
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *node) {
-    bool is_function = node->getIam() == ASTFuncProcBase::FuncType::FUNCTION);
+    bool is_function = node->getIam() == ASTFuncProcBase::FuncType::FUNCTION;
     auto parameters = std::static_pointer_cast<TypeListResult>(
         is_function ? ((ASTFunctionDecl*)node)->getFunctionHead()->getParameters()->Accept(this)
                     : ((ASTProcedureDecl*)node)->getProcedureHead()->getParameters()->Accept(this));
@@ -31,29 +33,58 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         func_name = ((ASTProcedureDecl*)node)->getProcedureHead()->getProcName();
     }
     llvm::Type *llvm_return_type = OurType::getLLVMType(context, return_type);
+    auto name_list = parameters->getNameList();
     auto type_var_list = parameters->getTypeList();
     std::vector<llvm::Type*> llvm_type_list;
     std::vector<OurType::PascalType*> type_list;
     std::vector<bool> var_list;
+    
     for (auto type: type_var_list){
         type_list.push_back(type->getType());
         var_list.push_back(type->is_var());
-        llvm_type_list.push_back(OurType::getLLVMType(context, type->getType()));
+        llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, type->getType())));
     }
-    FuncSign *sem_func = new FuncSign(parameters->getNameList(), type_list, var_list, return_type);
+
+    // adding local variables
+    auto local_vars = this->getAllLocalVarNameType();
+    std::vector<std::string> local_name_list = local_vars.first;
+    std::vector<OurType::PascalType *> local_type_list = local_vars.second;
+    for(int i = 0; i < local_name_list.size(); i++) {
+        name_list.push_back(local_name_list[i]);
+        type_list.push_back(local_type_list[i]);
+        var_list.push_back(true);
+        llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, local_type_list[i])));
+    }
+
+    FuncSign *funcsign = new FuncSign(name_list, type_list, var_list, return_type);
     llvm::FunctionType *functionType = llvm::FunctionType::get(llvm_return_type, llvm_type_list, false);
     llvm::Function *function = llvm::Function::Create(functionType, llvm::GlobalValue::ExternalLinkage, func_name, module.get());
 
-    BasicBlock* basicBlock = BasicBlock::Create(context.llvmContext, "entry", function, nullptr);
+    this->getCurrentBlock()->set_function(func_name, function, funcsign);
+
+    llvm::BasicBlock* basicBlock = llvm::BasicBlock::Create(context, "entry", function, nullptr);
     builder.SetInsertPoint(basicBlock);
-    int cur = 0;
-    for(auto &ir_arg_it: function->args()){
-        ir_arg_it.setName(name_list[cur]);
 
-
-        cur++;
-    }
-    //To be continued...
+    // MODIFY PARAMETERS PASSING
+    block_stack.push_back(new CodeBlock());
+    int iter_i = 0;
+    for(llvm::Function::arg_iterator arg_it = function->arg_begin(); arg_it != function->arg_end(); arg_it++) {
+        if (var_list[iter_i]) {
+            this->getCurrentBlock()->named_values[name_list[iter_i]] = (llvm::Value *)arg_it;
+        } else {
+            llvm::Value *value = this->builder.CreateLoad((llvm::Value *)arg_it);
+            llvm::AllocaInst *mem = this->builder.CreateAlloca(
+                OurType::getLLVMType(type_list[iter_i]),
+                nullptr,
+                name_list[iter_i]
+            );
+            this->builder.CreateStore(value, mem);
+            this->getCurrentBlock()->named_values[name_list[iter_i]] = mem;
+        }
+    }    
+    
+    if (is_function)  ((ASTFunctionDecl*)node)->getRoutine()->Accept(this);
+                else ((ASTProcedureDecl*)node)->getRoutine()->Accept(this);
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFunctionDecl(ASTFunctionDecl *node) {}

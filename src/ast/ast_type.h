@@ -48,9 +48,12 @@ private:
 };
 
 class ASTTypeDecl : public ASTNode {
+public:
+    virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor) { return nullptr; }
 };
 
 class ASTSimpleTypeDecl : public ASTTypeDecl {
+friend class Generator;
 public:
     enum class MyType { BUILTIN_TYPE, DEFINED_ID, VALUE_RANGE, ID_RANGE, ENUM };
 
@@ -107,7 +110,7 @@ public:
 
     ASTTypeDecl *getTypeDecl() const;
 
-    void setBelongToRecord(bool _);
+//    void setBelongToRecord(bool _);
 private:
     ASTNameList *name_list;
     ASTTypeDecl *type_decl;
@@ -126,8 +129,8 @@ public:
 
     const vector<ASTFieldDecl *> &getFielddeclList() const;
 
-    void setBelongToRecord(bool _);
-    void getBelongToRecord()
+//    void setBelongToRecord(bool _);
+//    void getBelongToRecord();
 private:
     std::vector<ASTFieldDecl *> fielddeclList;
     bool belong_to_record = false;

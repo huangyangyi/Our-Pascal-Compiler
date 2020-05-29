@@ -74,6 +74,9 @@ std::shared_ptr <VisitorResult> Generator::VisitASTConstExpr(ASTConstExpr *node)
             /*Linkage=*/llvm::GlobalValue::CommonLinkage,
             /*Initializer=*/(llvm::Constant *)res->getValue(), // has initializer, specified below
             /*Name=*/node->getId());
+    if (this->block_stack.back()->named_values.count(node->getId())|| this->named_constants.count(node->getId())) {
+        //error 
+    }
     this->named_constants[node->getId()] = res->getValue();
     this->block_stack.back()->named_values[node->getId()] = constant;
     return nullptr;
@@ -107,6 +110,9 @@ std::shared_ptr <VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
                     /*Linkage=*/llvm::GlobalValue::CommonLinkage,
                     /*Initializer=*/0, // has initializer, specified below
                     /*Name=*/id);
+            if (this->block_stack.back()->named_values.count(id)) {
+                //error 
+            }
             this->block_stack.back()->named_values[id] = var;
         } else {
             llvm::AllocaInst *var = this->builder.CreateAlloca(
@@ -114,6 +120,9 @@ std::shared_ptr <VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
                 nullptr,
                 id
             );
+            if (this->block_stack.back()->named_values.count(id)) {
+                //error 
+            }
             this->block_stack.back()->named_values[id] = var;
         }
     }

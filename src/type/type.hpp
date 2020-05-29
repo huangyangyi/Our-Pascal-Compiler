@@ -62,7 +62,7 @@ class ArrayType : public PascalType {
 public:
     std::pair<int, int> range; // pair(low, high)
     PascalType* element_type;
-    ArrayType(std::pair<int, int> > range, PascalType *type): 
+    ArrayType(std::pair<int, int> range, PascalType *type): 
         range(range), element_type(type), PascalType(PascalType::TypeGroup::ARRAY) {}
 };
 
@@ -149,7 +149,7 @@ llvm::Type *getLLVMType(llvm::LLVMContext &context, const PascalType *p_type) {
         
         // does not mean that enum type does not exist
         // it means that we do not consider it as a basic type
-        return nullptr;
+        return llvm::Type::getInt32Ty(context);
 
     } else if (p_type->tg == PascalType::TypeGroup::SUBRANGE) {
         // not implemented

@@ -278,14 +278,15 @@ private:
 
 class ASTParaList : public ASTNode {
 public:
-    bool isVar;
+    bool is_var;
 
-    bool isVar1() const {
-        return isVar;
+    bool isVar() const {
+        return is_var;
     }
 
-    ASTParaList(bool isVar) : isVar(isVar) {}
+    ASTParaList(bool isVar) : is_var(isVar) {}
 };
+
 
 class ASTVarParaList : public ASTParaList {
 public:

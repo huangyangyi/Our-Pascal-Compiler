@@ -3,14 +3,16 @@
 #include "../ast/ast_expr.h"
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Type.h>
+#include <llvm/IR/Function.h>
+#include <iostream>
 
 using namespace OurType;
 
 std::shared_ptr<VisitorResult> Generator::VisitASTExpressionList(ASTExpressionList *node) {
     auto expr_list = node->getExprList();
-    std::vector<ValueResult*> ret;
+    std::vector<std::shared_ptr<ValueResult>> ret;
     for (auto expr_node: expr_list){
-        ValueResult* val = static_pointer_cast<ValueResult>(expr_node->Accept(this));
+        auto val = static_pointer_cast<ValueResult>(expr_node->Accept(this));
         if (val == nullptr) return nullptr;
         ret.push_back(val);
     }
@@ -52,8 +54,8 @@ bool check_cmp(PascalType *l, PascalType *r,,PascalType *retl)
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node) {
-    auto l = static_pointer_cast<ValueResult>(node->getLExpr()->Accept(this));
-    auto r = static_pointer_cast<ValueResult>(node->getRExpr()->Accept(this));
+    auto l = std::static_pointer_cast<ValueResult>(node->getLExpr()->Accept(this));
+    auto r = std::static_pointer_cast<ValueResult>(node->getRExpr()->Accept(this));
     if (l == nullptr || r == nullptr)
         return nullptr;       
          //The error has been reported in the sub-node, so we just return.
@@ -61,9 +63,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     //semantic check
     //TODO: Should report the error message.
     
-    ASTBinaryExpr::Oper nowOp = node->getOp()
-    PascalType *ret = nullptr;;
-   ;
+    ASTBinaryExpr::Oper nowOp = node->getOp();
+    PascalType *ret = nullptr;
     if (nowOp == Op(GE) || nowOp == Op(GT) || nowOp == Op(LE) || nowOp == Op(LT) || nowOp == Op(Equal) || nowOp == Op(UNEQUAL)){
         if (!check_cmp(l->getType(), r->getType(),retl)) return nullptr;   
     }
@@ -133,7 +134,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) 
     else if (node->getOp() ==ASTUnaryExpr::Oper::SUB){
         if (isEqual(t->getType(), INT_TYPE)) && isEqual(t->getType(), REAL_TYPE)))
             return nullptr;
-        llvm::Type *tp =tl-getllvmTypee();
+        llvm::Type *tp =tl->getllvmType();
         llvm::Value *zero = llvm::ConstantInt::get(tp, (uint64_t) 0, true);
         if (isEqual(t->getType(), REAL_TYPE))
             return std::make_shared<ValueResult>(this->builder.CreateFSub(zero, t->getType(), "negaftmp"));
@@ -154,12 +155,48 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstValueExpr(ASTConstValueEx
     return node->getConstValue()->Accept(this);
 }
 
-std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {\
-    node->
-    Function *CalleeF = module->getFunction();
+std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
+    auto value_vector = std::static_pointer_cast<ValueListResult>(node->getArgList()->Accept(this))->getValueList();
+    for (int i = block_stack.size() - 1; i >= 0; i--){
+        std::string func_name = node->getFuncId();
+        FuncSign *funcsign = block_stack[i]->find_funcsign(func_name);
+        if (funcsign == nullptr ) continue;
+        //Note the function/procedure can not be overridden in pascal, so the function is matched iff the name is matched.
+        if (funcsign->getNameList().size() != value_vector.size()) return nullptr; //Error;
+        auto type_list = funcsign->getTypeList();
+        auto var_list = funcsign->getVarList();
+        auto return_type = funcsign->getReturnType();
+        llvm::Function *callee = block_stack[i]->find_function(func_name);
+        vector<llvm::Value*> parameters;
+        int cur = 0;
 
+        // MODIFY PARAMETERS PASSING
+        for (auto value: value_vector){
+            if (!isEqual(value->getType(), type_list[cur])) {
+                std::cerr << node->get_location() << "type does not match on function calling. " << std::endl;
+                return nullptr; //Error
+            }
+            if (value->getMem() != nullptr) {
+                parameters.push_back(value->getMem());
+            } else {
+                this->temp_variable_count++;
+                llvm::AllocaInst *mem = this->builder.CreateAlloca(
+                    getLLVMType(this->context, type_list[cur]), 
+                    nullptr, 
+                    "0_" + std::to_string(this->temp_variable_count)
+                );
+                this->builder.CreateLoad(value->getValue(), mem);
+                parameters.push_back(mem);
+            }
+            cur++;
+        } 
+        return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters, "calltmp"));
+    }
+    return nullptr;
 }
 
-std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
+    
+}
 
 std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) {}
