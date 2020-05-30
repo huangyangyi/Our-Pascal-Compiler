@@ -1,13 +1,14 @@
 #include "ast_base.h"
 #include "../visitor.h"
+#include <stdlib.h>
 
 int ASTNode::line() { return this->line_; }
 
 int ASTNode::col() { return this->col_; }
 
 std::string ASTNode::get_location() {
-    return "line " + string(this->line_) + 
-           " , col " + string(this->col_) + " : ";
+    return "line " + string(to_string(this->line_)) + 
+           " , col " + string(to_string(this->col_)) + " : ";
 }
 
 void ASTNode::set_location(int line, int col) {

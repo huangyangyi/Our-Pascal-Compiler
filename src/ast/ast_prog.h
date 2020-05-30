@@ -89,7 +89,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const ASTStmtList *getCompoundStmt();
+    ASTStmtList *getCompoundStmt();
 
 private:
     ASTStmtList *compound_stmt;

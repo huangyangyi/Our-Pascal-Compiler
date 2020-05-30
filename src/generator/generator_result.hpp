@@ -127,4 +127,5 @@ public:
 private:
     std::vector<std::shared_ptr<TypeDeclResult> > type_decl_list_;
 }
+
 #endif // OPC_GENERATOR_RESULT_H

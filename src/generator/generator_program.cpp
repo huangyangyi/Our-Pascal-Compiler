@@ -17,7 +17,6 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRoutineHead(ASTRoutineHead *no
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutineBody(ASTRoutineBody *node) {
     return node->getCompoundStmt()->Accept(this);
-    return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {

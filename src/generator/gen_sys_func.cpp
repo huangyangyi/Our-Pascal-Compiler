@@ -1,13 +1,14 @@
 #include "generator.h"
-#include <llvm/Type.h>
+#include "generator_result.hpp"
+#include <llvm/IR/Type.h>
 
 llvm::Value* GenSysWrite(const std::vector<std::shared_ptr<ValueResult>> &args_list, bool new_line, Generator *generator) {
     static llvm::Function *llvm_printf = nullptr;
     if (llvm_printf == nullptr) {
         //register printf
-        std::vector<llvm::Type *> arg_types = {llvm::Type::getInt8PtrTy(this->context)};
+        std::vector<llvm::Type *> arg_types = {llvm::Type::getInt8PtrTy(generator->context)};
         llvm::FunctionType *func_type = llvm::FunctionType::get(
-            llvm::Type::getInt32Ty(),
+            llvm::Type::getInt32Ty(generator->context),
             arg_types,
             true
         );
@@ -15,13 +16,13 @@ llvm::Value* GenSysWrite(const std::vector<std::shared_ptr<ValueResult>> &args_l
             func_type,
             llvm::Function::ExternalLinkage,
             "printf",
-            this->module
+            &*(generator->module)
         );
         func->setCallingConv(llvm::CallingConv::C);
         llvm_printf = func;
     }
     std::string format;
-    std::vector<Value *> printf_args;
+    std::vector<llvm::Value *> printf_args;
     printf_args.emplace_back(nullptr);
     for (auto arg: args_list) {
         OurType::PascalType *tp = arg->getType();
@@ -41,15 +42,14 @@ llvm::Value* GenSysWrite(const std::vector<std::shared_ptr<ValueResult>> &args_l
             format += "%s";
             printf_args.emplace_back(arg->getMem());
         } else {
-            std::cerr << "[write/writeln] Unsupported type" << std::endl;
             return nullptr;
         }
     }
     if (new_line) {
         format += "\n";
     }
-    printf_args[0] = this->builder.CreateGlobalStringPtr(format, "printf_format");
-    return this->builder.CreateCall(printf_func, printf_args, "call_printf");
+    printf_args[0] = generator->builder.CreateGlobalStringPtr(format, "printf_format");
+    return generator->builder.CreateCall(printf_func, printf_args, "call_printf");
 }
 
 llvm::Value* GenSysRead(const std::vector<std::shared_ptr<ValueResult>> &args_list, bool new_line, Generator *generator) {
@@ -100,7 +100,7 @@ llvm::Value* GenSysRead(const std::vector<std::shared_ptr<ValueResult>> &args_li
     llvm::Value* ret = this->builder.CreateCall(scanf_func, printf_args, "call_scanf");
     if (new_line) {
         //consume \n
-        this->builder.CreateCall(scanf_func, this->builder.CreateGlobalStringPtr("%*c", "scanf_newline"), "call_scanf");
+        this->builder.CreateCall(scanf_func, generator->builder.CreateGlobalStringPtr("%*c", "scanf_newline"), "call_scanf");
     }
     return ret;
 }

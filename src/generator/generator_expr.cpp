@@ -27,18 +27,19 @@ bool check_arith(PascalType *l, PascalType *r, PascalType *ret){
     // Don't consider the string temporarily.
     if (isEqual(l, BOOLEAN_TYPE) || isEqual(r, BOOLEAN_TYPE)) return false;
     //boolean type can not take part in the arithmetic
-    if (isEqual(l, CHAR_TYPE) || isEqual(r, CHAR_TYPE) return false;
+    if (isEqual(l, CHAR_TYPE) || isEqual(r, CHAR_TYPE)) return false;
     //char type can not take part in the arithmetic
 
     ret = l;
-    if (isEqual(l, REAL_TYPE)) ret = l;    |if (isEqual(r, REAL_TYPE)) ret = r; 
+    if (isEqual(l, REAL_TYPE)) ret = l;    
+    if (isEqual(r, REAL_TYPE)) ret = r; 
     return true;
     //only numbers (integer/real) can forcely converted.
 }
 bool check_logic(PascalType *l, PascalType *r){
     return isEqual(l, BOOLEAN_TYPE) && isEqual(r, BOOLEAN_TYPE);
 }
-bool check_cmp(PascalType *l, PascalType *r,,PascalType *retl)
+bool check_cmp(PascalType *l, PascalType *r, PascalType *ret) {
     if (!l->isSimple() || !r->isSimple()) return false;
     // Don't consider the string temporarily.
     ret = l;
@@ -66,14 +67,14 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     
     ASTBinaryExpr::Oper nowOp = node->getOp();
     PascalType *ret = nullptr;
-    if (nowOp == Op(GE) || nowOp == Op(GT) || nowOp == Op(LE) || nowOp == Op(LT) || nowOp == Op(Equal) || nowOp == Op(UNEQUAL)){
-        if (!check_cmp(l->getType(), r->getType(),retl)) return nullptr;   
+    if (nowOp == Op(GE) || nowOp == Op(GT) || nowOp == Op(LE) || nowOp == Op(LT) || nowOp == Op(EQUAL) || nowOp == Op(UNEQUAL)){
+        if (!check_cmp(l->getType(), r->getType(), ret)) return nullptr;   
     }
     else if (nowOp == Op(AND) || nowOp == Op(OR)){
         if (!check_logic(l->getType(), r->getType())) return  nullptr;   
     }
     else{
-        if (!check_arith(l->getType(), r->getType(),retl)) return nullptr; 
+        if (!check_arith(l->getType(), r->getType(),ret)) return nullptr; 
     }
     bool is_real = isEqual(ret, REAL_TYPE);
     auto L = l->getValue(), R = r->getValue();
@@ -128,14 +129,14 @@ std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) 
     auto t = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
     if (t == nullptr) return nullptr;
     if (node->getOp() == ASTUnaryExpr::Oper::NOT){
-        if (isEqual(t->getType(), BOOLEAN_TYPE)))
+        if (isEqual(t->getType(), BOOLEAN_TYPE))
             return nullptr;
-        return std::make_shared<ValueResult>(t->getType(), this->builder.CreateNot(zero, val, "nottmp"));
+        return std::make_shared<ValueResult>(t->getType(), this->builder.CreateNot(t->getValue(), "nottmp"));
     }
     else if (node->getOp() ==ASTUnaryExpr::Oper::SUB){
-        if (isEqual(t->getType(), INT_TYPE)) && isEqual(t->getType(), REAL_TYPE)))
+        if (isEqual(t->getType(), INT_TYPE) && isEqual(t->getType(), REAL_TYPE))
             return nullptr;
-        llvm::Type *tp =tl->getllvmType();
+        llvm::Type *tp =t->getllvmType();
         llvm::Value *zero = llvm::ConstantInt::get(tp, (uint64_t) 0, true);
         if (isEqual(t->getType(), REAL_TYPE))
             return std::make_shared<ValueResult>(this->builder.CreateFSub(zero, t->getType(), "negaftmp"));
@@ -170,7 +171,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTPropExpr(ASTPropExpr *node) {
                                           llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), bias, true)};
     
     llvm::Value *mem = builder.CreateGEP(val->getMem(), gep_vec, "record_field");
-    llvm::value *ret; this->builder.CreateLoad(ret, mem);
+    llvm::Value *ret; this->builder.CreateLoad(ret, mem);
     return std::make_shared<ValueResult>(type_vec[bias], ret, mem);
 }
 
