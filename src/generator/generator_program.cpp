@@ -21,6 +21,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRoutineBody(ASTRoutineBody *no
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {
     node->getRoutineHead()->Accept(this);
+    //std::cout << "program head ok!!" << std::endl;
     node->getRoutineBody()->Accept(this);
     return nullptr;
 }
@@ -33,6 +34,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTProgram(ASTProgram *node) {
     llvm::BasicBlock *entry = llvm::BasicBlock::Create(this->context, "entry", main_func);
     this->builder.SetInsertPoint(entry);
     node->getRoutine()->Accept(this);
+    this->builder.CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->context), 0, true));
     return nullptr;
 }
 

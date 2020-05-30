@@ -3,6 +3,11 @@ find_package(LLVM REQUIRED CONFIG)
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+if(APPLE)
+include_directories(/usr/local/opt/llvm/include)
+string(APPEND CMAKE_CXX_FLAGS " -Wno-c++11-narrowing")
+ENDIF(APPLE)
+
 set(CMAKE_CXX_STANDARD 14)
 
 aux_source_directory(ast AST_SOURCE)
