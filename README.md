@@ -2,9 +2,9 @@
 A course project of ZJU Compile Principle.
 
 ## Developer
-* Shibiao Jiang (C)
-* Yangyi Huang
-* Yuhan Wang
+* (C) Shibiao Jiang 
+* (C) Yangyi Huang  
+* (C) Yuhan Wang    
 
 ## Timeline
 * 2020/05/19: Finish Lex

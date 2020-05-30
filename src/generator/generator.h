@@ -3,21 +3,23 @@
 
 #include "../visitor.h"
 #include "../type/type.hpp"
-#include<llvm/IR/IRBuilder.h>
+#include <llvm/IR/IRBuilder.h>
 
 
 struct FuncSign{
 public:
-    FuncSign(std::vector<std::string> name_list, std::vector<PascalType*> type_list, std::vector<bool> is_var, PascalType* return_type = nullptr)
-        :name_list_(name_list), type_list_(type_list), is_var_(is_var), return_type_(return_type){
+    FuncSign(int n_local, std::vector<std::string> name_list, std::vector<PascalType*> type_list, std::vector<bool> is_var, PascalType* return_type = nullptr)
+        :name_list_(name_list), type_list_(type_list), is_var_(is_var), return_type_(return_type), n_local_variables(n_local) {
             if (return_type == nullptr)
-                return_type_ = VOID_TYPE;
+                return_type_ = OurType::VOID_TYPE;
         }
     std::vector<PascalType*> getTypeList(){return type_list_;}
     std::vector<std::string> getNameList(){return name_list_;}
     std::vector<bool> getVarList(){return is_var_;}
     PascalType* getReturnType(){return return_type_;}
+    int getLocalVariablesNum() { return this->n_local_variables; }
 private:
+    int n_local_variables; // used for parameter passing
     std::vector<PascalType*> type_list_;
     std::vector<std::string> name_list_;
     std::vector<bool> is_var_;
@@ -48,8 +50,9 @@ class CodeBlock {
             return nullptr;
         return named_funcsigns[id];
     }
-    void set_function(std::string id, FuncSign *funcsign){
+    void set_function(std::string id, llvm::Function *function, FuncSign *funcsign){
         named_funcsigns[id] = funcsign;
+        named_functions[id] = function;
     }
 };
 
@@ -83,6 +86,7 @@ public:
             OurType::PascalType *type = nullptr;
             for(int i = this->block_stack.size()-1; i >= 1; i--) {
                 // do not count global variable
+                // use the nearest one as it is the currently using type
                 if (this->block_stack[i]->isType(name, true)) {
                     type = this->block_stack[i]->named_types[name];
                     break;

@@ -186,15 +186,35 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         FuncSign *funcsign = block_stack[i]->find_funcsign(func_name);
         if (funcsign == nullptr ) continue;
         //Note the function/procedure can not be overridden in pascal, so the function is matched iff the name is matched.
-        if (funcsign->getNameList().size() != value_vector.size()) return nullptr; //Error;
+        // VERY IMPORTANT !!!
+        // NameList().size include all local variables that require to be passed
+        // we should compare NameList.size() - n_local
+        // which is the actual arg size
+        if (funcsign->getNameList().size() - funcsign->getLocalVariablesNum() != value_vector.size())
+            return nullptr; //Error;
+        
+        auto name_list = funcsign->getNameList();
         auto type_list = funcsign->getTypeList();
         auto var_list = funcsign->getVarList();
         auto return_type = funcsign->getReturnType();
         llvm::Function *callee = block_stack[i]->find_function(func_name);
         vector<llvm::Value*> parameters;
-        int cur = 0;
 
-        // MODIFY PARAMETERS PASSING
+        // adding local variables
+        // in generator_program.cpp, we define all locals at the head of the para list
+        int cur;
+        int n_local = funcsign->getLocalVariablesNum();
+        for(cur = 0; cur < n_local; cur++) {
+            std::string local_name = name_list[cur];
+            if (this->getCurrentBlock()->named_values.find(local_name) == this->getCurrentBlock()->named_values.end()) {
+                std::cout << node->get_location() << "local variable " << local_name << " need to be passed, but not found." << std::endl;
+                parameters.push_back(nullptr);
+            } else {
+                parameters.push_back(this->getCurrentBlock()->named_values[local_name]);
+            }
+        }
+
+        // PASSING function args
         for (auto value: value_vector){
             if (!isEqual(value->getType(), type_list[cur])) {
                 std::cerr << node->get_location() << "type does not match on function calling. " << std::endl;
@@ -204,6 +224,11 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
                 parameters.push_back(value->getMem());
             } else {
                 this->temp_variable_count++;
+
+                // here we encounter a literally const value as a parameter
+                // we add a local variable to the IRBuilder
+                // but do not reflect it in Current_CodeBlock->named_values
+                // thus we do not add abnormal local variables when we declare another function/procedure
                 llvm::AllocaInst *mem = this->builder.CreateAlloca(
                     getLLVMType(this->context, type_list[cur]), 
                     nullptr, 
@@ -216,7 +241,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         } 
         return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters, "calltmp"));
     }
-    std::cout << node->get_location() << " function not found." << std::endl;
+    std::cout << node->get_location() << "function not found." << std::endl;
     return nullptr;
 }
 

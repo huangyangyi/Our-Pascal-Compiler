@@ -64,13 +64,12 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
     std::vector<OurType::PascalType*> type_list;
     std::vector<bool> var_list;
     
-    for (auto type: type_var_list){
-        type_list.push_back(type->getType());
-        var_list.push_back(type->is_var());
-        llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, type->getType())));
-    }
-
-    // adding local variables
+    // Adding local variables
+    // we must put local variables first
+    // because after we create this function, 
+    // we have to add the variables to the next CodeBlock
+    // in this step, we must add the function parameters later
+    // so as to overwrite the older local variables
     auto local_vars = this->getAllLocalVarNameType();
     std::vector<std::string> local_name_list = local_vars.first;
     std::vector<OurType::PascalType *> local_type_list = local_vars.second;
@@ -81,7 +80,14 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, local_type_list[i])));
     }
 
-    FuncSign *funcsign = new FuncSign(name_list, type_list, var_list, return_type);
+    // adding function parameters
+    for (auto type: type_var_list){
+        type_list.push_back(type->getType());
+        var_list.push_back(type->is_var());
+        llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, type->getType())));
+    }
+
+    FuncSign *funcsign = new FuncSign(local_name_list.size(), name_list, type_list, var_list, return_type);
     llvm::FunctionType *functionType = llvm::FunctionType::get(llvm_return_type, llvm_type_list, false);
     llvm::Function *function = llvm::Function::Create(functionType, llvm::GlobalValue::ExternalLinkage, func_name, module.get());
 
