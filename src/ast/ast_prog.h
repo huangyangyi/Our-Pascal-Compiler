@@ -89,6 +89,8 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
+    const ASTStmtList *getCompoundStmt();
+
 private:
     ASTStmtList *compound_stmt;
 };
@@ -165,8 +167,6 @@ public:
 
     virtual void Print(GraphGenerator *);
 
-    virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
-
     ASTFunctionHead *getFunctionHead() const;
 
     ASTRoutine *getRoutine() const;
@@ -201,8 +201,6 @@ public:
     ASTProcedureDecl(ASTProcedureHead *, ASTRoutine *);
 
     virtual void Print(GraphGenerator *);
-
-    virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     ASTProcedureHead *getProcedureHead() const;
 

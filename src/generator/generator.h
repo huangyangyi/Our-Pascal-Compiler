@@ -15,7 +15,7 @@ public:
         }
     std::vector<PascalType*> getTypeList(){return type_list_;}
     std::vector<std::string> getNameList(){return name_list_;}
-    std::vector<bool> getIsVar(){return is_var_;}
+    std::vector<bool> getVarList(){return is_var_;}
     PascalType* getReturnType(){return return_type_;}
 private:
     std::vector<PascalType*> type_list_;
@@ -54,11 +54,10 @@ class CodeBlock {
 };
 
 class Generator : Visitor {
-private:
+public:
     int temp_variable_count = 0;
     llvm::LLVMContext context;
     llvm::IRBuilder<> builder;
-    llvm::DataLayout data_layout;
     std::unique_ptr<llvm::Module> module;
     std::vector<CodeBlock*> block_stack;
     std::map<std::string, llvm::Constant*> named_constants;
@@ -143,11 +142,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> VisitASTFuncProcBase(ASTFuncProcBase *node);
 
-    virtual std::shared_ptr<VisitorResult> VisitASTFunctionDecl(ASTFunctionDecl *node);
-
     virtual std::shared_ptr<VisitorResult> VisitASTFunctionHead(ASTFunctionHead *node);
-
-    virtual std::shared_ptr<VisitorResult> VisitASTProcedureDecl(ASTProcedureDecl *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTProcedureHead(ASTProcedureHead *node);
 

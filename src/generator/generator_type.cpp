@@ -200,7 +200,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRecordTypeDecl(ASTRecordTypeDe
 std::shared_ptr<VisitorResult> Generator::VisitASTTypeDefinition(ASTTypeDefinition *node) {
     std::string id = node->getId();
     std::shared_ptr<TypeResult> tr = std::dynamic_pointer_cast<TypeResult>(
-        node->getTypeDecl()->Accept(this);)
+        node->getTypeDecl()->Accept(this));
     if (tr) {
         OurType::PascalType *type = tr->getType();
         bool defined = false;

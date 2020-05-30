@@ -119,7 +119,7 @@ class TypeDeclListResult : public VisitorResult {
 public:
     TypeDeclListResult() {}
     void addTypeDeclResult(std::shared_ptr<TypeDeclResult> tdr) {
-        this->type_decl_list_.push_back(tdl);
+        this->type_decl_list_.push_back(tdr);
     }
     std::vector<std::shared_ptr<TypeDeclResult> > getTypeDeclList() {
         return this->type_decl_list_;

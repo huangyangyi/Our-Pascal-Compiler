@@ -1,11 +1,11 @@
 #include "generator.h"
 #include <llvm/Type.h>
 
-llvm::Value* GenSysWrite(const std::vector<std::shared_ptr<ValueResult>> &args_list, bool new_line, llvm::Context &context, llvm::IRBuilder &builder, llvm::Module &module) {
+llvm::Value* GenSysWrite(const std::vector<std::shared_ptr<ValueResult>> &args_list, bool new_line, Generator *generator) {
     static llvm::Function *llvm_printf = nullptr;
     if (llvm_printf == nullptr) {
         //register printf
-        std::vector<llvm::Type *> arg_types = {llvm::Type::getInt8PtrTy(context)};
+        std::vector<llvm::Type *> arg_types = {llvm::Type::getInt8PtrTy(this->context)};
         llvm::FunctionType *func_type = llvm::FunctionType::get(
             llvm::Type::getInt32Ty(),
             arg_types,
@@ -15,7 +15,7 @@ llvm::Value* GenSysWrite(const std::vector<std::shared_ptr<ValueResult>> &args_l
             func_type,
             llvm::Function::ExternalLinkage,
             "printf",
-            &module
+            this->module
         );
         func->setCallingConv(llvm::CallingConv::C);
         llvm_printf = func;
@@ -48,15 +48,15 @@ llvm::Value* GenSysWrite(const std::vector<std::shared_ptr<ValueResult>> &args_l
     if (new_line) {
         format += "\n";
     }
-    printf_args[0] = builder.CreateGlobalStringPtr(format, "printf_format");
-    return builder.CreateCall(printf_func, printf_args, "call_printf");
+    printf_args[0] = this->builder.CreateGlobalStringPtr(format, "printf_format");
+    return this->builder.CreateCall(printf_func, printf_args, "call_printf");
 }
 
-llvm::Value* GenSysRead(const std::vector<std::shared_ptr<ValueResult>> &args_list, bool new_line, llvm::Context &context, llvm::IRBuilder &builder, llvm::Module &module) {
+llvm::Value* GenSysRead(const std::vector<std::shared_ptr<ValueResult>> &args_list, bool new_line, Generator *generator) {
     static llvm::Function *llvm_scanf = nullptr;
     if (llvm_scanf == nullptr) {
         //register printf
-        std::vector<llvm::Type *> arg_types = {llvm::Type::getInt8PtrTy(context)};
+        std::vector<llvm::Type *> arg_types = {llvm::Type::getInt8PtrTy(this->context)};
         llvm::FunctionType *func_type = llvm::FunctionType::get(
             llvm::Type::getInt32Ty(),
             arg_types,
@@ -66,7 +66,7 @@ llvm::Value* GenSysRead(const std::vector<std::shared_ptr<ValueResult>> &args_li
             func_type,
             llvm::Function::ExternalLinkage,
             "scanf",
-            &module
+            this->module
         );
         func->setCallingConv(llvm::CallingConv::C);
         llvm_scanf = func;
@@ -96,11 +96,11 @@ llvm::Value* GenSysRead(const std::vector<std::shared_ptr<ValueResult>> &args_li
     if (new_line) {
         format += "%*[^\n]";
     }
-    printf_args[0] = builder.CreateGlobalStringPtr(format, "scanf_format");
-    llvm::Value* ret = builder.CreateCall(scanf_func, printf_args, "call_scanf");
+    printf_args[0] = this->builder.CreateGlobalStringPtr(format, "scanf_format");
+    llvm::Value* ret = this->builder.CreateCall(scanf_func, printf_args, "call_scanf");
     if (new_line) {
         //consume \n
-        builder.CreateCall(scanf_func, builder.CreateGlobalStringPtr("%*c", "scanf_newline"), "call_scanf");
+        this->builder.CreateCall(scanf_func, this->builder.CreateGlobalStringPtr("%*c", "scanf_newline"), "call_scanf");
     }
     return ret;
 }
@@ -112,8 +112,8 @@ bool Generator::isSysFunc(std::string id) {
 }
 
 llvm::Value* Generator::genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult> > &args_list) {
-    if (id == "write") return GenSysWrite(args_list, false, this->context, this->builder, this->module);
-    if (id == "writeln") return GenSysWrite(args_list, true, this->context, this->builder, this->module);
-    if (id == "read") return GenSysRead(args_list, false, this->context, this->builder, this->module);
-    if (id == "readln") return GenSysRead(args_list, true, this->context, this->builder, this->module);
+    if (id == "write") return GenSysWrite(args_list, false, this);
+    if (id == "writeln") return GenSysWrite(args_list, true, this);
+    if (id == "read") return GenSysRead(args_list, false, this);
+    if (id == "readln") return GenSysRead(args_list, true, this);
 }

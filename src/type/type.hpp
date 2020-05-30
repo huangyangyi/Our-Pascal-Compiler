@@ -5,6 +5,7 @@
 #include <map>
 #include <llvm/IR/Type.h>
 #include "../generator/generator.h"
+#include <stdint.h>
 
 namespace OurType {
 class PascalType {
@@ -62,6 +63,14 @@ class ArrayType : public PascalType {
 public:
     std::pair<int, int> range; // pair(low, high)
     PascalType* element_type;
+    llvm::ConstantInt* getLLVMLow(llvm::LLVMContext &context) {
+        return llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), range.first, true);
+    }
+
+    llvm::ConstantInt* getLLVMHigh(llvm::LLVMContext &context) {
+        return llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), range.second, true);
+    }
+
     ArrayType(std::pair<int, int> range, PascalType *type): 
         range(range), element_type(type), PascalType(PascalType::TypeGroup::ARRAY) {}
 };
@@ -126,7 +135,7 @@ llvm::Type *getLLVMType(llvm::LLVMContext &context, const PascalType *p_type) {
     } else if (p_type->tg == PascalType::TypeGroup::STR) {
 
         StrType *str = (StrType *)p_type;
-        return llvm::ArrayType::get(getLLVMType(context, CHAR_TYPE), (uint64_t)str->dim);
+        return llvm::ArrayType::get(getLLVMType(context, CHAR_TYPE), (uint64_t)(str->dim));
 
     } else if (p_type->tg == PascalType::TypeGroup::ARRAY) {
 

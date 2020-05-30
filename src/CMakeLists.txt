@@ -20,7 +20,7 @@ add_custom_command(
 
 add_executable(
     opc
-    main.cpp ${AST_SOURCE} pascal.l.cpp
+    main.cpp ${AST_SOURCE} ${GEN_SOURCE} pascal.l.cpp
     pascal.y.cpp pascal.y.hpp
 )
 

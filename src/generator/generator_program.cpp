@@ -3,18 +3,44 @@
 #include "generator_result.hpp"
 
 std::shared_ptr<VisitorResult> Generator::VisitASTProgramHead(ASTProgramHead *node) {
+    //do nothing
     return nullptr;
 }
 
-std::shared_ptr<VisitorResult> Generator::VisitASTRoutineHead(ASTRoutineHead *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTRoutineHead(ASTRoutineHead *node) {
+    node->getConstPart()->Accept(this);
+    node->getTypePart()->Accept(this);
+    node->getVarPart()->Accept(this);
+    node->getRoutinePart()->Accept(this);
+    return nullptr;
+}
 
-std::shared_ptr<VisitorResult> Generator::VisitASTRoutineBody(ASTRoutineBody *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTRoutineBody(ASTRoutineBody *node) {
+    return node->getCompoundStmt()->Accept(this);
+    return nullptr;
+}
 
-std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {
+    node->getRoutineHead()->Accept(this);
+    node->getRoutineBody()->Accept(this);
+    return nullptr;
+}
 
-std::shared_ptr<VisitorResult> Generator::VisitASTProgram(ASTProgram *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTProgram(ASTProgram *node) {
+    node->getProgramHead()->Accept(this);
+    this->block_stack.push_back(new CodeBlock());
+    llvm::FunctionType *func_type = llvm::FunctionType::get(OurType::getLLVMType(OurType::INT_TYPE), false);
+    llvm::Function *main_func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, "main", this->module);
+    llvm::BasicBlock *entry = llvm::BasicBlock::Create(this->context, "entry", main_func);
+    this->builder.SetInsertPoint(entry);
+    node->getRoutine()->Accept(this);
+    return nullptr;
+}
 
-std::shared_ptr<VisitorResult> Generator::VisitASTRoutinePart(ASTRoutinePart *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTRoutinePart(ASTRoutinePart *node) {
+    for (auto decl: node->getRoutineList()) decl->Accept(this);
+    return nullptr;
+}
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *node) {
     bool is_function = node->getIam() == ASTFuncProcBase::FuncType::FUNCTION;
@@ -62,8 +88,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
 
     this->getCurrentBlock()->set_function(func_name, function, funcsign);
 
+    llvm::BasicBlock* oldBlock = this->builder.GetInsertBlock();
     llvm::BasicBlock* basicBlock = llvm::BasicBlock::Create(context, "entry", function, nullptr);
-    builder.SetInsertPoint(basicBlock);
+    this->builder.SetInsertPoint(basicBlock);
 
     // MODIFY PARAMETERS PASSING
     block_stack.push_back(new CodeBlock());
@@ -83,17 +110,31 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         }
     }    
     
-    if (is_function)  ((ASTFunctionDecl*)node)->getRoutine()->Accept(this);
-                else ((ASTProcedureDecl*)node)->getRoutine()->Accept(this);
+    // add return mechanism
+    if (is_function) {
+        ((ASTFunctionDecl*)node)->getRoutine()->Accept(this);
+        if (this->block_stack.size() == 1) {
+            this->builder.CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(), 0, true));
+        } else {
+            llvm::Value *ret = this->builder.CreateLoad(this->getCurrentBlock()->named_values[func_name]);
+            this->builder.CreateRet(ret);
+        }
+    } else {
+        ((ASTProcedureDecl*)node)->getRoutine()->Accept(this);
+        this->builder.CreateRetVoid();
+    }
+
+    this->builder.SetInsertPoint(oldBlock);
+    this->block_stack.pop_back();
 }
 
-std::shared_ptr<VisitorResult> Generator::VisitASTFunctionDecl(ASTFunctionDecl *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTFunctionHead(ASTFunctionHead *node) {
+    return nullptr;
+}
 
-std::shared_ptr<VisitorResult> Generator::VisitASTFunctionHead(ASTFunctionHead *node) {}
-
-std::shared_ptr<VisitorResult> Generator::VisitASTProcedureDecl(ASTProcedureDecl *node) {}
-
-std::shared_ptr<VisitorResult> Generator::VisitASTProcedureHead(ASTProcedureHead *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTProcedureHead(ASTProcedureHead *node) {
+    return nullptr;
+}
 
 std::shared_ptr<VisitorResult> Generator::VisitASTParaDeclList(ASTParaDeclList *node) {
     vector<std::string> name_list;

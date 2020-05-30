@@ -35,6 +35,10 @@ void ASTRoutineBody::Print(GraphGenerator *g) {
     g->Pop();
 }
 
+const ASTStmtList *ASTRoutineBody::getCompoundStmt() {
+    return this->compound_stmt;
+};
+
 ASTRoutine::ASTRoutine(ASTRoutineHead *routine_head,
                        ASTRoutineBody *routine_body)
         : routine_head(routine_head), routine_body(routine_body) {}
@@ -235,8 +239,6 @@ ASTFuncProcBase::FuncType ASTFuncProcBase::getIam() const {
     return iam;
 }
 
-std::shared_ptr<VisitorResult> ASTFunctionDecl::Accept(Visitor *visitor) { return visitor->VisitASTFunctionDecl(this); }
-
 ASTFunctionHead *ASTFunctionDecl::getFunctionHead() const {
     return function_head;
 }
@@ -257,10 +259,6 @@ ASTParaDeclList *ASTFunctionHead::getParameters() const {
 
 ASTSimpleTypeDecl *ASTFunctionHead::getSimpleTypeDecl() const {
     return simple_type_decl;
-}
-
-std::shared_ptr<VisitorResult> ASTProcedureDecl::Accept(Visitor *visitor) {
-    return visitor->VisitASTProcedureDecl(this);
 }
 
 ASTProcedureHead *ASTProcedureDecl::getProcedureHead() const {

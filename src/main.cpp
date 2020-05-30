@@ -82,7 +82,11 @@ int main(int argc, char *argv[]) {
         delete g;
     }
     if (gen_ir) {
-        
+        Generator *gen = new Generator();
+        ast_root->Accept(gen);
+        if (output_ll_fname == "") output_ll_fname = input_fname + ".dot";
+        gen->Save(out_ll_fname);
+        delete gen;
     }
     return 0;
 }

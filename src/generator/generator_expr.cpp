@@ -5,6 +5,7 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Function.h>
 #include <iostream>
+#include <stdint.h>
 
 using namespace OurType;
 
@@ -38,7 +39,7 @@ bool check_logic(PascalType *l, PascalType *r){
     return isEqual(l, BOOLEAN_TYPE) && isEqual(r, BOOLEAN_TYPE);
 }
 bool check_cmp(PascalType *l, PascalType *r,,PascalType *retl)
-    if (!l->isSimple() || !r->isSimple()) return false;{
+    if (!l->isSimple() || !r->isSimple()) return false;
     // Don't consider the string temporarily.
     ret = l;
 
@@ -124,7 +125,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
 #undef Op(x)
 
 std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) {
-    auto t = static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
+    auto t = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
     if (t == nullptr) return nullptr;
     if (node->getOp() == ASTUnaryExpr::Oper::NOT){
         if (isEqual(t->getType(), BOOLEAN_TYPE)))
@@ -144,11 +145,33 @@ std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) 
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTPropExpr(ASTPropExpr *node) {
-    //TODO: build a record type in Generator
-    std::string id = node->getPropId();
+    std::string id = node->getId();
     std::string propid = node->getPropId();
-    if (!id->isValue()) return nullptr;
-.
+    auto val = std::static_pointer_cast<ValueResult>((new ASTIDExpr(id))->Accept(this));
+    auto record_type_ = val->getType();
+    if (!record_type_->isRecordTy()){
+        std::cerr << "Non-record type can not use '.'." << std::endl;
+        return nullptr;
+    }
+    auto record_type = (RecordType *)record_type_;
+    auto name_vec = record_type->name_vec;
+    auto type_vec = record_type->type_vec;
+    int bias = -1;
+    for (int i = 0; i < name_vec.size(); i++)
+        if (name_vec[i] == propid){
+            bias = i;
+            break;
+        }
+    if (bias == -1){
+        std::cerr << id + " do not have property " + propid << endl;
+        return nullptr;
+    }
+    std::vector<llvm::Value *> gep_vec = {llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0, true),
+                                          llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), bias, true)};
+    
+    llvm::Value *mem = builder.CreateGEP(val->getMem(), gep_vec, "record_field");
+    llvm::value *ret; this->builder.CreateLoad(ret, mem);
+    return std::make_shared<ValueResult>(type_vec[bias], ret, mem);
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTConstValueExpr(ASTConstValueExpr *node) {
@@ -192,11 +215,33 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         } 
         return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters, "calltmp"));
     }
+    std::cout << node->get_location() << " function not found." << std::endl;
     return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
-    
+    std::string name = node->getId();
+    if (this->getCurrentBlock()->isValue(name)){
+        llvm::Value *mem = this->getCurrentBlock()->named_values[name];
+        llvm::Value *value = this->builder.CreateLoad(mem);
+        return std::make_shared<ValueResult>(this->getCurrentBlock()->named_types[name], value, mem);
+    }
+    if (this->block_stack[0]->isValue(name)){
+        llvm::Value *mem = this->block_stack[0]->named_values[name];
+        llvm::Value *value = this->builder.CreateLoad(mem);
+        return std::make_shared<ValueResult>(this->block_stack[0]->named_types[name], value, mem);
+    }
+    return nullptr;
 }
 
-std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) {}
+std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) {
+    auto index = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
+    auto array = std::static_pointer_cast<ValueResult>((new ASTIDExpr(index->getId()))->Accept(this));
+    ArrayType* array_type = (ArrayType*)(array->getType());
+    if (!isEqual(index->getType(), array_type->element_type)) return nullptr;
+
+    auto offset = this->builder.CreateSub(index->getValue(), array_type->getLLVMLow(this->context), "subtmp");
+    llvm::Value *mem = builder.CreateGEP(array->getMem(), offset, "ArrayCall");
+    llvm::Value *value = this->builder.CreateLoad(mem);
+    return std::make_shared<ValueResult>(array_type->element_type, value, mem);
+}

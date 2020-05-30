@@ -2,6 +2,7 @@
 #include "generator_result.hpp"
 #include <llvm/IR/Function.h>
 #include <iostream>
+#include <stdlib.h>
 
 using namespace OurType;
 
@@ -23,22 +24,6 @@ std::shared_ptr<VisitorResult> Generator::VisitASTStmtList(ASTStmtList *node) {
     return nullptr;
 }
 
-llvm::Value* Generator::genMatch(llvm::Value* dest, PascalType *dest_type, llvm::Value* src, PascalType *src_type) {
-    if (!isEqual(dest_type, src_type)) {
-        //error here
-        return nullptr;
-    }
-    if (dest_type->isIntegerTy()) {
-        return this->builder.CreateICmpEQ(dest, src);
-    }
-    else if (dest_type->isStringTy()) {
-        return nullptr;//TODO: implement string match
-    }
-    else if (dest_type->isCharTy()) {
-        return this->builder.CreateICmpEQ(dest, src);
-    }
-}
-
 void Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Value* src, PascalType *src_type) {
     if (!isEqual(dest_type, src_type)) {
         //Type conversions
@@ -51,8 +36,7 @@ void Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Va
         this->builder.CreateStore(src, dest_ptr);
     }
     else if (dest_type->isStringTy()) {
-        this->builder.CreateStore(src, dest_ptr)
-        //TODO: implement string assignment
+        this->builder.CreateStore(src, dest_ptr);
     }
     else if (dest_type->isArrayTy()) {
         //TODO: implement array assignment
@@ -75,9 +59,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTAssignStmt(ASTAssignStmt *node
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTProcStmt(ASTProcStmt *node) {
-    auto arg_list_res = std::static_pointer_cast<ValueListResult>(node->getExprList()->Accept(this));
-    this->genFuncCall(node->getId(), arg_list_res->getValueList());
-    return nullptr;
+    ASTFuncCall *ast_func = new ASTFuncCall(node->getId(), node->getExprList());
+    auto res = ast_func->Accept(this);
+    delete ast_func;
+    return res;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTIfStmt(ASTIfStmt *node) {
@@ -159,11 +144,11 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     llvm::BasicBlock *end_block = llvm::BasicBlock::Create(this->context, "for_end", func);
     builder.CreateBr(start_block);
     builder.SetInsertPoint(start_block);
-    auto st = std::static_pointer_cast<ValueResult>(node->getForExpr()->Accept(this));
-    if (st == nullptr) return nullptr;
-    llvm::Value *iter = this->block_stack.back()->named_values[node->getId()];
-    //check type here
-    this->builder.CreateStore(st->getValue(), iter);
+
+    auto ast_id_expr = new ASTIDExpr(node->getId());
+    auto ast_assign = new ASTAssignStmt(ast_id_expr, node->getForExpr());
+    ast_assign->Accept(this);
+
     this->builder.CreateBr(body_block);
     this->builder.SetInsertPoint(body_block);
     node->getStmt()->Accept(this);
@@ -172,23 +157,39 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     this->builder.SetInsertPoint(cond_block);
     auto en = std::static_pointer_cast<ValueResult>(node->getToExpr()->Accept(this));
     if (en == nullptr) return nullptr;
-    int step = node->getDir() == ASTForStmt::ForDir::TO ? 1 : -1;
-    llvm::Constant *step_const = llvm::ConstantInt::get(en->getValue()->getType(), step, true);
-    llvm::Value *iter_res = this->builder.CreateLoad(iter);
-    iter_res = this->builder.CreateAdd(iter_res, step_const);
-    this->builder.CreateStore(iter_res, iter);
-    llvm::Value *cmp_res = node->getDir() == ASTForStmt::ForDir::TO ? this->builder.CreateICmpSGT(iter_res, en->getValue()) : this->builder.CreateICmpSLT(iter_res, en->getValue());
+    std::string step = node->getDir() == ASTForStmt::ForDir::TO ? "1" : "-1";
 
-    this->builder.CreateCondBr(cmp_res, end_block, body_block);
+    auto ast_const_value = new ASTConstValue(step, ASTConstValue::ValueType::INTEGER);
+    auto ast_const_value_expr = new ASTConstValueExpr(ast_const_value);
+    auto ast_step_add = new ASTBinaryExpr(ASTBinaryExpr::Oper::PLUS, ast_id_expr, ast_const_value_expr);
+    auto ast_step_assign = new ASTAssignStmt(ast_id_expr, ast_step_add);
+    ast_step_assign->Accept(this);
+
+    auto ast_step_cmp = new ASTBinaryExpr(
+        node->getDir() == ASTForStmt::ForDir::TO ? ASTBinaryExpr::Oper::GT : ASTBinaryExpr::Oper::LT,
+        ast_id_expr,
+        node->getToExpr()
+    );
+
+    auto cmp_res = std::static_pointer_cast<ValueResult>(ast_step_cmp->Accept(this)); 
+
+    this->builder.CreateCondBr(cmp_res->getValue(), end_block, body_block);
     this->builder.SetInsertPoint(end_block);
-    
+
+    delete ast_id_expr;
+    delete ast_assign;
+    delete ast_const_value;
+    delete ast_const_value_expr;
+    delete ast_step_add;
+    delete ast_step_assign;
+    delete ast_step_cmp;
+
     return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTCaseStmt(ASTCaseStmt *node) {
     llvm::Function *func = this->builder.GetInsertBlock()->getParent();
     auto case_expr_list = node->getCaseExprList()->getCaseExprList();
-    auto expr_res = node->getExpr()->Accept(this);
     std::vector<llvm::BasicBlock *> cond_vec;
     std::vector<llvm::BasicBlock *> body_vec;
     int len = case_expr_list.size();
@@ -201,9 +202,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTCaseStmt(ASTCaseStmt *node) {
     for (int i=0; i < len; i++) {
         auto case_expr = case_expr_list[i];
         this->builder.SetInsertPoint(cond_vec[i]);
-        auto cond_res = static_pointer_cast<ValueResult>(case_expr->getExpr()->Accept(this));
-        auto match_res = genMatch(cond_res->getValue(), cond_res->getType(), expr_res->getValue(), expr_res->getType());
-        this->builder.CreateCondBr(match_res, body_vec[i], i == len - 1 ? end_block : cond_vec[i+1]);
+        auto ast_cmp = new ASTBinaryExpr(ASTBinaryExpr::Oper::EQUAL, node->getExpr(), case_expr->getExpr());
+        auto match_res = std::static_pointer_cast<ValueResult>(ast_cmp->Accept(this));
+        delete ast_cmp;
+        this->builder.CreateCondBr(match_res->getValue(), body_vec[i], i == len - 1 ? end_block : cond_vec[i+1]);
         this->builder.SetInsertPoint(body_vec[i]);
         case_expr->getStmt()->Accept(this);
     }

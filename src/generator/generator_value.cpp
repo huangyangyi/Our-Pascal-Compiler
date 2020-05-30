@@ -77,8 +77,8 @@ std::shared_ptr <VisitorResult> Generator::VisitASTConstExpr(ASTConstExpr *node)
     if (this->block_stack.back()->named_values.count(node->getId())|| this->named_constants.count(node->getId())) {
         //error 
     }
-    this->named_constants[node->getId()] = res->getValue();
-    this->block_stack.back()->named_values[node->getId()] = constant;
+    this->named_constants[node->getId()] = (llvm::Constant *) (res->getValue());
+    this->block_stack[0]->named_values[node->getId()] = constant;
     return nullptr;
 }
 

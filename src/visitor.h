@@ -48,11 +48,7 @@ public:
 
     virtual shared_ptr<VisitorResult> VisitASTFuncProcBase(ASTFuncProcBase *node) = 0;
 
-    virtual shared_ptr<VisitorResult> VisitASTFunctionDecl(ASTFunctionDecl *node) = 0;
-
     virtual shared_ptr<VisitorResult> VisitASTFunctionHead(ASTFunctionHead *node) = 0;
-
-    virtual shared_ptr<VisitorResult> VisitASTProcedureDecl(ASTProcedureDecl *node) = 0;
 
     virtual shared_ptr<VisitorResult> VisitASTProcedureHead(ASTProcedureHead *node) = 0;
 
