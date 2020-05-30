@@ -29,7 +29,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {
 std::shared_ptr<VisitorResult> Generator::VisitASTProgram(ASTProgram *node) {
     node->getProgramHead()->Accept(this);
     this->block_stack.push_back(new CodeBlock());
-    llvm::FunctionType *func_type = llvm::FunctionType::get(OurType::getLLVMType(OurType::INT_TYPE), false);
+    llvm::FunctionType *func_type = llvm::FunctionType::get(OurType::getLLVMType(this->context, OurType::INT_TYPE), false);
     llvm::Function *main_func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, "main", this->module);
     llvm::BasicBlock *entry = llvm::BasicBlock::Create(this->context, "entry", main_func);
     this->builder.SetInsertPoint(entry);
@@ -101,7 +101,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         } else {
             llvm::Value *value = this->builder.CreateLoad((llvm::Value *)arg_it);
             llvm::AllocaInst *mem = this->builder.CreateAlloca(
-                OurType::getLLVMType(type_list[iter_i]),
+                OurType::getLLVMType(this->context, type_list[iter_i]),
                 nullptr,
                 name_list[iter_i]
             );

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "generator_result.hpp"
 
-std::shared_ptr <VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node) {
+std::shared_ptr<VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node) {
     llvm::Type *tp;
     switch (node->getValueType()) {
         case ASTConstValue::ValueType::INTEGER:
@@ -60,16 +60,16 @@ std::shared_ptr <VisitorResult> Generator::VisitASTConstValue(ASTConstValue *nod
     return nullptr;
 }
 
-std::shared_ptr <VisitorResult> Generator::VisitASTConstExprList(ASTConstExprList *node) {
+std::shared_ptr<VisitorResult> Generator::VisitASTConstExprList(ASTConstExprList *node) {
     for (auto expr: node->getConstExprList()) expr->Accept(this);
     return nullptr;
 }
 
-std::shared_ptr <VisitorResult> Generator::VisitASTConstExpr(ASTConstExpr *node) {
+std::shared_ptr<VisitorResult> Generator::VisitASTConstExpr(ASTConstExpr *node) {
     std::shared_ptr<ValueResult> res = std::static_pointer_cast<ValueResult>(node->getValue()->Accept(this));
     llvm::GlobalVariable *constant = new llvm::GlobalVariable(
             /*Module=*/*(this->module),
-            /*Type=*/OurType::getLLVMType(res->getType()),
+            /*Type=*/OurType::getLLVMType(this->context, res->getType()),
             /*isConstant=*/true,
             /*Linkage=*/llvm::GlobalValue::CommonLinkage,
             /*Initializer=*/(llvm::Constant *)res->getValue(), // has initializer, specified below
@@ -82,22 +82,22 @@ std::shared_ptr <VisitorResult> Generator::VisitASTConstExpr(ASTConstExpr *node)
     return nullptr;
 }
 
-std::shared_ptr <VisitorResult> Generator::VisitASTConstPart(ASTConstPart *node) {
+std::shared_ptr<VisitorResult> Generator::VisitASTConstPart(ASTConstPart *node) {
     return node->getConstExprList()->Accept(this);
     return nullptr;
 }
 
-std::shared_ptr <VisitorResult> Generator::VisitASTVarPart(ASTVarPart *node) {
+std::shared_ptr<VisitorResult> Generator::VisitASTVarPart(ASTVarPart *node) {
     return node->getVarDeclList()->Accept(this);
     return nullptr;
 }
 
-std::shared_ptr <VisitorResult> Generator::VisitASTVarDeclList(ASTVarDeclList *node) {
+std::shared_ptr<VisitorResult> Generator::VisitASTVarDeclList(ASTVarDeclList *node) {
     for (auto expr: node->getVarDeclList()) expr->Accept(this);
     return nullptr;
 }
 
-std::shared_ptr <VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
+std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
     auto res = std::static_pointer_cast<TypeResult>(node->getTypeDecl()->Accept(this));
     auto name_list = std::static_pointer_cast<NameList>(node->getNameList()->Accept(this));
     for (auto id: name_list->get_list()) {
