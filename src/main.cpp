@@ -44,15 +44,19 @@ void parse_arg(int argc, char *argv[]) {
         else if (input_fname == "") {
             input_fname = arg;
         }
-        else printf("\
-            Usage: opc input_file [--ir [ir_fname]] [--noir] [--graph [graph_fname]] \n\
-        ");
+    }
+    if (argc == 0) {
+        printf("Usage: opc input_file [--ir [ir_fname]] [--noir] [--graph [graph_fname]] \n");
     }
 }
 
 int main(int argc, char *argv[]) {
     parse_arg(argc - 1, argv + 1);
     //input_fname = "hanoi.pas";
+
+    if (argc - 1 == 0 && input_fname == "")
+        return 0;
+    
     if (input_fname.substr(input_fname.length() - 4, 4).compare(".pas") != 0) {
         cerr << "invalid input file name: " << input_fname << std::endl
              << "please use .pas file!" << std::endl;
