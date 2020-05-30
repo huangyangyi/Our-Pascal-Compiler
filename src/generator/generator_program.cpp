@@ -29,7 +29,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTProgram(ASTProgram *node) {
     node->getProgramHead()->Accept(this);
     this->block_stack.push_back(new CodeBlock());
     llvm::FunctionType *func_type = llvm::FunctionType::get(OurType::getLLVMType(this->context, OurType::INT_TYPE), false);
-    llvm::Function *main_func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, "main", this->module);
+    llvm::Function *main_func = llvm::Function::Create(func_type, llvm::Function::ExternalLinkage, "main", &*(this->module));
     llvm::BasicBlock *entry = llvm::BasicBlock::Create(this->context, "entry", main_func);
     this->builder.SetInsertPoint(entry);
     node->getRoutine()->Accept(this);
@@ -87,7 +87,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, type->getType())));
     }
 
-    FuncSign *funcsign = new FuncSign(local_name_list.size(), name_list, type_list, var_list, return_type);
+    FuncSign *funcsign = new FuncSign((int)(local_name_list.size()), name_list, type_list, var_list, return_type);
     llvm::FunctionType *functionType = llvm::FunctionType::get(llvm_return_type, llvm_type_list, false);
     llvm::Function *function = llvm::Function::Create(functionType, llvm::GlobalValue::ExternalLinkage, func_name, module.get());
 
@@ -119,7 +119,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
     if (is_function) {
         ((ASTFunctionDecl*)node)->getRoutine()->Accept(this);
         if (this->block_stack.size() == 1) {
-            this->builder.CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(), 0, true));
+            this->builder.CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->context), 0, true));
         } else {
             llvm::Value *ret = this->builder.CreateLoad(this->getCurrentBlock()->named_values[func_name]);
             this->builder.CreateRet(ret);
@@ -162,7 +162,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTParaTypeList(ASTParaTypeList *
     auto name_list = std::static_pointer_cast<NameListResult>(list)->getNameList()->GetIdentifierList();
     auto type_value = std::static_pointer_cast<TypeResult>(node->getSimpleTypeDecl()->Accept(this));
     if (node->getParaList()->isVar())
-        type_value->set_var();
+        type_value->setIsVar(true);
     std::vector<std::shared_ptr<TypeResult> > type_list(name_list.size(), type_value);
     return std::make_shared<TypeListResult>(type_list, name_list);
 }

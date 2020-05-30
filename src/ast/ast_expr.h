@@ -38,7 +38,7 @@ public:
 private:
     std::vector<ASTExpr *> expr_list_;
 public:
-    const vector<ASTExpr *> &getExprList() const;
+    const std::vector<ASTExpr *> &getExprList() const;
 };
 
 class ASTBinaryExpr : public ASTExpr {
@@ -85,13 +85,13 @@ public:
 
 class ASTUnaryExpr : public ASTExpr {
 public:
-    Oper getOp() const;
 
     ASTExpr *getExpr() const;
 
     enum class Oper {
         NOT, SUB
     };
+    Oper getOp() const;
 
 private:
     Oper op_;
@@ -109,9 +109,9 @@ class ASTPropExpr : public ASTExpr {
 private:
     std::string id_, prop_id_;
 public:
-    const string &getId() const;
+    const std::string &getId() const;
 
-    const string &getPropId() const;
+    const std::string &getPropId() const;
 
 public:
     ASTPropExpr(std::string id, std::string prop_id);
@@ -138,7 +138,7 @@ public:
 class ASTFuncCall : public ASTExpr {
 private:
 public:
-    const string &getFuncId() const;
+    const std::string &getFuncId() const;
 
     ASTExpressionList *getArgList() const;
 
@@ -163,7 +163,7 @@ public:
 
     virtual void Print(GraphGenerator *);
 
-    const string &getId() const;
+    const std::string &getId() const;
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
@@ -180,7 +180,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const string &getId() const;
+    const std::string &getId() const;
 
     ASTExpr *getExpr() const;
 };

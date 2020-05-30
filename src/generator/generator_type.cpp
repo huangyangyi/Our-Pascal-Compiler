@@ -3,7 +3,7 @@
 #include "generator.h"
 #include "generator_result.hpp"
 #include "../ast/ast_type.h"
-#include "../type/type.hpp"
+#include "type/type.h"
 
 std::shared_ptr<VisitorResult> Generator::VisitASTType(ASTType *node) {
     ASTType::TypeName type_name = node->getTypeName();
@@ -27,7 +27,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
         PascalType *ret = nullptr;
         
         // cannot be an variable
-        if (this->getCurrentBlock()->named_values.find(node->defined_id)) {
+        if (this->getCurrentBlock()->named_values.count(node->defined_id) > 0) {
             return nullptr;
         }
 
@@ -97,7 +97,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
     } else if (node->my_type == ASTSimpleTypeDecl::MyType::ENUM) {
         std::shared_ptr<NameListResult> list_ret;
         std::vector<std::string> name_list;
-        if (list_ret = std::dynamic_pointer_cast<NameListResult>(node->name_list->Accept(this))) {
+        if (list_ret = std::static_pointer_cast<NameListResult>(node->name_list->Accept(this))) {
             name_list = list_ret->getNameList()->GetIdentifierList();
         } else {
             std::cout << node->get_location() << " not a name list." << endl;
@@ -110,7 +110,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
 std::shared_ptr<VisitorResult> Generator::VisitASTArrayTypeDecl(ASTArrayTypeDecl *node) {
     std::shared_ptr<TypeResult> tr;
     int low, high;
-    tr = std::dynamic_pointer_cast<TypeResult>(node->getSimpleTypeDecl()->Accept(this));
+    tr = std::static_pointer_cast<TypeResult>(node->getSimpleTypeDecl()->Accept(this));
     if (tr->getType()->tg == OurType::PascalType::TypeGroup::SUBRANGE) {
         OurType::SubRangeType *range = (OurType::SubRangeType *)tr->getType();
         low = range->low;
@@ -123,7 +123,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTArrayTypeDecl(ASTArrayTypeDecl
     
     std::shared_ptr< TypeResult > type_ret;
     OurType::PascalType *array_type;
-    if (type_ret = std::dynamic_pointer_cast< TypeResult >(node->getTypeDecl()->Accept(this))) {
+    if (type_ret = std::static_pointer_cast< TypeResult >(node->getTypeDecl()->Accept(this))) {
         array_type = type_ret->getType();
     } else {
         // not a type
@@ -141,7 +141,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTArrayTypeDecl(ASTArrayTypeDecl
 std::shared_ptr<VisitorResult> Generator::VisitASTFieldDecl(ASTFieldDecl *node) {
     std::shared_ptr<NameListResult> list_ret;
     std::vector<std::string> name_list;
-    if (list_ret = std::dynamic_pointer_cast<NameListResult>(node->getNameList()->Accept(this))) {
+    if (list_ret = std::static_pointer_cast<NameListResult>(node->getNameList()->Accept(this))) {
         name_list = list_ret->getNameList()->GetIdentifierList();
     } else {
         std::cout << node->get_location() << " not a name list." << endl;
@@ -149,7 +149,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFieldDecl(ASTFieldDecl *node) 
 
     std::shared_ptr< TypeResult > type_ret;
     OurType::PascalType *type;
-    if (type_ret = std::dynamic_pointer_cast< TypeResult >(node->getTypeDecl()->Accept(this))) {
+    if (type_ret = std::static_pointer_cast< TypeResult >(node->getTypeDecl()->Accept(this))) {
         type = type_ret->getType();
     } else {
         // not a type
@@ -167,7 +167,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFieldDeclList(ASTFieldDeclList
         fd_ret = fd->Accept(this);
         
         std::shared_ptr<TypeDeclResult> tdr;
-        if (tdr = dynamic_pointer_cast<TypeDeclResult>(fd_ret)) {
+        if (tdr = static_pointer_cast<TypeDeclResult>(fd_ret)) {
             ret->addTypeDeclResult(tdr);
         } else {
             std::cout << fd->get_location() << "in a record_decl but not a type_decl" << std::endl;
@@ -177,7 +177,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFieldDeclList(ASTFieldDeclList
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRecordTypeDecl(ASTRecordTypeDecl *node) {
-    shared_ptr<TypeDeclListResult> decls = std::dynamic_pointer_cast<TypeDeclListResult>(
+    shared_ptr<TypeDeclListResult> decls = std::static_pointer_cast<TypeDeclListResult>(
         node->getFieldDeclList()->Accept(this));
     if (decls) {
         std::vector<std::string> name_vec;
@@ -192,14 +192,14 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRecordTypeDecl(ASTRecordTypeDe
         OurType::PascalType *record_type = new OurType::RecordType(name_vec, type_vec);
         return std::make_shared<TypeResult>(record_type);
     } else {
-        std::cout << node->get_location() << "fail to generate a record type." << std::endl();
+        std::cout << node->get_location() << "fail to generate a record type." << std::endl;
         return nullptr;
     }
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTTypeDefinition(ASTTypeDefinition *node) {
     std::string id = node->getId();
-    std::shared_ptr<TypeResult> tr = std::dynamic_pointer_cast<TypeResult>(
+    std::shared_ptr<TypeResult> tr = std::static_pointer_cast<TypeResult>(
         node->getTypeDecl()->Accept(this));
     if (tr) {
         OurType::PascalType *type = tr->getType();

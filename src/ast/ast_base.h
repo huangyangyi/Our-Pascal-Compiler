@@ -4,8 +4,10 @@
 #include <vector>
 #include <string>
 #include <assert.h>
+#include <memory>
 #include "graph_generator.h"
-#include "../generator/generator.h"
+
+class VisitorResult;
 
 class Visitor;
 

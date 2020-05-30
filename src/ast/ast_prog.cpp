@@ -35,7 +35,7 @@ void ASTRoutineBody::Print(GraphGenerator *g) {
     g->Pop();
 }
 
-ASTStmtList *ASTRoutineBody::getCompoundStmt const() {
+ASTStmtList *ASTRoutineBody::getCompoundStmt(){
     return this->compound_stmt;
 };
 

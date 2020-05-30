@@ -304,7 +304,7 @@ TYPE:
         SET_LOCATION($$);
     }
     | TYPE_INT{
-        $$ = new ASTType(ASTType::TypeName::INTERGER);
+        $$ = new ASTType(ASTType::TypeName::INTEGER);
         SET_LOCATION($$);
     }
     | TYPE_FLOAT{
@@ -331,11 +331,11 @@ simple_type_decl:
         SET_LOCATION($$);
     }
     |  SYM_SUB  const_value  SYM_RANGE  const_value{
-        $$ = new ASTSimpleTypeDecl($1, true, $3, false);
+        $$ = new ASTSimpleTypeDecl($2, true, $4, false);
         SET_LOCATION($$);
     }
     |  SYM_SUB  const_value  SYM_RANGE  SYM_SUB  const_value{
-        $$ = new ASTSimpleTypeDecl($1, true, $3, true);
+        $$ = new ASTSimpleTypeDecl($2, true, $5, true);
         SET_LOCATION($$);
     }
     |  IDENTIFIER  SYM_RANGE  IDENTIFIER{

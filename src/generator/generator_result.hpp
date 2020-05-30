@@ -2,7 +2,7 @@
 #define OPC_GENERATOR_RESULT_H
 
 #include "../visitor.h"
-#include "../type/type.hpp"
+#include "type/type.h"
 #include <vector>
 #include <string>
 
@@ -64,7 +64,7 @@ public:
 
     ~ValueListResult() = default;
 
-    std::vector<std::shared_ptr<ValueResult> > &getValueList() const { return this->value_list_; }
+    const std::vector<std::shared_ptr<ValueResult> > &getValueList() const { return this->value_list_; }
 private:
     std::vector<std::shared_ptr<ValueResult> > value_list_;
 };
@@ -87,6 +87,11 @@ public:
     TypeResult(OurType::PascalType *type, bool is_var = false) :type_(type), is_var_(is_var){}
     OurType::PascalType *getType() const {return type_;}
     bool is_var(){return is_var_;}
+
+    void setIsVar(bool isVar) {
+        is_var_ = isVar;
+    }
+
 private:
     OurType::PascalType *type_;
     bool is_var_; //use when it is served for function parameters.
@@ -108,11 +113,11 @@ public:
     TypeDeclResult(ASTNameList *nl, OurType::PascalType *type):
         ast_name_list(nl), type_(type) {}
     ASTNameList *getNameList(void) { return this->ast_name_list; }
-    const OurType::PascalType const *getType(void) { return this->type_; }
+    OurType::PascalType *getType(void) { return this->type_; }
 
 private:
     ASTNameList *ast_name_list;
-    const OurType::PascalType const *type_;
+    OurType::PascalType *type_;
 };
 
 class TypeDeclListResult : public VisitorResult {
@@ -121,11 +126,11 @@ public:
     void addTypeDeclResult(std::shared_ptr<TypeDeclResult> tdr) {
         this->type_decl_list_.push_back(tdr);
     }
-    std::vector<std::shared_ptr<TypeDeclResult> > getTypeDeclList() {
+    std::vector<std::shared_ptr<TypeDeclResult> > &getTypeDeclList() {
         return this->type_decl_list_;
     }
 private:
     std::vector<std::shared_ptr<TypeDeclResult> > type_decl_list_;
-}
+};
 
 #endif // OPC_GENERATOR_RESULT_H

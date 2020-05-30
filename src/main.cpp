@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include "pascal.y.hpp"
 #include "ast/graph_generator.h"
+#include "generator/generator.h"
 
 using namespace std;
 string input_fname = "";
@@ -19,10 +20,12 @@ void parse_arg(int argc, char *argv[]) {
         string arg = argv[i];
         if (arg == "--ir") {
             gen_ir = true;
-            string nxt_arg = argv[i + 1];
-            if (nxt_arg[0] != '-') {
-                output_ll_fname = nxt_arg;
-                i ++;
+            if (i < argc - 1) {
+                string nxt_arg = argv[i + 1];
+                if (nxt_arg[0] != '-') {
+                    output_ll_fname = nxt_arg;
+                    i++;
+                }
             }
         } else
         if (arg == "--noir") {
@@ -30,10 +33,12 @@ void parse_arg(int argc, char *argv[]) {
         } else
         if (arg == "--graph") {
             gen_graph = true;
-            string nxt_arg = argv[i + 1];
-            if (nxt_arg[0] != '-') {
-                output_dot_fname = nxt_arg;
-                i ++;
+            if (i < argc - 1) {
+                string nxt_arg = argv[i + 1];
+                if (nxt_arg[0] != '-') {
+                    output_dot_fname = nxt_arg;
+                    i++;
+                }
             }
         }
         else if (input_fname == "") {
@@ -47,6 +52,7 @@ void parse_arg(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     parse_arg(argc - 1, argv + 1);
+    //input_fname = "hanoi.pas";
     if (input_fname.substr(input_fname.length() - 4, 4).compare(".pas") != 0) {
         cerr << "invalid input file name: " << input_fname << std::endl
              << "please use .pas file!" << std::endl;
@@ -76,16 +82,18 @@ int main(int argc, char *argv[]) {
     std::cout << "parsed!" << endl;
     if (gen_graph) {
         GraphGenerator *g = new GraphGenerator();
+
         ast_root->Print(g);
         if (output_dot_fname == "") output_dot_fname = input_fname + ".dot";
         g->Save(output_dot_fname);
-        delete g;
     }
     if (gen_ir) {
         Generator *gen = new Generator();
+        std::cout << "new!" << std::endl;
         ast_root->Accept(gen);
+        std::cout << "accept!" << std::endl;
         if (output_ll_fname == "") output_ll_fname = input_fname + ".dot";
-        gen->Save(out_ll_fname);
+        gen->Save(output_ll_fname);
         delete gen;
     }
     return 0;

@@ -1,12 +1,13 @@
 #include "ast_type.h"
 #include "../visitor.h"
+#include "../generator/generator.h"
 
 ASTType::ASTType(TypeName type_name) : type_name(type_name) {}
 
 void ASTType::Print(GraphGenerator *g) {
     // Need to be considered more...
     switch (type_name) {
-        case TypeName::INTERGER:
+        case TypeName::INTEGER:
             g->AddIdentifier("Integer");
             break;
         case TypeName::REAL:
@@ -68,15 +69,6 @@ ASTFieldDeclList::ASTFieldDeclList(ASTFieldDecl *field_decl) {
     fielddeclList.clear();
     fielddeclList.push_back(field_decl);
 }
-
-/*
-void ASTFieldDeclList::setBelongToRecord(bool _) {
-    this->belong_to_record = _;
-    for(auto fd : this->fielddeclList) {
-        fd->setBelongToRecord(_);
-    }
-}
-*/
 
 void ASTFieldDeclList::addFieldDecl(ASTFieldDecl *field_decl) {
     fielddeclList.push_back(field_decl);

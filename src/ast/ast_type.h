@@ -3,7 +3,8 @@
 
 #include "ast_base.h"
 #include "ast_value.h"
-#include "../generator/generator.h"
+
+class Generator;
 
 class Visitor;
 
@@ -14,6 +15,8 @@ class ASTType;
 class ASTTypeDecl;
 
 class ASTSimpleTypeDecl;
+
+class ASTConstValue;
 
 class ASTArrayTypeDecl;
 
@@ -127,7 +130,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const vector<ASTFieldDecl *> &getFielddeclList() const;
+    const std::vector<ASTFieldDecl *> &getFielddeclList() const;
 
 //    void setBelongToRecord(bool _);
 //    void getBelongToRecord();
@@ -158,7 +161,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const string &getId() const;
+    const std::string &getId() const;
 
     ASTTypeDecl *getTypeDecl() const;
 
@@ -177,7 +180,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const vector<ASTTypeDefinition *> &getTypeList() const;
+    const std::vector<ASTTypeDefinition *> &getTypeList() const;
 
 private:
     std::vector<ASTTypeDefinition *> typeList;

@@ -25,6 +25,8 @@ class ASTVarPart;
 
 class ASTVarDeclList;
 
+class ASTTypeDecl;
+
 class ASTVarDecl;
 
 class ASTConstValue : public ASTNode {
@@ -41,7 +43,7 @@ public:
 
     ValueType getValueType() const;
 
-    const string &getContent() const;
+    const std::string &getContent() const;
 
 private:
     ValueType value_type;
@@ -63,7 +65,7 @@ public:
 private:
     std::vector<ASTConstExpr *> const_expr_list;
 public:
-    const vector<ASTConstExpr *> &getConstExprList() const;
+    const std::vector<ASTConstExpr *> &getConstExprList() const;
 };
 
 class ASTConstExpr : public ASTNode {
@@ -74,7 +76,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const string &getId() const;
+    const std::string &getId() const;
 
     ASTExpr *getValue() const;
 
@@ -121,7 +123,7 @@ public:
 
     void addVarDecl(ASTVarDecl *);
 
-    const vector<ASTVarDecl *> &getVarDeclList() const;
+    const std::vector<ASTVarDecl *> &getVarDeclList() const;
 
 private:
     std::vector<ASTVarDecl *> var_decl_list;

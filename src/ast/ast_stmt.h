@@ -4,6 +4,7 @@
 #include "ast_base.h"
 #include "ast_expr.h"
 
+using namespace std;
 class Visitor;
 
 class ASTNode;
@@ -52,7 +53,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const string &getLabel() const;
+    const std::string &getLabel() const;
 
     ASTNonLabelStmt *getNonLabelStmt() const;
 };
@@ -67,7 +68,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const vector<ASTStmt *> &getStmtList() const;
+    const std::vector<ASTStmt *> &getStmtList() const;
 
 private:
     std::vector<ASTStmt *> stmt_list;
@@ -98,7 +99,7 @@ public:
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
-    const string &getId() const;
+    const std::string &getId() const;
 
     ASTExpressionList *getExprList() const;
 

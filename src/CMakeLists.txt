@@ -1,3 +1,5 @@
+project(opc)
+find_package(LLVM REQUIRED CONFIG)
 include_directories(.)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -18,9 +20,12 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parser/pascal.y
 )
 
+llvm_map_components_to_libnames(LLVM_LINK_LIBRARIES core)
+
 add_executable(
     opc
     main.cpp ${AST_SOURCE} ${GEN_SOURCE} pascal.l.cpp
     pascal.y.cpp pascal.y.hpp
-)
+        type/type.cpp)
 
+set_target_properties(opc PROPERTIES LINK_LIBRARIES "${LLVM_LINK_LIBRARIES}")

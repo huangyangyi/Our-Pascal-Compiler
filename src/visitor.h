@@ -2,6 +2,7 @@
 #define OPC_VISITOR_H
 
 #include <memory>
+#include <ast/ast_expr.h>
 #include "ast/ast.h"
 using namespace std;
 

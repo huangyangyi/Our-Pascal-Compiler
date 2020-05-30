@@ -139,9 +139,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) 
         llvm::Type *tp =t->getllvmType();
         llvm::Value *zero = llvm::ConstantInt::get(tp, (uint64_t) 0, true);
         if (isEqual(t->getType(), REAL_TYPE))
-            return std::make_shared<ValueResult>(this->builder.CreateFSub(zero, t->getType(), "negaftmp"));
+            return std::make_shared<ValueResult>(t->getType(), this->builder.CreateFSub(zero, t->getValue(), "negaftmp"));
         else
-            return std::make_shared<ValueResult>(this->builder.CreateSub(zero, t->getType(), "negatmp"));
+            return std::make_shared<ValueResult>(t->getType(), this->builder.CreateSub(zero, t->getValue(), "negatmp"));
     }
 }
 
@@ -241,6 +241,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         } 
         return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters, "calltmp"));
     }
+    if (isSysFunc(node->getFuncId())) {
+        return std::make_shared<ValueResult>(OurType::VOID_TYPE, genSysFunc(node->getFuncId(), value_vector));
+    }
     std::cout << node->get_location() << "function not found." << std::endl;
     return nullptr;
 }
@@ -262,7 +265,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
 
 std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) {
     auto index = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
-    auto array = std::static_pointer_cast<ValueResult>((new ASTIDExpr(index->getId()))->Accept(this));
+    auto array = std::static_pointer_cast<ValueResult>((new ASTIDExpr(node->getId()))->Accept(this));
     ArrayType* array_type = (ArrayType*)(array->getType());
     if (!isEqual(index->getType(), array_type->element_type)) return nullptr;
 

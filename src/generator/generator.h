@@ -2,28 +2,37 @@
 #define OPC_GENERATOR_H
 
 #include "../visitor.h"
-#include "../type/type.hpp"
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Value.h>
 
+namespace OurType {
+    class EnumType;
+    class PascalType;
+    extern PascalType* const VOID_TYPE;
+};
 
-struct FuncSign{
+class ValueResult;
+
+class FuncSign{
 public:
-    FuncSign(int n_local, std::vector<std::string> name_list, std::vector<PascalType*> type_list, std::vector<bool> is_var, PascalType* return_type = nullptr)
+    FuncSign(int n_local, std::vector<std::string> name_list, std::vector<OurType::PascalType*> type_list, std::vector<bool> is_var, OurType::PascalType* return_type = nullptr)
         :name_list_(name_list), type_list_(type_list), is_var_(is_var), return_type_(return_type), n_local_variables(n_local) {
             if (return_type == nullptr)
                 return_type_ = OurType::VOID_TYPE;
         }
-    std::vector<PascalType*> getTypeList(){return type_list_;}
+
+
+    std::vector<OurType::PascalType*> getTypeList(){return type_list_;}
     std::vector<std::string> getNameList(){return name_list_;}
     std::vector<bool> getVarList(){return is_var_;}
-    PascalType* getReturnType(){return return_type_;}
+    OurType::PascalType* getReturnType(){return return_type_;}
     int getLocalVariablesNum() { return this->n_local_variables; }
 private:
     int n_local_variables; // used for parameter passing
-    std::vector<PascalType*> type_list_;
+    std::vector<OurType::PascalType*> type_list_;
     std::vector<std::string> name_list_;
     std::vector<bool> is_var_;
-    PascalType* return_type_;
+    OurType::PascalType* return_type_;
 };
 
 class CodeBlock {
@@ -56,7 +65,7 @@ class CodeBlock {
     }
 };
 
-class Generator : Visitor {
+class Generator : public Visitor {
 public:
     int temp_variable_count = 0;
     llvm::LLVMContext context;
@@ -72,40 +81,7 @@ public:
     
     void Save(std::string path);
 
-    CodeBlock* getCurrentBlock(void) { return *(this->block_stack.rbegin()); }
-
-    std::pair<std::vector<std::string>, std::vector<OurType::PascalType *> > getAllLocalVarNameType() {        
-        std::vector<std::string> name_list;
-        std::vector<OurType::PascalType *> type_list;
-
-        if (this->block_stack.size() == 1)
-            return make_pair(name_list, type_list);
-        
-        for(auto it : this->getCurrentBlock()->named_values) {
-            std::string name = (*it).first;
-            OurType::PascalType *type = nullptr;
-            for(int i = this->block_stack.size()-1; i >= 1; i--) {
-                // do not count global variable
-                // use the nearest one as it is the currently using type
-                if (this->block_stack[i]->isType(name, true)) {
-                    type = this->block_stack[i]->named_types[name];
-                    break;
-                }
-            }
-            
-            std::assert(type != nullptr);
-
-            name_list.push_back(name);
-            type_list.push_back(type);
-        }
-        return std::make_pair(name_list, type_list);
-    }
-
     void genAssign(llvm::Value* dest_ptr, OurType::PascalType *dest_type, llvm::Value* src, OurType::PascalType *src_type);
-
-    llvm::Value* genMatch(llvm::Value* dest, OurType::PascalType *dest_type, llvm::Value* src, OurType::PascalType *src_type);
-    
-    llvm::Value* genFuncCall(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
 
     llvm::Value* genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
 
@@ -218,6 +194,9 @@ public:
 
     virtual std::shared_ptr<VisitorResult> VisitASTVarDecl(ASTVarDecl *node);
 
+    CodeBlock *getCurrentBlock(void);
+
+    pair<vector<std::string>, vector<OurType::PascalType *>> getAllLocalVarNameType();
 };
 
-#endif OPC_GENERATOR_H
+#endif //OPC_GENERATOR_H

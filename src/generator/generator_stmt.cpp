@@ -70,7 +70,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIfStmt(ASTIfStmt *node) {
     llvm::BasicBlock *then_block = llvm::BasicBlock::Create(this->context, "if_then", func);
     llvm::BasicBlock *else_block = llvm::BasicBlock::Create(this->context, "if_else", func);
     llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "if_cont", func);
-    auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept());
+    auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
     if (cond_res == nullptr) return nullptr;
     this->builder.CreateCondBr(cond_res->getValue(), then_block, else_block);
     this->builder.SetInsertPoint(then_block);

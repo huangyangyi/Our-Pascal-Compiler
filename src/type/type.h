@@ -21,7 +21,7 @@ namespace OurType {
         };
         TypeGroup tg;
 
-        PascalType(TypeGroup tg) : tg(tg) {}
+        PascalType(TypeGroup tg);
 
         bool isSimple() const;
 
@@ -49,20 +49,14 @@ namespace OurType {
         };
         BasicTypes type;
 
-        BuiltinType(BasicTypes type) : type(type), PascalType(PascalType::TypeGroup::BUILT_IN) {};
+        BuiltinType(BasicTypes type);
     };
 
-    const BuiltinType INT_TYPE_INST(BuiltinType::BasicTypes::INT);
-    const BuiltinType REAL_TYPE_INST(BuiltinType::BasicTypes::REAL);
-    const BuiltinType CHAR_TYPE_INST(BuiltinType::BasicTypes::CHAR);
-    const BuiltinType BOOLEAN_TYPE_INST(BuiltinType::BasicTypes::BOOLEAN);
-    const BuiltinType VOID_TYPE_INST(BuiltinType::BasicTypes::VOID);
-    PascalType *const INT_TYPE = (PascalType *) (&INT_TYPE_INST);
-    PascalType *const REAL_TYPE = (PascalType *) (&REAL_TYPE_INST);
-    PascalType *const CHAR_TYPE = (PascalType *) (&CHAR_TYPE_INST);
-    PascalType *const BOOLEAN_TYPE = (PascalType *) (&BOOLEAN_TYPE_INST);
-    PascalType *const VOID_TYPE = (PascalType *) (&VOID_TYPE_INST);
-
+    extern PascalType *const INT_TYPE;
+    extern PascalType *const REAL_TYPE;
+    extern PascalType *const CHAR_TYPE;
+    extern PascalType *const BOOLEAN_TYPE;
+    extern PascalType *const VOID_TYPE;
 
     class SubRangeType : public PascalType {
     public:

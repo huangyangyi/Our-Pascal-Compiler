@@ -7,8 +7,8 @@ int ASTNode::line() { return this->line_; }
 int ASTNode::col() { return this->col_; }
 
 std::string ASTNode::get_location() {
-    return "line " + string(to_string(this->line_)) + 
-           " , col " + string(to_string(this->col_)) + " : ";
+    return "line " + string(to_string(this->line())) +
+           " , col " + string(to_string(this->col())) + " : ";
 }
 
 void ASTNode::set_location(int line, int col) {

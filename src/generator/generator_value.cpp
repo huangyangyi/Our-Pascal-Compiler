@@ -8,53 +8,51 @@
 
 std::shared_ptr<VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node) {
     llvm::Type *tp;
-    switch (node->getValueType()) {
-        case ASTConstValue::ValueType::INTEGER:
-            tp = llvm::Type::getInt32Ty(this->context);
-            int v_int = atoi(node->getContent().c_str());
-            return std::make_shared<ValueResult>(
-                    OurType::INT_TYPE,
-                    llvm::ConstantInt::get(tp, (uint64_t) v_int, true),
-                    nullptr
-            );
-            break;
-        case ASTConstValue::ValueType::FLOAT:
-            tp = llvm::Type::getDoubleTy(this->context);
-            double v_float = atof(node->getContent().c_str());
-            return std::make_shared<ValueResult>(
-                    OurType::REAL_TYPE,
-                    llvm::ConstantFP::get(tp, v_float),
-                    nullptr
-            );
-            break;
-        case ASTConstValue::ValueType::CHAR:
-            tp = llvm::Type::getInt8Ty(this->context);
-            char v_int = node->getContent()[1];
-            return std::make_shared<ValueResult>(
-                    OurType::CHAR_TYPE,
-                    llvm::ConstantInt::get(tp, (uint64_t) v_int, true),
-                    nullptr
-            );
-            break;
-        case ASTConstValue::ValueType::STRING:
-            llvm::Value *mem_str = this->builder.CreateGlobalString(
-                    node->getContent().substr(1, node->getContent().length() - 2));
-            llvm::Value *v_str = this->builder.CreateLoad(mem_str);
-            return std::make_shared<ValueResult>(
+    if (node->getValueType() == ASTConstValue::ValueType::INTEGER) {
+        tp = llvm::Type::getInt32Ty(this->context);
+        int v_int = atoi(node->getContent().c_str());
+        return std::make_shared<ValueResult>(
+                OurType::INT_TYPE,
+                llvm::ConstantInt::get(tp, (uint64_t) v_int, true),
+                nullptr
+        );
+    }
+    if (node->getValueType() == ASTConstValue::ValueType::FLOAT) {
+        tp = llvm::Type::getDoubleTy(this->context);
+        double v_float = atof(node->getContent().c_str());
+        return std::make_shared<ValueResult>(
+                OurType::REAL_TYPE,
+                llvm::ConstantFP::get(tp, v_float),
+                nullptr
+        );
+    }
+    if (node->getValueType() == ASTConstValue::ValueType::CHAR) {
+        tp = llvm::Type::getInt8Ty(this->context);
+        char v_int = node->getContent()[1];
+        return std::make_shared<ValueResult>(
+                OurType::CHAR_TYPE,
+                llvm::ConstantInt::get(tp, (uint64_t) v_int, true),
+                nullptr
+        );
+    }
+    if (node->getValueType() == ASTConstValue::ValueType::STRING) {
+        llvm::Value *mem_str = this->builder.CreateGlobalString(
+                node->getContent().substr(1, node->getContent().length() - 2));
+        llvm::Value *v_str = this->builder.CreateLoad(mem_str);
+        return std::make_shared<ValueResult>(
                 new OurType::StrType(node->getContent().length() - 2),
-                v_str, 
+                v_str,
                 mem_str
-            );
-            break;
-        case ASTConstValue::ValueType::BOOL:
-            tp = llvm::Type::getInt1Ty(this->context);
-            char v_int = node->getContent()[1];
-            return std::make_shared<ValueResult>(
+        );
+    }
+    if (node->getValueType() == ASTConstValue::ValueType::BOOL) {
+        tp = llvm::Type::getInt1Ty(this->context);
+        char v_int = node->getContent()[1];
+        return std::make_shared<ValueResult>(
                 OurType::BOOLEAN_TYPE,
                 llvm::ConstantInt::get(tp, (uint64_t) v_int, true),
                 nullptr
-            );
-            break;
+        );
     }
     const PascalType *ty = BOOLEAN_TYPE;
     return nullptr;
@@ -72,9 +70,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstExpr(ASTConstExpr *node) 
             /*Type=*/OurType::getLLVMType(this->context, res->getType()),
             /*isConstant=*/true,
             /*Linkage=*/llvm::GlobalValue::CommonLinkage,
-            /*Initializer=*/(llvm::Constant *)res->getValue(), // has initializer, specified below
+            /*Initializer=*/(llvm::Constant *) res->getValue(), // has initializer, specified below
             /*Name=*/node->getId());
-    if (this->block_stack.back()->named_values.count(node->getId())|| this->named_constants.count(node->getId())) {
+    if (this->block_stack.back()->named_values.count(node->getId()) || this->named_constants.count(node->getId())) {
         //error 
     }
     this->named_constants[node->getId()] = (llvm::Constant *) (res->getValue());
@@ -116,9 +114,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
             this->block_stack.back()->named_values[id] = var;
         } else {
             llvm::AllocaInst *var = this->builder.CreateAlloca(
-                ty,
-                nullptr,
-                id
+                    ty,
+                    nullptr,
+                    id
             );
             if (this->block_stack.back()->named_values.count(id)) {
                 //error 
