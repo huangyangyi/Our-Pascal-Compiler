@@ -398,7 +398,7 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 
 {LITERAL_FLOAT} {
     yylval = strdup(yytext);
-    RETURN_TOKEN(LITERAL_FALSE)
+    RETURN_TOKEN(LITERAL_FLOAT)
 }
 
 {LITERAL_CHAR} {

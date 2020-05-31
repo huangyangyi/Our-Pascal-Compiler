@@ -83,7 +83,13 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
         if (!check_arith(l->getType(), r->getType(),ret)) return nullptr; 
     }
     bool is_real = isEqual(ret, REAL_TYPE);
+    if (nowOp == ASTBinaryExpr::Oper::REALDIV)
+        is_real = true;
     auto L = l->getValue(), R = r->getValue();
+    if (is_real){
+        L = this->builder.CreateUIToFP(L, getLLVMType(this->context, REAL_TYPE));
+        R = this->builder.CreateUIToFP(R, getLLVMType(this->context, REAL_TYPE));
+    }
     switch (nowOp)
     {
         case Op(GE):
@@ -129,7 +135,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     return nullptr;
 }
 
-#undef Op(x)
+#undef Op
 
 std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) {
     auto t = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));

@@ -4,6 +4,7 @@
 
 %code requires {
 #include "ast/ast.h"
+#include <iostream>
 }
 
 %{
