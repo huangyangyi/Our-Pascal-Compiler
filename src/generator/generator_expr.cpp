@@ -185,8 +185,17 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstValueExpr(ASTConstValueEx
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
-    auto value_list = std::static_pointer_cast<ValueListResult>(node->getArgList()->Accept(this));
-    auto value_vector = value_list ->getValueList();
+    ASTExpressionList *argList = node->getArgList();
+    std::shared_ptr<ValueListResult> value_list;
+    std::vector<std::shared_ptr<ValueResult>> value_vector;
+    bool have_args = true;
+    if (argList == nullptr) {
+        have_args = false;
+    } else {
+        value_list = std::static_pointer_cast<ValueListResult>(node->getArgList()->Accept(this));
+        value_vector = value_list ->getValueList();
+        have_args = true;
+    }
     for (int i = block_stack.size() - 1; i >= 0; i--){
         std::string func_name = node->getFuncId();
         FuncSign *funcsign = block_stack[i]->find_funcsign(func_name);
@@ -204,7 +213,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         auto var_list = funcsign->getVarList();
         auto return_type = funcsign->getReturnType();
         llvm::Function *callee = block_stack[i]->find_function(func_name);
-        vector<llvm::Value*> parameters;
+        std::vector<llvm::Value*> parameters;
 
         // adding local variables
         // in generator_program.cpp, we define all locals at the head of the para list
@@ -247,6 +256,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         } 
         return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters));//, "call_"+ node->getFuncId()
     }
+    // Currently, sys_function will use no local variables that has cascade relation
+    // So we do not need to deal with the locals and do it simply
     if (isSysFunc(node->getFuncId())) {
         return std::make_shared<ValueResult>(OurType::VOID_TYPE, genSysFunc(node->getFuncId(), value_vector));
     }
@@ -267,9 +278,17 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
         std::cerr << "Get global named value: " << name << std::endl;
         return std::make_shared<ValueResult>(this->block_stack[0]->named_types[name], value, mem);
     } else {
-        
+        std::cerr << "start calling no arg func : " << name << std::endl;
+        ASTFuncCall *func_call = new ASTFuncCall(name, nullptr);
+        auto ret = func_call->Accept(this);
+        std::cerr << "finish calling no arg func : " << name << " , return " << (ret == nullptr ? "is" : "is not") << " nullptr" << std::endl;
+        if (ret == nullptr) {
+            std::cerr << node->get_location() << name << " is neither a variable nor a no-arg function. Cannot get named value: " << name << std::endl;
+            return nullptr;
+        } else {
+            return ret;
+        }
     }
-    std::cerr << "Cannot get named value: " << name << std::endl;
     return nullptr;
 }
 

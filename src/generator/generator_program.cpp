@@ -49,7 +49,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
     auto parameters = std::static_pointer_cast<TypeListResult>(
         is_function ? ((ASTFunctionDecl*)node)->getFunctionHead()->getParameters()->Accept(this)
                     : ((ASTProcedureDecl*)node)->getProcedureHead()->getParameters()->Accept(this));
+
     if (parameters == nullptr) return nullptr;
+
     OurType::PascalType *return_type = OurType::VOID_TYPE;
     std::string func_name;
     if (is_function){
@@ -89,7 +91,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         var_list.push_back(type->is_var());
         llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, type->getType())));
     }
-
+    
     FuncSign *funcsign = new FuncSign((int)(local_name_list.size()), name_list, type_list, var_list, return_type);
     llvm::FunctionType *functionType = llvm::FunctionType::get(llvm_return_type, llvm_type_list, false);
     llvm::Function *function = llvm::Function::Create(functionType, llvm::GlobalValue::ExternalLinkage, func_name, module.get());
@@ -106,7 +108,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
     for(llvm::Function::arg_iterator arg_it = function->arg_begin(); arg_it != function->arg_end(); arg_it++, iter_i++) {
         if (var_list[iter_i]) {
             this->getCurrentBlock()->named_values[name_list[iter_i]] = (llvm::Value *)arg_it;
-            this->getCurrentBlock()->named_types[name_list[iter_i]] = type_list[iter_i];
+            if (iter_i >= local_name_list.size())
+                this->getCurrentBlock()->named_types[name_list[iter_i]] = type_list[iter_i];
             std::cout << "Inserted var param " << name_list[iter_i] << std::endl;
         } else {
             llvm::Value *value = this->builder.CreateLoad((llvm::Value *)arg_it);
@@ -117,7 +120,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
             );
             this->builder.CreateStore(value, mem);
             this->getCurrentBlock()->named_values[name_list[iter_i]] = mem;
-            this->getCurrentBlock()->named_types[name_list[iter_i]] = type_list[iter_i];
+            if (iter_i >= local_name_list.size())
+                this->getCurrentBlock()->named_types[name_list[iter_i]] = type_list[iter_i];
             std::cout << "Inserted val param " << name_list[iter_i] << std::endl;
         }
     }    
