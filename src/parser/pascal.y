@@ -312,6 +312,10 @@ TYPE:
         $$ = new ASTType(ASTType::TypeName::REAL);
         SET_LOCATION($$);
     }
+    | TYPE_STRING {
+        $$ = new ASTType(ASTType::TypeName::STRING);
+        SET_LOCATION($$);
+    }
 ;
 
 simple_type_decl:

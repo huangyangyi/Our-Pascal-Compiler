@@ -261,7 +261,27 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
             }
             cur++;
         } 
-        return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters));//, "call_"+ node->getFuncId()
+        auto ret = builder.CreateCall(callee, parameters);
+        if (funcsign->getReturnType()->tg == OurType::PascalType::TypeGroup::STR) {
+            // to return a str type for writeln to print
+            // we have to use its pointer
+            // to achieve this, we add a never used variable here
+            // we do this shit only to the str type return value
+            // VERY BAD CODING STYLE
+            // NEED TO BE MODIFIED ASAP 
+            this->temp_variable_count++;
+            std::cout << ((OurType::StrType *)funcsign->getReturnType())->dim << std::endl;
+            llvm::AllocaInst *mem = this->builder.CreateAlloca(
+                OurType::getLLVMType(this->context, funcsign->getReturnType()),
+                nullptr,
+                "0_" + func_name + std::to_string(this->temp_variable_count)
+            );
+            this->builder.CreateStore(ret, mem);
+            llvm::Value *value = this->builder.CreateLoad(mem);
+            return std::make_shared<ValueResult>(funcsign->getReturnType(), value, mem); //, ret->getPointerOperand()); //, "call_"+ node->getFuncId()
+        } else {
+            return std::make_shared<ValueResult>(funcsign->getReturnType(), ret);   
+        }
     }
     // Currently, sys_function will use no local variables that has cascade relation
     // So we do not need to deal with the locals and do it simply
