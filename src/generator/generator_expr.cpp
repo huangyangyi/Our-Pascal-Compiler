@@ -6,6 +6,7 @@
 #include <llvm/IR/Function.h>
 #include <iostream>
 #include <stdint.h>
+#include <llvm/Support/Casting.h>
 
 using namespace OurType;
 
@@ -300,7 +301,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) 
     if (!isEqual(index->getType(), array_type->element_type)) return nullptr;
 
     auto offset = this->builder.CreateSub(index->getValue(), array_type->getLLVMLow(this->context), "subtmp");
-    llvm::Value *mem = builder.CreateGEP(array->getMem(), offset, "ArrayCall");
+    std::vector<llvm::Value*> offset_vec;
+    offset_vec.push_back(llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->context), 0));
+    offset_vec.push_back(offset);
+    llvm::Value *mem = builder.CreateGEP( array->getMem(), offset_vec, "ArrayCall");
     llvm::Value *value = this->builder.CreateLoad(mem);
     return std::make_shared<ValueResult>(array_type->element_type, value, mem);
 }

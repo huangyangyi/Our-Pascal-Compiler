@@ -25,15 +25,15 @@ std::shared_ptr<VisitorResult> Generator::VisitASTStmtList(ASTStmtList *node) {
 }
 
 void Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Value* src, PascalType *src_type) {
-    if (!isEqual(dest_type, src_type)) {
-        //Type conversions
-        if (src_type->isIntegerTy() && dest_type->isFloatingPointTy()) {
-            src = this->builder.CreateSIToFP(src, llvm::Type::getFloatTy(this->context));
-            this->builder.CreateStore(src, dest_ptr);
+    if (dest_type->isSimple()) {
+        if (!isEqual(dest_type, src_type)) {
+            //Type conversions
+            if (src_type->isIntegerTy() && dest_type->isFloatingPointTy()) {
+                src = this->builder.CreateSIToFP(src, llvm::Type::getFloatTy(this->context));
+                this->builder.CreateStore(src, dest_ptr);
+            }
         }
-    }
-    else if (dest_type->isSimple()) {
-        this->builder.CreateStore(src, dest_ptr);
+        else this->builder.CreateStore(src, dest_ptr);
     }
     else if (dest_type->isStringTy()) {
         this->builder.CreateStore(src, dest_ptr);
