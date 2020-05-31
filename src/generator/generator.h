@@ -198,6 +198,8 @@ public:
     CodeBlock *getCurrentBlock(void);
 
     pair<vector<std::string>, vector<OurType::PascalType *>> getAllLocalVarNameType();
+
+    OurType::PascalType *getVarType(std::string id);
 };
 
 #endif //OPC_GENERATOR_H

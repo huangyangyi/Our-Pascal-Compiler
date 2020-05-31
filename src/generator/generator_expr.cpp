@@ -271,7 +271,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
         llvm::Value *mem = this->getCurrentBlock()->named_values[name];
         llvm::Value *value = this->builder.CreateLoad(mem);
         std::cerr << "Get local named value: " << name << std::endl;
-        return std::make_shared<ValueResult>(this->getCurrentBlock()->named_types[name], value, mem);
+        return std::make_shared<ValueResult>(this->getVarType(name), value, mem);
     } else if (this->block_stack[0]->isValue(name)){
         llvm::Value *mem = this->block_stack[0]->named_values[name];
         llvm::Value *value = this->builder.CreateLoad(mem);

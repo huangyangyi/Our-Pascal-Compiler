@@ -60,3 +60,16 @@ std::pair<std::vector<std::string>, std::vector<OurType::PascalType *> > Generat
     }
     return std::make_pair(name_list, type_list);
 }
+
+OurType::PascalType *Generator::getVarType(std::string id) {
+    if (!this->getCurrentBlock()->isValue(id) && !this->block_stack[0]->isValue(id)) {
+        std::cout << "variable not found, return nullptr" << std::endl;
+        return nullptr;
+    }
+    for(int i = this->block_stack.size()-1; i >= 0; i--) {
+        if (this->block_stack[i]->isType(id, true)) {
+            return this->block_stack[i]->named_types[id];
+        }
+    }
+    return nullptr;
+}
