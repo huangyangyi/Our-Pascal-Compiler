@@ -66,11 +66,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     auto r = std::static_pointer_cast<ValueResult>(node->getRExpr()->Accept(this));
     if (l == nullptr || r == nullptr)
         return nullptr;       
-         //The error has been reported in the sub-node, so we just return.
+        //The error has been reported in the sub-node, so we just return.
     
     //semantic check
-    //TODO: Should report the error message.
-    
     ASTBinaryExpr::Oper nowOp = node->getOp();
     PascalType *ret = nullptr;
     if (nowOp == Op(GE) || nowOp == Op(GT) || nowOp == Op(LE) || nowOp == Op(LT) || nowOp == Op(EQUAL) || nowOp == Op(UNEQUAL)){
