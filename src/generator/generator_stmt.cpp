@@ -107,13 +107,17 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRepeatStmt(ASTRepeatStmt *node
     this->builder.SetInsertPoint(cond_block);
 
     auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
+    std::cout << "Fuck1" << std::endl;
     if (cond_res == nullptr) return nullptr;
+    std::cout << "Fuck2" << std::endl;
     if (!cond_res->getValue()->getType()->isIntegerTy(1)) {
+        std::cout << "Fuck3" << std::endl;
         //ERROR: Not boolean expression
     };
 
     this->builder.CreateCondBr(cond_res->getValue(), cont_block, body_block);
     this->builder.SetInsertPoint(cont_block);
+
 
     return nullptr;
 }
