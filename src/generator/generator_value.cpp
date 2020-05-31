@@ -19,8 +19,11 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node
         );
     }
     if (node->getValueType() == ASTConstValue::ValueType::FLOAT) {
+        
         tp = llvm::Type::getDoubleTy(this->context);
+        
         double v_float = atof(node->getContent().c_str());
+        std::cout << v_float << std::endl;
         return std::make_shared<ValueResult>(
                 OurType::REAL_TYPE,
                 llvm::ConstantFP::get(tp, v_float),

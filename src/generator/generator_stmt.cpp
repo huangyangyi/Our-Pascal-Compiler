@@ -102,22 +102,19 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRepeatStmt(ASTRepeatStmt *node
     this->builder.SetInsertPoint(body_block);
 
     node->getStmtList()->Accept(this);
+    std::cout << 1 << std::endl;
 
     this->builder.CreateBr(cond_block);
     this->builder.SetInsertPoint(cond_block);
-
     auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
-    std::cout << "Fuck1" << std::endl;
     if (cond_res == nullptr) return nullptr;
-    std::cout << "Fuck2" << std::endl;
     if (!cond_res->getValue()->getType()->isIntegerTy(1)) {
-        std::cout << "Fuck3" << std::endl;
+        //std::cout << "Fuck3" << std::endl;
         //ERROR: Not boolean expression
     };
 
     this->builder.CreateCondBr(cond_res->getValue(), cont_block, body_block);
     this->builder.SetInsertPoint(cont_block);
-
 
     return nullptr;
 }
@@ -133,6 +130,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTWhileStmt(ASTWhileStmt *node) 
 
     auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
     if (cond_res == nullptr) return nullptr;
+    
     this->builder.CreateCondBr(cond_res->getValue(), body_block, end_block);
     this->builder.SetInsertPoint(body_block);
     node->getStmt()->Accept(this);
@@ -169,7 +167,6 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     auto ast_const_value = new ASTConstValue(step, ASTConstValue::ValueType::INTEGER);
     auto ast_const_value_expr = new ASTConstValueExpr(ast_const_value);
     auto ast_step_add = new ASTBinaryExpr(ASTBinaryExpr::Oper::PLUS, ast_id_expr, ast_const_value_expr);
-
 
     auto ast_step_cmp = new ASTBinaryExpr(
         node->getDir() == ASTForStmt::ForDir::TO ? ASTBinaryExpr::Oper::GT : ASTBinaryExpr::Oper::LT,

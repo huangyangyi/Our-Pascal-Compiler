@@ -11,6 +11,10 @@ std::string ASTNode::get_location() {
            " , col " + string(to_string(this->col())) + " : ";
 }
 
+std::pair<int, int> ASTNode::get_location_pairs(){
+    return std::make_pair(this->line(), this->col());
+}
+
 void ASTNode::set_location(int line, int col) {
     this->line_ = line;
     this->col_ = col;
