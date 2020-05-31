@@ -183,7 +183,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTPropExpr(ASTPropExpr *node) {
                                           llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), bias, true)};
     
     llvm::Value *mem = builder.CreateGEP(val->getMem(), gep_vec, "record_field");
-    llvm::Value *ret; this->builder.CreateLoad(ret, mem);
+    llvm::Value *ret = this->builder.CreateLoad(mem);
     return std::make_shared<ValueResult>(type_vec[bias], ret, mem);
 }
 

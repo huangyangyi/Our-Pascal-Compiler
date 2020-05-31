@@ -12,7 +12,7 @@ using namespace std;
 string input_fname = "";
 string output_dot_fname = "";
 string output_ll_fname = "";
-bool gen_graph = false;
+bool gen_graph = true;
 bool gen_ir = true;
 
 void parse_arg(int argc, char *argv[]) {
@@ -52,7 +52,7 @@ void parse_arg(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     parse_arg(argc - 1, argv + 1);
-    //input_fname = "array_assign.pas";
+    //input_fname = "test_record_basic.pas";
     //input_fname = "func.pas";
     if (input_fname.substr(input_fname.length() - 4, 4).compare(".pas") != 0) {
         cerr << "invalid input file name: " << input_fname << std::endl
