@@ -22,7 +22,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRoutineBody(ASTRoutineBody *no
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {
     node->getRoutineHead()->Accept(this);
-    //std::cout << "program head ok!!" << std::endl;
+    std::cout << "routine_head ready" << std::endl;
     node->getRoutineBody()->Accept(this);
     return nullptr;
 }

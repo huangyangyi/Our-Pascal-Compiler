@@ -273,6 +273,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
 
 std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
     std::string name = node->getId();
+    //std::cout << "ID : " << name << std::endl;
     if (this->getCurrentBlock()->isValue(name)){
         llvm::Value *mem = this->getCurrentBlock()->named_values[name];
         llvm::Value *value = this->builder.CreateLoad(mem);
@@ -284,10 +285,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
         std::cerr << "Get global named value: " << name << std::endl;
         return std::make_shared<ValueResult>(this->block_stack[0]->named_types[name], value, mem);
     } else {
-        std::cerr << "start calling no arg func : " << name << std::endl;
+        std::cout << "start calling no arg func : " << name << std::endl;
         ASTFuncCall *func_call = new ASTFuncCall(name, nullptr);
         auto ret = func_call->Accept(this);
-        std::cerr << "finish calling no arg func : " << name << " , return " << (ret == nullptr ? "is" : "is not") << " nullptr" << std::endl;
+        std::cout << "finish calling no arg func : " << name << " , return " << (ret == nullptr ? "is" : "is not") << " nullptr" << std::endl;
         if (ret == nullptr) {
             std::cerr << node->get_location() << name << " is neither a variable nor a no-arg function. Cannot get named value: " << name << std::endl;
             return nullptr;

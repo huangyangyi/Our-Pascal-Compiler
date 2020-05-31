@@ -49,6 +49,7 @@ void Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Va
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTAssignStmt(ASTAssignStmt *node) {
+    std::cout << "assign!" << std::endl;
     auto left = std::static_pointer_cast<ValueResult>(node->getExpr1()->Accept(this));
     auto right = std::static_pointer_cast<ValueResult>(node->getExpr2()->Accept(this));
     if (left == nullptr || right == nullptr) return nullptr;
