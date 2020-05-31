@@ -97,7 +97,8 @@ namespace OurType {
 
             ArrayType *array = (ArrayType *) p_type;
             llvm::ArrayType *ret = nullptr;
-            int len = array->range.second - array->range.first;
+            int len = array->range.second - array->range.first + 1;
+            std::cout << "creating array of length " <<len << std::endl;
             ret = llvm::ArrayType::get(getLLVMType(context, array->element_type), (uint64_t) len);
             return ret;
 
