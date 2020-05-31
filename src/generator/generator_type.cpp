@@ -95,10 +95,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
         return std::make_shared<TypeResult>(range);
 
     } else if (node->my_type == ASTSimpleTypeDecl::MyType::ENUM) {
-        std::shared_ptr<NameListResult> list_ret;
+        std::shared_ptr<NameList> list_ret;
         std::vector<std::string> name_list;
-        if (list_ret = std::static_pointer_cast<NameListResult>(node->name_list->Accept(this))) {
-            name_list = list_ret->getNameList()->GetIdentifierList();
+        if (list_ret = std::static_pointer_cast<NameList>(node->name_list->Accept(this))) {
+            name_list = list_ret->getNameList();
         } else {
             std::cout << node->get_location() << " not a name list." << endl;
         }
@@ -139,10 +139,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTArrayTypeDecl(ASTArrayTypeDecl
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFieldDecl(ASTFieldDecl *node) {
-    std::shared_ptr<NameListResult> list_ret;
+    std::shared_ptr<NameList> list_ret;
     std::vector<std::string> name_list;
-    if (list_ret = std::static_pointer_cast<NameListResult>(node->getNameList()->Accept(this))) {
-        name_list = list_ret->getNameList()->GetIdentifierList();
+    if (list_ret = std::static_pointer_cast<NameList>(node->getNameList()->Accept(this))) {
+        name_list = list_ret->getNameList();
     } else {
         std::cout << node->get_location() << " not a name list." << endl;
     }
@@ -184,7 +184,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRecordTypeDecl(ASTRecordTypeDe
         std::vector<OurType::PascalType *> type_vec;
         for(auto tdr : decls->getTypeDeclList()) {
             OurType::PascalType *type = tdr->getType();
-            for(auto attr_name : tdr->getNameList()->GetIdentifierList()) {
+            for(auto attr_name : tdr->getNameList()) {
                 name_vec.push_back(attr_name);
                 type_vec.push_back(type);
             }

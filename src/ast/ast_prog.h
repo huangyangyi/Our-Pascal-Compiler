@@ -243,7 +243,7 @@ class ASTParameters : public ASTNode {
 
 class ASTParaDeclList : public ASTNode {
 public:
-    ASTParaDeclList(ASTParaTypeList *);
+    ASTParaDeclList();
 
     void addParaTypeList(ASTParaTypeList *);
 

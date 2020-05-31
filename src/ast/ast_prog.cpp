@@ -137,9 +137,8 @@ void ASTParameters::Print(GraphGenerator* g) {
 }
 */
 
-ASTParaDeclList::ASTParaDeclList(ASTParaTypeList *para_type_list) {
+ASTParaDeclList::ASTParaDeclList() {
     this->para_decl_list.clear();
-    this->para_decl_list.push_back(para_type_list);
 }
 
 void ASTParaDeclList::addParaTypeList(ASTParaTypeList *para_type_list) {

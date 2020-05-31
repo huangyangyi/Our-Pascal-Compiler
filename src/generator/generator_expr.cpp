@@ -12,17 +12,22 @@ using namespace OurType;
 std::shared_ptr<VisitorResult> Generator::VisitASTExpressionList(ASTExpressionList *node) {
     auto expr_list = node->getExprList();
     std::vector<std::shared_ptr<ValueResult>> ret;
+    int cnt = 0;
     for (auto expr_node: expr_list){
         auto val = static_pointer_cast<ValueResult>(expr_node->Accept(this));
-        if (val == nullptr) return nullptr;
+        if (val == nullptr) {
+            std::cerr << "meet nullptr at VisitASTExpressionList! at parameter: " << cnt << std::endl;
+            return nullptr;
+        }
         ret.push_back(val);
+        cnt++;
     }
     return std::make_shared<ValueListResult>(ret);
 }
 
 #define Op(x) ASTBinaryExpr::Oper::x
 
-bool check_arith(PascalType *l, PascalType *r, PascalType *ret){
+bool check_arith(PascalType *l, PascalType *r, PascalType *&ret){
     if (!l->isSimple() || !r->isSimple()) return false;
     // Don't consider the string temporarily.
     if (isEqual(l, BOOLEAN_TYPE) || isEqual(r, BOOLEAN_TYPE)) return false;
@@ -39,7 +44,7 @@ bool check_arith(PascalType *l, PascalType *r, PascalType *ret){
 bool check_logic(PascalType *l, PascalType *r){
     return isEqual(l, BOOLEAN_TYPE) && isEqual(r, BOOLEAN_TYPE);
 }
-bool check_cmp(PascalType *l, PascalType *r, PascalType *ret) {
+bool check_cmp(PascalType *l, PascalType *r, PascalType *&ret) {
     if (!l->isSimple() || !r->isSimple()) return false;
     // Don't consider the string temporarily.
     ret = l;
@@ -180,7 +185,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstValueExpr(ASTConstValueEx
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
-    auto value_vector = std::static_pointer_cast<ValueListResult>(node->getArgList()->Accept(this))->getValueList();
+    auto value_list = std::static_pointer_cast<ValueListResult>(node->getArgList()->Accept(this));
+    auto value_vector = value_list ->getValueList();
     for (int i = block_stack.size() - 1; i >= 0; i--){
         std::string func_name = node->getFuncId();
         FuncSign *funcsign = block_stack[i]->find_funcsign(func_name);
@@ -234,12 +240,12 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
                     nullptr, 
                     "0_" + std::to_string(this->temp_variable_count)
                 );
-                this->builder.CreateLoad(value->getValue(), mem);
+                this->builder.CreateStore(value->getValue(), mem);
                 parameters.push_back(mem);
             }
             cur++;
         } 
-        return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters, "calltmp"));
+        return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters));//, "call_"+ node->getFuncId()
     }
     if (isSysFunc(node->getFuncId())) {
         return std::make_shared<ValueResult>(OurType::VOID_TYPE, genSysFunc(node->getFuncId(), value_vector));
@@ -253,13 +259,16 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
     if (this->getCurrentBlock()->isValue(name)){
         llvm::Value *mem = this->getCurrentBlock()->named_values[name];
         llvm::Value *value = this->builder.CreateLoad(mem);
+        std::cerr << "Get local named value: " << name << std::endl;
         return std::make_shared<ValueResult>(this->getCurrentBlock()->named_types[name], value, mem);
     }
     if (this->block_stack[0]->isValue(name)){
         llvm::Value *mem = this->block_stack[0]->named_values[name];
         llvm::Value *value = this->builder.CreateLoad(mem);
+        std::cerr << "Get global named value: " << name << std::endl;
         return std::make_shared<ValueResult>(this->block_stack[0]->named_types[name], value, mem);
     }
+    std::cerr << "Cannot get named value: " << name << std::endl;
     return nullptr;
 }
 

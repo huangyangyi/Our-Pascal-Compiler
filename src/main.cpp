@@ -51,8 +51,8 @@ void parse_arg(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    parse_arg(argc - 1, argv + 1);
-    //input_fname = "hanoi.pas";
+    //parse_arg(argc - 1, argv + 1);
+    input_fname = "hanoi.pas";
     if (input_fname.substr(input_fname.length() - 4, 4).compare(".pas") != 0) {
         cerr << "invalid input file name: " << input_fname << std::endl
              << "please use .pas file!" << std::endl;
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
         std::cout << "new!" << std::endl;
         ast_root->Accept(gen);
         std::cout << "accept!" << std::endl;
-        if (output_ll_fname == "") output_ll_fname = input_fname + ".dot";
+        if (output_ll_fname == "") output_ll_fname = input_fname + ".ll";
         gen->Save(output_ll_fname);
         delete gen;
     }

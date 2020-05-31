@@ -480,7 +480,7 @@ parameters:
         SET_LOCATION($$);
     }
     | %empty {
-        $$ = nullptr;
+        $$ = new ASTParaDeclList();
     }
 ;
 
@@ -491,7 +491,8 @@ para_decl_list:
         SET_LOCATION($$);
     }
     | para_type_list {
-        $$ = new ASTParaDeclList($1);
+        $$ = new ASTParaDeclList();
+        $$->addParaTypeList($1);
         SET_LOCATION($$);
     }
 ;
@@ -531,14 +532,11 @@ compound_stmt:
 stmt_list:
     stmt_list stmt SYM_SEMICOLON{
         $$ = $1;
-        if ($$ == nullptr)
-            $$ = new ASTStmtList($2);
-        else
-            $$->addStmt($2);
+        $$->addStmt($2);
         SET_LOCATION($$);
     }
     | %empty{
-        $$ = nullptr;
+        $$ = new ASTStmtList();
     }
 ;
 

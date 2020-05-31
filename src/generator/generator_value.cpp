@@ -98,7 +98,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTVarDeclList(ASTVarDeclList *no
 std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
     auto res = std::static_pointer_cast<TypeResult>(node->getTypeDecl()->Accept(this));
     auto name_list = std::static_pointer_cast<NameList>(node->getNameList()->Accept(this));
-    for (auto id: name_list->get_list()) {
+    for (auto id: name_list->getNameList()) {
         llvm::Type *ty = OurType::getLLVMType(this->context, res->getType());
         if (this->block_stack.size() == 1) {
             llvm::GlobalVariable *var = new llvm::GlobalVariable(
@@ -112,6 +112,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
                 //error 
             }
             this->block_stack.back()->named_values[id] = var;
+            this->block_stack.back()->named_types[id] = res->getType();
         } else {
             llvm::AllocaInst *var = this->builder.CreateAlloca(
                     ty,
@@ -122,6 +123,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
                 //error 
             }
             this->block_stack.back()->named_values[id] = var;
+            this->block_stack.back()->named_types[id] = res->getType();
         }
     }
 

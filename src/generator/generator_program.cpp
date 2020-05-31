@@ -1,6 +1,7 @@
 #include "generator.h"
 #include "../ast/ast_prog.h"
 #include "generator_result.hpp"
+#include <iostream>
 
 std::shared_ptr<VisitorResult> Generator::VisitASTProgramHead(ASTProgramHead *node) {
     //do nothing
@@ -8,10 +9,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTProgramHead(ASTProgramHead *no
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutineHead(ASTRoutineHead *node) {
-    node->getConstPart()->Accept(this);
-    node->getTypePart()->Accept(this);
-    node->getVarPart()->Accept(this);
-    node->getRoutinePart()->Accept(this);
+    if (node->getConstPart()) node->getConstPart()->Accept(this);
+    if (node->getTypePart()) node->getTypePart()->Accept(this);
+    if (node->getVarPart()) node->getVarPart()->Accept(this);
+    if (node->getRoutinePart()) node->getRoutinePart()->Accept(this);
     return nullptr;
 }
 
@@ -100,9 +101,11 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
     // MODIFY PARAMETERS PASSING
     block_stack.push_back(new CodeBlock());
     int iter_i = 0;
-    for(llvm::Function::arg_iterator arg_it = function->arg_begin(); arg_it != function->arg_end(); arg_it++) {
+    for(llvm::Function::arg_iterator arg_it = function->arg_begin(); arg_it != function->arg_end(); arg_it++, iter_i++) {
         if (var_list[iter_i]) {
             this->getCurrentBlock()->named_values[name_list[iter_i]] = (llvm::Value *)arg_it;
+            this->getCurrentBlock()->named_types[name_list[iter_i]] = type_list[iter_i];
+            std::cout << "Inserted var param " << name_list[iter_i] << std::endl;
         } else {
             llvm::Value *value = this->builder.CreateLoad((llvm::Value *)arg_it);
             llvm::AllocaInst *mem = this->builder.CreateAlloca(
@@ -112,6 +115,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
             );
             this->builder.CreateStore(value, mem);
             this->getCurrentBlock()->named_values[name_list[iter_i]] = mem;
+            this->getCurrentBlock()->named_types[name_list[iter_i]] = type_list[iter_i];
+            std::cout << "Inserted val param " << name_list[iter_i] << std::endl;
         }
     }    
     
@@ -159,7 +164,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTParaTypeList(ASTParaTypeList *
     else
         list = ((ASTValParaList*)(node->getParaList()))->Accept(this);
     
-    auto name_list = std::static_pointer_cast<NameListResult>(list)->getNameList()->GetIdentifierList();
+    auto name_list = std::static_pointer_cast<NameList>(list)->getNameList();
     auto type_value = std::static_pointer_cast<TypeResult>(node->getSimpleTypeDecl()->Accept(this));
     if (node->getParaList()->isVar())
         type_value->setIsVar(true);
@@ -168,9 +173,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTParaTypeList(ASTParaTypeList *
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTVarParaList(ASTVarParaList *node) {
-    return std::make_shared<NameListResult>(node->getNameList());
+    return node->getNameList()->Accept(this);
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTValParaList(ASTValParaList *node) {
-    return std::make_shared<NameListResult>(node->getNameList());
+    return node->getNameList()->Accept(this);
 }

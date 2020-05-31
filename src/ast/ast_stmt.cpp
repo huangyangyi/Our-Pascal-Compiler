@@ -3,9 +3,8 @@
 
 #include <sstream>
 
-ASTStmtList::ASTStmtList(ASTStmt *stmt) {
+ASTStmtList::ASTStmtList() {
     stmt_list.clear();
-    stmt_list.push_back(stmt);
 }
 
 void ASTStmtList::addStmt(ASTStmt *stmt) { stmt_list.push_back(stmt); }

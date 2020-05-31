@@ -60,7 +60,7 @@ public:
 
 class ASTStmtList : public ASTNonLabelStmt {
 public:
-    ASTStmtList(ASTStmt *);
+    ASTStmtList();
 
     void addStmt(ASTStmt *);
 

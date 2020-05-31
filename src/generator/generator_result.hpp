@@ -17,7 +17,7 @@ public:
 
     ~NameList() = default;
 
-    const std::vector<std::string> &get_list() const { return this->list_; };
+    const std::vector<std::string> &getNameList() const { return this->list_; };
 private:
     std::vector<std::string> list_;
 };
@@ -69,19 +69,6 @@ private:
     std::vector<std::shared_ptr<ValueResult> > value_list_;
 };
 
-class NameListResult : public VisitorResult {
-public:
-    NameListResult(ASTNameList *ast_name_list, bool is_var = false) : ast_name_list_(ast_name_list), is_var_(is_var){}
-
-    ~NameListResult() = default;
-
-    ASTNameList *getNameList() const { return this->ast_name_list_; }
-    bool is_var(){return is_var_;}
-private:
-    ASTNameList *ast_name_list_;
-    bool is_var_;
-};
-
 class TypeResult : public VisitorResult {
 public:
     TypeResult(OurType::PascalType *type, bool is_var = false) :type_(type), is_var_(is_var){}
@@ -101,8 +88,8 @@ class TypeListResult : public VisitorResult {
 public:
     TypeListResult(std::vector<std::shared_ptr<TypeResult> > type_list, std::vector<std::string> name_list) 
         :type_list_(type_list), name_list_(name_list){}
-    std::vector<std::shared_ptr<TypeResult> > getTypeList() {return type_list_;}
-    std::vector<std::string> getNameList(){return name_list_;}
+    const std::vector<std::shared_ptr<TypeResult>> &getTypeList() {return type_list_;}
+    const std::vector<std::string> &getNameList(){return name_list_;}
 private:
     std::vector<std::shared_ptr<TypeResult> >type_list_;
     std::vector<std::string> name_list_;
@@ -110,13 +97,13 @@ private:
 
 class TypeDeclResult : public VisitorResult {
 public:    
-    TypeDeclResult(ASTNameList *nl, OurType::PascalType *type):
-        ast_name_list(nl), type_(type) {}
-    ASTNameList *getNameList(void) { return this->ast_name_list; }
+    TypeDeclResult(std::vector<std::string> nl, OurType::PascalType *type):
+        name_list(nl), type_(type) {}
+    const std::vector<std::string> &getNameList(void) { return this->name_list; }
     OurType::PascalType *getType(void) { return this->type_; }
 
 private:
-    ASTNameList *ast_name_list;
+    std::vector<std::string> name_list;
     OurType::PascalType *type_;
 };
 
