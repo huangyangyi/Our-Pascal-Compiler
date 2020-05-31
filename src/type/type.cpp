@@ -78,7 +78,7 @@ namespace OurType {
             if (isEqual(p_type, INT_TYPE))
                 return llvm::Type::getInt32Ty(context);
             else if (isEqual(p_type, REAL_TYPE))
-                return llvm::Type::getFloatTy(context);
+                return llvm::Type::getDoubleTy(context);
             else if (isEqual(p_type, CHAR_TYPE))
                 return llvm::Type::getInt8Ty(context);
             else if (isEqual(p_type, BOOLEAN_TYPE))
