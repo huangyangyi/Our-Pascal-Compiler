@@ -51,9 +51,9 @@ void parse_arg(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    parse_arg(argc - 1, argv + 1);
-    //input_fname = "test_record_basic.pas";
-    //input_fname = "func.pas";
+    //parse_arg(argc - 1, argv + 1);
+    input_fname = "cell.pas";
+    //input_fname = "record.pas";
     if (input_fname.substr(input_fname.length() - 4, 4).compare(".pas") != 0) {
         cerr << "invalid input file name: " << input_fname << std::endl
              << "please use .pas file!" << std::endl;
@@ -95,7 +95,12 @@ int main(int argc, char *argv[]) {
         std::cout << "accept!" << std::endl;
         if (output_ll_fname == "") output_ll_fname = input_fname + ".ll";
         system(("rm "+output_ll_fname).c_str());
-        gen->Save(output_ll_fname);
+        if (gen->hasError()){
+            std::cout << "Compiling Error!" << std::endl;
+            gen->printError();
+        }
+        else
+            gen->Save(output_ll_fname);
         delete gen;
     }
     return 0;

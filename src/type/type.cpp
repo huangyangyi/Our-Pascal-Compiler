@@ -67,6 +67,7 @@ namespace OurType {
     }
 
     bool isEqual(const PascalType *const a, const PascalType *const b) {
+        if (a == nullptr || b == nullptr) return false; 
         if (a->tg != b->tg) return false;
         if (a->tg == PascalType::TypeGroup::BUILT_IN)
             return ((BuiltinType *) a)->type == ((BuiltinType *) b)->type;

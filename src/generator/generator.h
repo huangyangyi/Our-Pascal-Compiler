@@ -74,7 +74,10 @@ public:
     std::unique_ptr<llvm::Module> module;
     std::vector<CodeBlock*> block_stack;
     std::map<std::string, llvm::Constant*> named_constants;
+    std::vector<std::string> error_message;
+    std::vector<std::pair<int, int> > error_position;
     friend class OurType::EnumType;
+
 public:
     Generator();
 
@@ -86,7 +89,12 @@ public:
 
     llvm::Value* genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
 
+    std::shared_ptr<VisitorResult> RecordErrorMessage(std::string cur_error_message, std::pair<int, int> location = std::make_pair(-1, -1));
 
+    bool hasError();
+
+    void printError();
+    
     bool isSysFunc(std::string id);
 
     virtual std::shared_ptr<VisitorResult> VisitASTNode(ASTNode *node);
