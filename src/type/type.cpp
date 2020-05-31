@@ -70,6 +70,8 @@ namespace OurType {
         if (a->tg != b->tg) return false;
         if (a->tg == PascalType::TypeGroup::BUILT_IN)
             return ((BuiltinType *) a)->type == ((BuiltinType *) b)->type;
+        else
+            return true;
     }
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context, PascalType *const p_type) {
