@@ -22,7 +22,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRoutineBody(ASTRoutineBody *no
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {
     node->getRoutineHead()->Accept(this);
-    //std::cout << "program head ok!!" << std::endl;
+    std::cout << "routine_head ready" << std::endl;
     node->getRoutineBody()->Accept(this);
     return nullptr;
 }
@@ -154,6 +154,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
 
     this->builder.SetInsertPoint(oldBlock);
     this->block_stack.pop_back();
+    return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFunctionHead(ASTFunctionHead *node) {
