@@ -26,9 +26,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
     } else if (node->my_type == ASTSimpleTypeDecl::MyType::DEFINED_ID) {
         PascalType *ret = nullptr;
         
-        // cannot be an variable
         if (this->getCurrentBlock()->named_values.count(node->defined_id) > 0) {
-            return nullptr;
+            return RecordErrorMessage("The variable " + node->defined_id + " Can not be defined again.", node->get_location_pairs());
         }
 
         for (int i = this->block_stack.size()-1; i >= 0; i--) {

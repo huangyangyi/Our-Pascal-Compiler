@@ -204,8 +204,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         value_vector = value_list ->getValueList();
         have_args = true;
     }
+
+    std::string func_name = node->getFuncId();
     for (int i = block_stack.size() - 1; i >= 0; i--){
-        std::string func_name = node->getFuncId();
         FuncSign *funcsign = block_stack[i]->find_funcsign(func_name);
         if (funcsign == nullptr ) continue;
         //Note the function/procedure can not be overridden in pascal, so the function is matched iff the name is matched.
@@ -214,7 +215,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         // we should compare NameList.size() - n_local
         // which is the actual arg size
         if (funcsign->getNameList().size() - funcsign->getLocalVariablesNum() != value_vector.size())
-            RecordErrorMessage("Can't find function " + func_name + ": you have " + std::to_string(value_vector.size()) + "parameters, but the defined one has " 
+            return RecordErrorMessage("Can't find function " + func_name + ": you have " + std::to_string(value_vector.size()) + "parameters, but the defined one has " 
               + std::to_string(funcsign->getNameList().size() - funcsign->getLocalVariablesNum()) + "parameters.", node->get_location_pairs());
         
         auto name_list = funcsign->getNameList();
@@ -240,15 +241,12 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
 
         // PASSING function args
         for (auto value: value_vector){
-            if (!isEqual(value->getType(), type_list[cur])) {
-                std::cerr << node->get_location() << "type does not match on function calling. " << std::endl;
-                return nullptr; //Error
-            }
+            if (!isEqual(value->getType(), type_list[cur]))
+                return RecordErrorMessage("Type does not match on function " + func_name + " calling.", node->get_location_pairs());
             if (value->getMem() != nullptr) {
                 parameters.push_back(value->getMem());
             } else {
                 this->temp_variable_count++;
-
                 // here we encounter a literally const value as a parameter
                 // we add a local variable to the IRBuilder
                 // but do not reflect it in Current_CodeBlock->named_values
@@ -270,9 +268,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
     if (isSysFunc(node->getFuncId())) {
         return std::make_shared<ValueResult>(OurType::VOID_TYPE, genSysFunc(node->getFuncId(), value_vector));
     }
-    std::cout << node->getFuncId() << std::endl;
-    std::cout << node->get_location() << "function not found." << std::endl;
-    return nullptr;
+    return RecordErrorMessage("Function " + func_name + " not found.", node->get_location_pairs());
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
@@ -293,14 +289,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
         ASTFuncCall *func_call = new ASTFuncCall(name, nullptr);
         auto ret = func_call->Accept(this);
         std::cout << "finish calling no arg func : " << name << " , return " << (ret == nullptr ? "is" : "is not") << " nullptr" << std::endl;
-        if (ret == nullptr) {
-            std::cerr << node->get_location() << name << " is neither a variable nor a no-arg function. Cannot get named value: " << name << std::endl;
-            return nullptr;
-        } else {
-            return ret;
-        }
+        if (ret != nullptr) return ret;
+        return RecordErrorMessage(name + " is neither a variable nor a no-arg function. Cannot get named value: ", node->get_location_pairs());
     }
-    return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) {
