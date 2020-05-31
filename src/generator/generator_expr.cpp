@@ -93,23 +93,23 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     switch (nowOp)
     {
         case Op(GE):
-            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOGE(L, R, "cmpftmp") 
-                                                             : this->builder.CreateICmpSGE(L, R, "cmptmp"));
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, is_real ? this->builder.CreateFCmpOGE(L, R, "cmpftmp") 
+                                                                       : this->builder.CreateICmpSGE(L, R, "cmptmp"));
         case Op(GT):
-            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOGT(L, R, "cmpftmp")
-                                                             :  this->builder.CreateICmpSGT(L, R, "cmptmp"));
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, is_real ? this->builder.CreateFCmpOGT(L, R, "cmpftmp")
+                                                                      :  this->builder.CreateICmpSGT(L, R, "cmptmp"));
         case Op(LE):
-            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOLE(L, R, "cmpftmp")
-                                                             :  this->builder.CreateICmpSLE(L, R, "cmptmp"));
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, is_real ? this->builder.CreateFCmpOLE(L, R, "cmpftmp")
+                                                                      :  this->builder.CreateICmpSLE(L, R, "cmptmp"));
         case Op(LT):
-            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOLT(L, R, "cmpftmp")
-                                                             : this->builder.CreateICmpSLT(L, R, "cmptmp"));
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, is_real ? this->builder.CreateFCmpOLT(L, R, "cmpftmp")
+                                                                        : this->builder.CreateICmpSLT(L, R, "cmptmp"));
         case Op(EQUAL):
-            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpOEQ(L, R, "cmpftmp")
-                                                             : this->builder.CreateICmpEQ(L, R, "cmptmp"));
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, is_real ? this->builder.CreateFCmpOEQ(L, R, "cmpftmp")
+                                                                       : this->builder.CreateICmpEQ(L, R, "cmptmp"));
         case Op(UNEQUAL):
-            return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFCmpONE(L, R, "cmpftmp")
-                                                              : this->builder.CreateICmpNE(L, R, "cmptmp"));
+            return std::make_shared<ValueResult>(BOOLEAN_TYPE, is_real ? this->builder.CreateFCmpONE(L, R, "cmpftmp")
+                                                                       : this->builder.CreateICmpNE(L, R, "cmptmp"));
         case Op(PLUS):
             return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFAdd(L, R, "addftmp")
                                                                : this->builder.CreateAdd(L, R, "addtmp"));
