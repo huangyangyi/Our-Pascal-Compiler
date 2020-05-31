@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "generator_result.hpp"
 
+
 std::shared_ptr<VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node) {
     llvm::Type *tp;
     if (node->getValueType() == ASTConstValue::ValueType::INTEGER) {
@@ -101,12 +102,15 @@ std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
     for (auto id: name_list->getNameList()) {
         llvm::Type *ty = OurType::getLLVMType(this->context, res->getType());
         if (this->block_stack.size() == 1) {
+            llvm::Constant * initializer;
+            if (res->getType()->isBuiltInTy()) initializer = llvm::Constant::getNullValue(ty);
+            else initializer = llvm::ConstantAggregateZero::get(ty);
             llvm::GlobalVariable *var = new llvm::GlobalVariable(
                     /*Module=*/*(this->module),
                     /*Type=*/ty,
                     /*isConstant=*/false,
                     /*Linkage=*/llvm::GlobalValue::CommonLinkage,
-                    /*Initializer=*/0, // has initializer, specified below
+                    /*Initializer=*/initializer, // has initializer, specified below
                     /*Name=*/id);
             if (this->block_stack.back()->named_values.count(id)) {
                 //error 

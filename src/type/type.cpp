@@ -21,6 +21,10 @@ namespace OurType {
 
     bool PascalType::isStringTy() const { return this->tg == TypeGroup::STR; };
 
+    bool PascalType::isBuiltInTy() const {
+        return this->tg == TypeGroup::BUILT_IN;
+    }
+
     bool PascalType::isSubRangeTy() const { return this->tg == TypeGroup::SUBRANGE; };
 
     bool PascalType::isRecordTy() const { return this->tg == TypeGroup::RECORD; };
