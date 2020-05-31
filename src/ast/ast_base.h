@@ -31,6 +31,7 @@ public:
     int col();
 
     std::string get_location();
+    std::pair<int, int> get_location_pairs();
 
     virtual void Print(GraphGenerator *) = 0;
 

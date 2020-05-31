@@ -65,22 +65,26 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     auto l = std::static_pointer_cast<ValueResult>(node->getLExpr()->Accept(this));
     auto r = std::static_pointer_cast<ValueResult>(node->getRExpr()->Accept(this));
     if (l == nullptr || r == nullptr)
-        return nullptr;       
-         //The error has been reported in the sub-node, so we just return.
+        return nullptr;
+        //The error has been reported in the sub-node, so we just return.
     
     //semantic check
-    //TODO: Should report the error message.
-    
     ASTBinaryExpr::Oper nowOp = node->getOp();
     PascalType *ret = nullptr;
     if (nowOp == Op(GE) || nowOp == Op(GT) || nowOp == Op(LE) || nowOp == Op(LT) || nowOp == Op(EQUAL) || nowOp == Op(UNEQUAL)){
-        if (!check_cmp(l->getType(), r->getType(), ret)) return nullptr;   
+        if (!check_cmp(l->getType(), r->getType(), ret)) 
+            return RecordErrorMessage("The type of two side in binary compare expression does not matched.", node->get_location_pairs());
     }
+    
     else if (nowOp == Op(AND) || nowOp == Op(OR)){
-        if (!check_logic(l->getType(), r->getType())) return  nullptr;   
+        std::cout << isEqual(l->getType(), BOOLEAN_TYPE) << std::endl;
+        std::cout << isEqual(r->getType(), BOOLEAN_TYPE) << std::endl;
+        if (!check_logic(l->getType(), r->getType()))
+            return RecordErrorMessage("Both sides of the binary logic expression need to be BOOLEAN type.", node->get_location_pairs());
     }
     else{
-        if (!check_arith(l->getType(), r->getType(),ret)) return nullptr; 
+        if (!check_arith(l->getType(), r->getType(),ret))
+            return RecordErrorMessage("The type of two side in binary arithmetic expression does not matched.", node->get_location_pairs());
     }
     bool is_real = isEqual(ret, REAL_TYPE);
     if (nowOp == ASTBinaryExpr::Oper::REALDIV)
@@ -120,10 +124,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
             return std::make_shared<ValueResult>(ret, is_real ? this->builder.CreateFMul(L, R, "mulftmp")
                                                               :  this->builder.CreateMul(L, R, "multmp"));
         case Op(DIV):
-            if (is_real) return nullptr;
+            if (is_real) return RecordErrorMessage("The type of two side in div must be INTEGER.", node->get_location_pairs());
             return std::make_shared<ValueResult>(ret, this->builder.CreateSDiv(L, R, "divtmp"));
         case Op(MOD):
-            if (is_real) return nullptr;
+            if (is_real) return RecordErrorMessage("The type of two side in mod must be INTEGER.", node->get_location_pairs());
             return std::make_shared<ValueResult>(ret, this->builder.CreateSRem(L, R, "modtmp"));
         case Op(REALDIV):
             return std::make_shared<ValueResult>(REAL_TYPE, this->builder.CreateFDiv(L, R, "divftmp"));
@@ -141,13 +145,13 @@ std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) 
     auto t = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
     if (t == nullptr) return nullptr;
     if (node->getOp() == ASTUnaryExpr::Oper::NOT){
-        if (isEqual(t->getType(), BOOLEAN_TYPE))
-            return nullptr;
+        if (!isEqual(t->getType(), BOOLEAN_TYPE))
+            return RecordErrorMessage("The type after not must be BOOLEAN.", node->get_location_pairs());
         return std::make_shared<ValueResult>(t->getType(), this->builder.CreateNot(t->getValue(), "nottmp"));
     }
     else if (node->getOp() ==ASTUnaryExpr::Oper::SUB){
         if (isEqual(t->getType(), INT_TYPE) && isEqual(t->getType(), REAL_TYPE))
-            return nullptr;
+            return RecordErrorMessage("The type after negative sign must be INTEGER or REAL.", node->get_location_pairs());
         llvm::Type *tp =t->getllvmType();
         llvm::Value *zero = llvm::ConstantInt::get(tp, (uint64_t) 0, true);
         if (isEqual(t->getType(), REAL_TYPE))
@@ -162,10 +166,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTPropExpr(ASTPropExpr *node) {
     std::string propid = node->getPropId();
     auto val = std::static_pointer_cast<ValueResult>((new ASTIDExpr(id))->Accept(this));
     auto record_type_ = val->getType();
-    if (!record_type_->isRecordTy()){
-        std::cerr << "Non-record type can not use '.'." << std::endl;
-        return nullptr;
-    }
+    if (!record_type_->isRecordTy())
+        return RecordErrorMessage("Non-record type can not use '.'.", node->get_location_pairs());
     auto record_type = (RecordType *)record_type_;
     auto name_vec = record_type->name_vec;
     auto type_vec = record_type->type_vec;
@@ -175,10 +177,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTPropExpr(ASTPropExpr *node) {
             bias = i;
             break;
         }
-    if (bias == -1){
-        std::cerr << id + " do not have property " + propid << endl;
-        return nullptr;
-    }
+    if (bias == -1)
+        return RecordErrorMessage(id + " do not have property " + propid, node->get_location_pairs());
+    
     std::vector<llvm::Value *> gep_vec = {llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0, true),
                                           llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), bias, true)};
     
@@ -213,7 +214,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
         // we should compare NameList.size() - n_local
         // which is the actual arg size
         if (funcsign->getNameList().size() - funcsign->getLocalVariablesNum() != value_vector.size())
-            return nullptr; //Error;
+            RecordErrorMessage("Can't find function " + func_name + ": you have " + std::to_string(value_vector.size()) + "parameters, but the defined one has " 
+              + std::to_string(funcsign->getNameList().size() - funcsign->getLocalVariablesNum()) + "parameters.", node->get_location_pairs());
         
         auto name_list = funcsign->getNameList();
         auto type_list = funcsign->getTypeList();

@@ -24,6 +24,24 @@ void Generator::Save(std::string path) {
 
 Generator::Generator():builder(this->context) {
     this->module = std::make_unique<llvm::Module>("pascal_module", this->context);
+    error_message.clear();
+    error_position.clear();
+}
+
+std::shared_ptr<VisitorResult> Generator::RecordErrorMessage(std::string cur_error_message, std::pair<int, int> location){
+    error_message.push_back(cur_error_message);
+    error_position.push_back(location);
+    return nullptr;
+}
+
+bool Generator::hasError(){return error_message.size() > 0;}
+void Generator::printError(){
+    for (int i = 0; i < error_message.size(); i++){
+        std::string location = "[Error]  ";
+        if (error_position[i] != std::make_pair(-1, -1))
+            location = "[Error in (" + std::to_string(error_position[i].first) + ", " + std::to_string(error_position[i].second) + ")]  ";
+        std::cout << location + error_message[i] << std::endl;
+    }
 }
 
 Generator::~Generator() {

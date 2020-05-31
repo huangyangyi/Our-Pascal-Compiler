@@ -95,7 +95,12 @@ int main(int argc, char *argv[]) {
         std::cout << "accept!" << std::endl;
         if (output_ll_fname == "") output_ll_fname = input_fname + ".ll";
         system(("rm "+output_ll_fname).c_str());
-        gen->Save(output_ll_fname);
+        if (gen->hasError()){
+            std::cout << "Compiling Error!" << std::endl;
+            gen->printError();
+        }
+        else
+            gen->Save(output_ll_fname);
         delete gen;
     }
     return 0;
