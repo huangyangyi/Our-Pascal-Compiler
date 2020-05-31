@@ -25,15 +25,15 @@ std::shared_ptr<VisitorResult> Generator::VisitASTStmtList(ASTStmtList *node) {
 }
 
 void Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Value* src, PascalType *src_type) {
-    if (!isEqual(dest_type, src_type)) {
-        //Type conversions
-        if (src_type->isIntegerTy() && dest_type->isFloatingPointTy()) {
-            src = this->builder.CreateSIToFP(src, llvm::Type::getFloatTy(this->context));
-            this->builder.CreateStore(src, dest_ptr);
+    if (dest_type->isSimple()) {
+        if (!isEqual(dest_type, src_type)) {
+            //Type conversions
+            if (src_type->isIntegerTy() && dest_type->isFloatingPointTy()) {
+                src = this->builder.CreateSIToFP(src, llvm::Type::getFloatTy(this->context));
+                this->builder.CreateStore(src, dest_ptr);
+            }
         }
-    }
-    else if (dest_type->isSimple()) {
-        this->builder.CreateStore(src, dest_ptr);
+        else this->builder.CreateStore(src, dest_ptr);
     }
     else if (dest_type->isStringTy()) {
         this->builder.CreateStore(src, dest_ptr);
@@ -165,18 +165,17 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     auto ast_const_value = new ASTConstValue(step, ASTConstValue::ValueType::INTEGER);
     auto ast_const_value_expr = new ASTConstValueExpr(ast_const_value);
     auto ast_step_add = new ASTBinaryExpr(ASTBinaryExpr::Oper::PLUS, ast_id_expr, ast_const_value_expr);
-    auto ast_step_assign = new ASTAssignStmt(ast_id_expr, ast_step_add);
-    ast_step_assign->Accept(this);
+
 
     auto ast_step_cmp = new ASTBinaryExpr(
         node->getDir() == ASTForStmt::ForDir::TO ? ASTBinaryExpr::Oper::GT : ASTBinaryExpr::Oper::LT,
-        ast_id_expr,
+        ast_step_add,
         node->getToExpr()
     );
-
-    auto cmp_res = std::static_pointer_cast<ValueResult>(ast_step_cmp->Accept(this)); 
-
+    auto cmp_res = std::static_pointer_cast<ValueResult>(ast_step_cmp->Accept(this));
     this->builder.CreateCondBr(cmp_res->getValue(), end_block, body_block);
+    auto ast_step_assign = new ASTAssignStmt(ast_id_expr, ast_step_add);
+    ast_step_add->Accept(this);
     this->builder.SetInsertPoint(end_block);
 
     delete ast_id_expr;

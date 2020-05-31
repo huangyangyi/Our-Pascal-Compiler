@@ -6,6 +6,7 @@
 #include <llvm/IR/Function.h>
 #include <iostream>
 #include <stdint.h>
+#include <llvm/Support/Casting.h>
 
 using namespace OurType;
 
@@ -82,7 +83,13 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
         if (!check_arith(l->getType(), r->getType(),ret)) return nullptr; 
     }
     bool is_real = isEqual(ret, REAL_TYPE);
+    if (nowOp == ASTBinaryExpr::Oper::REALDIV)
+        is_real = true;
     auto L = l->getValue(), R = r->getValue();
+    if (is_real){
+        L = this->builder.CreateUIToFP(L, getLLVMType(this->context, REAL_TYPE));
+        R = this->builder.CreateUIToFP(R, getLLVMType(this->context, REAL_TYPE));
+    }
     switch (nowOp)
     {
         case Op(GE):
@@ -128,7 +135,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     return nullptr;
 }
 
-#undef Op(x)
+#undef Op
 
 std::shared_ptr<VisitorResult> Generator::VisitASTUnaryExpr(ASTUnaryExpr *node) {
     auto t = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
@@ -176,7 +183,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTPropExpr(ASTPropExpr *node) {
                                           llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), bias, true)};
     
     llvm::Value *mem = builder.CreateGEP(val->getMem(), gep_vec, "record_field");
-    llvm::Value *ret; this->builder.CreateLoad(ret, mem);
+    llvm::Value *ret = this->builder.CreateLoad(mem);
     return std::make_shared<ValueResult>(type_vec[bias], ret, mem);
 }
 
@@ -301,7 +308,10 @@ std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) 
     if (!isEqual(index->getType(), array_type->element_type)) return nullptr;
 
     auto offset = this->builder.CreateSub(index->getValue(), array_type->getLLVMLow(this->context), "subtmp");
-    llvm::Value *mem = builder.CreateGEP(array->getMem(), offset, "ArrayCall");
+    std::vector<llvm::Value*> offset_vec;
+    offset_vec.push_back(llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->context), 0));
+    offset_vec.push_back(offset);
+    llvm::Value *mem = builder.CreateGEP( array->getMem(), offset_vec, "ArrayCall");
     llvm::Value *value = this->builder.CreateLoad(mem);
     return std::make_shared<ValueResult>(array_type->element_type, value, mem);
 }

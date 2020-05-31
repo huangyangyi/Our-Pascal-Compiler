@@ -86,7 +86,7 @@ TYPE_BOOLEAN boolean
 TYPE_FLOAT real
 TYPE_FLOAT_16 single
 TYPE_FLOAT_32 double
-TYPE_CHAR char
+TYPE_CHAR char|character
 TYPE_STRING string
 /* Values here*/
 SIGN "+"|"-"
@@ -398,7 +398,7 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 
 {LITERAL_FLOAT} {
     yylval = strdup(yytext);
-    RETURN_TOKEN(LITERAL_FALSE)
+    RETURN_TOKEN(LITERAL_FLOAT)
 }
 
 {LITERAL_CHAR} {
