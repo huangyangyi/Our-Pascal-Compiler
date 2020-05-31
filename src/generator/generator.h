@@ -1,6 +1,7 @@
 #ifndef OPC_GENERATOR_H
 #define OPC_GENERATOR_H
 
+#include <iostream>
 #include "../visitor.h"
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Value.h>

@@ -44,9 +44,9 @@ void parse_arg(int argc, char *argv[]) {
         else if (input_fname == "") {
             input_fname = arg;
         }
-        else printf("\
-            Usage: opc input_file [--ir [ir_fname]] [--noir] [--graph [graph_fname]] \n\
-        ");
+    }
+    if (argc == 0) {
+        printf("Usage: opc input_file [--ir [ir_fname]] [--noir] [--graph [graph_fname]] \n");
     }
 }
 
