@@ -91,7 +91,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         var_list.push_back(type->is_var());
         llvm_type_list.push_back(llvm::PointerType::getUnqual(OurType::getLLVMType(context, type->getType())));
     }
-    
+
     FuncSign *funcsign = new FuncSign((int)(local_name_list.size()), name_list, type_list, var_list, return_type);
     llvm::FunctionType *functionType = llvm::FunctionType::get(llvm_return_type, llvm_type_list, false);
     llvm::Function *function = llvm::Function::Create(functionType, llvm::GlobalValue::ExternalLinkage, func_name, module.get());
@@ -125,7 +125,19 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
             std::cout << "Inserted val param " << name_list[iter_i] << std::endl;
         }
     }    
-    
+
+    // add function to named_value for itself
+    if (is_function) {    
+        llvm::AllocaInst *mem = this->builder.CreateAlloca(
+            OurType::getLLVMType(this->context, return_type),
+            nullptr,
+            func_name
+        );
+        this->getCurrentBlock()->named_values[func_name] = mem;
+        this->getCurrentBlock()->named_types[func_name] = return_type;
+        std::cout << "Inserted val param " << func_name << std::endl;
+    }
+
     // add return mechanism
     if (is_function) {
         ((ASTFunctionDecl*)node)->getRoutine()->Accept(this);

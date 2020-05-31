@@ -261,6 +261,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
     if (isSysFunc(node->getFuncId())) {
         return std::make_shared<ValueResult>(OurType::VOID_TYPE, genSysFunc(node->getFuncId(), value_vector));
     }
+    std::cout << node->getFuncId() << std::endl;
     std::cout << node->get_location() << "function not found." << std::endl;
     return nullptr;
 }
