@@ -154,6 +154,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
 
     this->builder.SetInsertPoint(oldBlock);
     this->block_stack.pop_back();
+    return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTFunctionHead(ASTFunctionHead *node) {

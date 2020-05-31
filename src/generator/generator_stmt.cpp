@@ -39,9 +39,11 @@ void Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Va
         this->builder.CreateStore(src, dest_ptr);
     }
     else if (dest_type->isArrayTy()) {
+        this->builder.CreateStore(src, dest_ptr);
         //TODO: implement array assignment
     }
     else if (dest_type->isRecordTy()) {
+        this->builder.CreateStore(src, dest_ptr);
         //TODO: implement record assignment
     }
 }
