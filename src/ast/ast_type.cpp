@@ -39,7 +39,8 @@ ASTSimpleTypeDecl::ASTSimpleTypeDecl(ASTNameList *name_list): name_list(name_lis
 
 void ASTSimpleTypeDecl::Print(GraphGenerator *g) {
     g->AddNode("simple_type_decl", this->line(), this->col());
-    type_name->Print(g);
+    if (type_name) type_name->Print(g);
+    else g->AddIdentifier(this->getDefinedId());
     g->Pop();
 }
 
@@ -135,6 +136,10 @@ std::shared_ptr<VisitorResult> ASTSimpleTypeDecl::Accept(Visitor *visitor) {
 
 ASTType *ASTSimpleTypeDecl::getTypeName() const {
     return type_name;
+}
+
+const string &ASTSimpleTypeDecl::getDefinedId() const {
+    return defined_id;
 }
 
 std::shared_ptr<VisitorResult> ASTArrayTypeDecl::Accept(Visitor *visitor) {

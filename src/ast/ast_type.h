@@ -76,6 +76,10 @@ public:
 private:
     ASTType *type_name;
     std::string defined_id;
+public:
+    const std::string &getDefinedId() const;
+
+private:
     bool neg_low, neg_high;
     ASTConstValue *low, *high;
     std::string low_name, high_name;

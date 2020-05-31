@@ -38,7 +38,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
             }
         }
         if (ret == nullptr) return nullptr;
-        else return std::make_shared<VisitorResult>(TypeResult(ret));
+        else return std::make_shared<TypeResult>(ret);
     } else if (node->my_type == ASTSimpleTypeDecl::MyType::VALUE_RANGE) {
         std::shared_ptr<ValueResult> low_ret = std::static_pointer_cast<ValueResult>(node->low->Accept(this));
         std::shared_ptr<ValueResult> high_ret = std::static_pointer_cast<ValueResult>(node->high->Accept(this));
