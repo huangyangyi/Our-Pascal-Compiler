@@ -48,10 +48,12 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node
     }
     if (node->getValueType() == ASTConstValue::ValueType::BOOL) {
         tp = llvm::Type::getInt1Ty(this->context);
-        char v_int = node->getContent()[1];
+        std::string lit = node->getContent();
+        for (int i=0;i < lit.length(); i++) lit[i] = tolower(lit[i]);
+        bool p = lit == "true" ? true : false;
         return std::make_shared<ValueResult>(
                 OurType::BOOLEAN_TYPE,
-                llvm::ConstantInt::get(tp, (uint64_t) v_int, true),
+                llvm::ConstantInt::get(tp, (uint64_t) p, true),
                 nullptr
         );
     }
