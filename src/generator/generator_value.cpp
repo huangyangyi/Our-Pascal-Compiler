@@ -40,21 +40,37 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node
         );
     }
     if (node->getValueType() == ASTConstValue::ValueType::STRING) {
-        llvm::Value *mem_str = this->builder.CreateGlobalString(
-                node->getContent().substr(1, node->getContent().length() - 2));
+        // to make str things can store, alloc with each other
+        // we have to make all string values have the same length
+        // we make this 256
+        // so we add suffix zero to all constant string
+        // VERY BAD CODING STYLE
+        // NEED TO BE MODIFIED ASAP
+        std::string tmp = node->getContent().substr(1, node->getContent().length() - 2);
+        int tmp_len = tmp.size();
+        if (tmp_len > 255) {
+            std::cerr << node->get_location() << "this string constant is too long, use first 255 characters instead." << std::endl;
+            tmp = tmp.substr(0, 255);
+            tmp_len = tmp.size();
+        }
+        char zero = 0;
+        for (int i = 0; i < 255 - tmp_len; i++) tmp = tmp + zero;
+        llvm::Value *mem_str = this->builder.CreateGlobalString(tmp);
         llvm::Value *v_str = this->builder.CreateLoad(mem_str);
         return std::make_shared<ValueResult>(
-                new OurType::StrType(node->getContent().length() - 2),
+                new OurType::StrType(),
                 v_str,
                 mem_str
         );
     }
     if (node->getValueType() == ASTConstValue::ValueType::BOOL) {
         tp = llvm::Type::getInt1Ty(this->context);
-        char v_int = node->getContent()[1];
+        std::string lit = node->getContent();
+        for (int i=0;i < lit.length(); i++) lit[i] = tolower(lit[i]);
+        bool p = lit == "true" ? true : false;
         return std::make_shared<ValueResult>(
                 OurType::BOOLEAN_TYPE,
-                llvm::ConstantInt::get(tp, (uint64_t) v_int, true),
+                llvm::ConstantInt::get(tp, (uint64_t) p, true),
                 nullptr
         );
     }

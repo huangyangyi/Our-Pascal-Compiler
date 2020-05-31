@@ -261,7 +261,27 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncCall(ASTFuncCall *node) {
             }
             cur++;
         } 
-        return std::make_shared<ValueResult>(funcsign->getReturnType(), builder.CreateCall(callee, parameters));//, "call_"+ node->getFuncId()
+        auto ret = builder.CreateCall(callee, parameters);
+        if (funcsign->getReturnType()->tg == OurType::PascalType::TypeGroup::STR) {
+            // to return a str type for writeln to print
+            // we have to use its pointer
+            // to achieve this, we add a never used variable here
+            // we do this shit only to the str type return value
+            // VERY BAD CODING STYLE
+            // NEED TO BE MODIFIED ASAP 
+            this->temp_variable_count++;
+            std::cout << ((OurType::StrType *)funcsign->getReturnType())->dim << std::endl;
+            llvm::AllocaInst *mem = this->builder.CreateAlloca(
+                OurType::getLLVMType(this->context, funcsign->getReturnType()),
+                nullptr,
+                "0_" + func_name + std::to_string(this->temp_variable_count)
+            );
+            this->builder.CreateStore(ret, mem);
+            llvm::Value *value = this->builder.CreateLoad(mem);
+            return std::make_shared<ValueResult>(funcsign->getReturnType(), value, mem); //, ret->getPointerOperand()); //, "call_"+ node->getFuncId()
+        } else {
+            return std::make_shared<ValueResult>(funcsign->getReturnType(), ret);   
+        }
     }
     // Currently, sys_function will use no local variables that has cascade relation
     // So we do not need to deal with the locals and do it simply
@@ -297,14 +317,33 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIDExpr(ASTIDExpr *node) {
 std::shared_ptr<VisitorResult> Generator::VisitASTArrayExpr(ASTArrayExpr *node) {
     auto index = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
     auto array = std::static_pointer_cast<ValueResult>((new ASTIDExpr(node->getId()))->Accept(this));
-    ArrayType* array_type = (ArrayType*)(array->getType());
-    if (!isEqual(index->getType(), array_type->element_type)) return nullptr;
+    bool isStr = array->getType()->tg == OurType::PascalType::TypeGroup::STR;
+    bool isArr = array->getType()->tg == OurType::PascalType::TypeGroup::ARRAY;
+    if (array == nullptr || (!isArr && !isStr)) {
+        std::cerr << node->get_location() << "Not an array nor str, cannot use index." << std::endl;
+        return nullptr;
+    }
 
-    auto offset = this->builder.CreateSub(index->getValue(), array_type->getLLVMLow(this->context), "subtmp");
+    ArrayType* array_type = (ArrayType*)(array->getType());
+    if (!isEqual(index->getType(), OurType::INT_TYPE) && !isEqual(index->getType(), OurType::CHAR_TYPE)) 
+        return nullptr;
+
+    llvm::Value *base;
+    if (isArr) {
+        base = array_type->getLLVMLow(this->context);
+    } else {
+        base = llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->context), 0, true);
+    }
+
+    auto offset = this->builder.CreateSub(index->getValue(), base, "subtmp");
     std::vector<llvm::Value*> offset_vec;
     offset_vec.push_back(llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->context), 0));
     offset_vec.push_back(offset);
     llvm::Value *mem = builder.CreateGEP( array->getMem(), offset_vec, "ArrayCall");
     llvm::Value *value = this->builder.CreateLoad(mem);
-    return std::make_shared<ValueResult>(array_type->element_type, value, mem);
+    if (isArr) {
+        return std::make_shared<ValueResult>(array_type->element_type, value, mem);
+    } else {
+        return std::make_shared<ValueResult>(OurType::CHAR_TYPE, value, mem);
+    }
 }

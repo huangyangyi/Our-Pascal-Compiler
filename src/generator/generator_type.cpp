@@ -15,6 +15,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTType(ASTType *node) {
         return std::make_shared<TypeResult>(OurType::BOOLEAN_TYPE);
     else if (type_name == ASTType::TypeName::CHAR)
         return std::make_shared<TypeResult>(OurType::CHAR_TYPE);
+    else if (type_name == ASTType::TypeName::STRING)
+        return std::make_shared<TypeResult>(new OurType::StrType());
     else 
         return nullptr;
 }
