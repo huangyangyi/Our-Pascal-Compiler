@@ -84,7 +84,7 @@ namespace OurType {
     public:
         int dim;
 
-        StrType(int dim);
+        StrType(int dim = 256);
     };
 
     class RecordType : public PascalType {

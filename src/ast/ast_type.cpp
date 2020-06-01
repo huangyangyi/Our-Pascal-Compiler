@@ -19,6 +19,9 @@ void ASTType::Print(GraphGenerator *g) {
         case TypeName::CHAR:
             g->AddIdentifier("Char");
             break;
+        case TypeName::STRING:
+            g->AddIdentifier("String");
+            break;
     }
 }
 

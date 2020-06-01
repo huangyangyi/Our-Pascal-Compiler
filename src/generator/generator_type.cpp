@@ -15,6 +15,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTType(ASTType *node) {
         return std::make_shared<TypeResult>(OurType::BOOLEAN_TYPE);
     else if (type_name == ASTType::TypeName::CHAR)
         return std::make_shared<TypeResult>(OurType::CHAR_TYPE);
+    else if (type_name == ASTType::TypeName::STRING)
+        return std::make_shared<TypeResult>(new OurType::StrType());
     else 
         return nullptr;
 }
@@ -26,9 +28,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
     } else if (node->my_type == ASTSimpleTypeDecl::MyType::DEFINED_ID) {
         PascalType *ret = nullptr;
         
-        // cannot be an variable
         if (this->getCurrentBlock()->named_values.count(node->defined_id) > 0) {
-            return nullptr;
+            return RecordErrorMessage("The variable " + node->defined_id + " Can not be defined again.", node->get_location_pairs());
         }
 
         for (int i = this->block_stack.size()-1; i >= 0; i--) {

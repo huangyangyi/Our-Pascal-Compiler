@@ -35,7 +35,7 @@ class ASTTypePart;
 class ASTType : public ASTNode {
 public:
     enum class TypeName {
-        INTEGER, REAL, BOOLEAN, CHAR
+        INTEGER, REAL, BOOLEAN, CHAR, STRING
     };
 
     ASTType(TypeName type_name);

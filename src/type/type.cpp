@@ -71,8 +71,35 @@ namespace OurType {
         if (a->tg != b->tg) return false;
         if (a->tg == PascalType::TypeGroup::BUILT_IN)
             return ((BuiltinType *) a)->type == ((BuiltinType *) b)->type;
-        else
+        else if (a->tg == PascalType::TypeGroup::RECORD) {
+            RecordType *ra = (RecordType *)a, *rb = (RecordType *)b;
+            if (ra->name_vec.size() != rb->name_vec.size())
+                return false;
+            for(int i = 0; i < ra->name_vec.size(); i++) {
+                if (ra->name_vec[i] != rb->name_vec[i]) return false;
+                if (ra->type_vec[i] != rb->type_vec[i]) return false;
+            }
             return true;
+        } else if (a->tg == PascalType::TypeGroup::ARRAY) {
+            ArrayType *aa = (ArrayType *)a, *ab = (ArrayType *)b;
+            if (aa->range != ab->range) return false;
+            return isEqual(aa->element_type, ab->element_type);
+        } else if (a->tg == PascalType::TypeGroup::SUBRANGE) {
+            SubRangeType *sa = (SubRangeType *)a, *sb = (SubRangeType *)b;
+            return (sa->low == sb->low && sa->high == sb->high);
+        } else if (a->tg == PascalType::TypeGroup::STR) {
+            StrType *stra = (StrType *)a, *strb = (StrType *)b;
+            return stra->dim == strb->dim;
+        } else if (a->tg == PascalType::TypeGroup::ENUM) {
+            EnumType *ea = (EnumType *)a, *eb = (EnumType *)b;
+            if (ea->names_.size() != eb->names_.size()) return false;
+            for(int i = 0; i < ea->names_.size(); i++)
+                if (ea->names_[i] != eb->names_[i]) return false;
+            return true;
+        } else {
+            std::cout << "Unknown Error Occurred at OurType::isEqual" << std::endl;
+            return false;
+        }
     }
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context, PascalType *const p_type) {

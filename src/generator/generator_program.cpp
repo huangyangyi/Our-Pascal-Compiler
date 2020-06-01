@@ -22,7 +22,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRoutineBody(ASTRoutineBody *no
 
 std::shared_ptr<VisitorResult> Generator::VisitASTRoutine(ASTRoutine *node) {
     node->getRoutineHead()->Accept(this);
-    std::cout << "routine_head ready" << std::endl;
+    //std::cout << "routine_head ready" << std::endl;
     node->getRoutineBody()->Accept(this);
     return nullptr;
 }
@@ -50,14 +50,16 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
         is_function ? ((ASTFunctionDecl*)node)->getFunctionHead()->getParameters()->Accept(this)
                     : ((ASTProcedureDecl*)node)->getProcedureHead()->getParameters()->Accept(this));
 
-    if (parameters == nullptr) return nullptr;
+    if (parameters == nullptr)
+        return RecordErrorMessage("Can not recognize the parameters for function/procedure definition.", node->get_location_pairs());
 
     OurType::PascalType *return_type = OurType::VOID_TYPE;
     std::string func_name;
     if (is_function){
         func_name = ((ASTFunctionDecl*)node)->getFunctionHead()->getFuncName();
         auto return_type_result = std::static_pointer_cast<TypeResult>(((ASTFunctionDecl*)node)->getFunctionHead()->getSimpleTypeDecl()->Accept(this));
-        if (return_type_result == nullptr) return nullptr;
+        if (return_type_result == nullptr)
+            return RecordErrorMessage("Can not recognize the return type for the function definition.", node->get_location_pairs());
         return_type = return_type_result->getType();
     }else{
         func_name = ((ASTProcedureDecl*)node)->getProcedureHead()->getProcName();
@@ -68,6 +70,11 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
     std::vector<llvm::Type*> llvm_type_list;
     std::vector<OurType::PascalType*> type_list;
     std::vector<bool> var_list;
+
+    for (int i = 0; i < name_list.size(); i++)
+        for (int j = i+1; j < name_list.size(); j++)
+            if (name_list[i] == name_list[j])
+                return RecordErrorMessage("The parameters in the function/procedure definition are duplicated.", node->get_location_pairs());
     
     // Adding local variables
     // we must put local variables first

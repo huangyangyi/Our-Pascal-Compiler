@@ -53,10 +53,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTAssignStmt(ASTAssignStmt *node
     auto left = std::static_pointer_cast<ValueResult>(node->getExpr1()->Accept(this));
     auto right = std::static_pointer_cast<ValueResult>(node->getExpr2()->Accept(this));
     if (left == nullptr || right == nullptr) return nullptr;
-    if (left->getMem() == nullptr) {
-        std::cerr << "Invalid left expression" << endl;//not left expression error
-        return nullptr;
-    }
+    if (left->getMem() == nullptr) 
+        return RecordErrorMessage("Invalid left expression.", node->get_location_pairs());
     genAssign(left->getMem(), left->getType(), right->getValue(), right->getType());
     return nullptr;
 }
@@ -74,7 +72,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTIfStmt(ASTIfStmt *node) {
     llvm::BasicBlock *else_block = llvm::BasicBlock::Create(this->context, "if_else", func);
     llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "if_cont", func);
     auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
-    if (cond_res == nullptr) return nullptr;
+    if (cond_res == nullptr || !isEqual(cond_res->getType(), BOOLEAN_TYPE))
+        return RecordErrorMessage("Invalid condition in if statement.", node->get_location_pairs());
     this->builder.CreateCondBr(cond_res->getValue(), then_block, else_block);
     this->builder.SetInsertPoint(then_block);
     node->getStmt()->Accept(this);
@@ -102,16 +101,14 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRepeatStmt(ASTRepeatStmt *node
     this->builder.SetInsertPoint(body_block);
 
     node->getStmtList()->Accept(this);
-    std::cout << 1 << std::endl;
 
     this->builder.CreateBr(cond_block);
     this->builder.SetInsertPoint(cond_block);
     auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
-    if (cond_res == nullptr) return nullptr;
-    if (!cond_res->getValue()->getType()->isIntegerTy(1)) {
-        //std::cout << "Fuck3" << std::endl;
-        //ERROR: Not boolean expression
-    };
+
+    //#if (!cond_res->getValue()->getType()->isIntegerTy(1))
+    if (cond_res == nullptr || !isEqual(cond_res->getType(), BOOLEAN_TYPE))
+        return RecordErrorMessage("Invalid condition in repeat statement.", node->get_location_pairs());
 
     this->builder.CreateCondBr(cond_res->getValue(), cont_block, body_block);
     this->builder.SetInsertPoint(cont_block);
@@ -129,7 +126,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTWhileStmt(ASTWhileStmt *node) 
     this->builder.SetInsertPoint(cond_block);
 
     auto cond_res = std::static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
-    if (cond_res == nullptr) return nullptr;
+    if (cond_res == nullptr || !isEqual(cond_res->getType(), BOOLEAN_TYPE))
+        return RecordErrorMessage("Invalid condition in while statement.", node->get_location_pairs());
     
     this->builder.CreateCondBr(cond_res->getValue(), body_block, end_block);
     this->builder.SetInsertPoint(body_block);
