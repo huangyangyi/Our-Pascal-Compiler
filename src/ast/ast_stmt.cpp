@@ -280,3 +280,21 @@ std::shared_ptr<VisitorResult> ASTGotoStmt::Accept(Visitor *visitor) { return vi
 const string &ASTGotoStmt::getLabel() const {
     return label_;
 }
+
+ASTExpr *ASTExitStmt::getExpr() const {
+    return expr_;
+}
+
+ASTExitStmt::ASTExitStmt(ASTExpr *expr) : expr_(expr) {}
+
+void ASTExitStmt::Print(GraphGenerator *g) {
+    g->AddNode("exit", this->line(), this->col());
+    if (this->getExpr()) this->getExpr()->Print(g);
+    g->Pop();
+}
+
+std::shared_ptr<VisitorResult> ASTExitStmt::Accept(Visitor *visitor) {
+    return visitor->VisitASTExitStmt(this);
+}
+
+

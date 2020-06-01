@@ -43,6 +43,8 @@ class CodeBlock {
     std::map<std::string, llvm::Function*> named_functions;
     std::map<std::string, FuncSign*> named_funcsigns;
     std::map<int, llvm::BasicBlock *> labels;
+    std::string block_name;
+    bool is_function;
     bool isType(std::string id, bool check_defined=false){
         return named_types.find(id) != named_types.end() && 
              ( named_values.find(id) == named_values.end() || check_defined );
@@ -170,6 +172,8 @@ public:
     virtual std::shared_ptr<VisitorResult> VisitASTCaseExpr(ASTCaseExpr *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTGotoStmt(ASTGotoStmt *node);
+
+    virtual shared_ptr<VisitorResult> VisitASTExitStmt(ASTExitStmt *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTType(ASTType *node);
 

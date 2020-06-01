@@ -33,6 +33,7 @@ KWD_DO do
 KWD_DOWNTO downto
 KWD_ELSE else
 KWD_END end
+KWD_EXIT exit
 KWD_FILE file
 KWD_FOR for
 KWD_FUNCTION function
@@ -193,6 +194,10 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 
 {KWD_GOTO} {
     RETURN_TOKEN(KWD_GOTO)
+}
+
+{KWD_EXIT} {
+    RETURN_TOKEN(KWD_EXIT)
 }
 
 {KWD_IF} {

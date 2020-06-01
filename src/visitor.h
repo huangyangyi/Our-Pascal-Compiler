@@ -121,6 +121,7 @@ public:
 
     virtual shared_ptr<VisitorResult> VisitASTVarDecl(ASTVarDecl *node) = 0;
 
+    virtual shared_ptr<VisitorResult> VisitASTExitStmt(ASTExitStmt *node) = 0;
 };
 
 #endif  // OPC_VISITOR_H

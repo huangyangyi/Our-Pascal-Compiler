@@ -270,4 +270,15 @@ private:
     std::string label_;
 };
 
+class ASTExitStmt : public ASTNonLabelStmt {
+public:
+    ASTExitStmt(ASTExpr *expr = nullptr);
+    virtual void Print(GraphGenerator *);
+    virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
+
+    ASTExpr *getExpr() const;
+
+private:
+    ASTExpr *expr_;
+};
 #endif //OPC_AST_AST_STMT_H

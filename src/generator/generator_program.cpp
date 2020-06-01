@@ -104,6 +104,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTFuncProcBase(ASTFuncProcBase *
 
     // MODIFY PARAMETERS PASSING
     block_stack.push_back(new CodeBlock());
+    this->getCurrentBlock()->block_name = func_name;
+    this->getCurrentBlock()->is_function = is_function;
     int iter_i = 0;
     for(llvm::Function::arg_iterator arg_it = function->arg_begin(); arg_it != function->arg_end(); arg_it++, iter_i++) {
         if (var_list[iter_i]) {

@@ -107,6 +107,7 @@ llvm::Value* GenSysRead(const std::vector<std::shared_ptr<ValueResult>> &args_li
     return ret;
 }
 bool Generator::isSysFunc(std::string id) {
+    for (auto &ch: id) ch = tolower(ch);
     if (id == "write") return true;
     if (id == "writeln") return true;
     if (id == "read") return true;
@@ -114,6 +115,7 @@ bool Generator::isSysFunc(std::string id) {
 }
 
 llvm::Value* Generator::genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list) {
+    for (auto &ch: id) ch = tolower(ch);
     if (id == "write") return GenSysWrite(args_list, false, this);
     if (id == "writeln") return GenSysWrite(args_list, true, this);
     if (id == "read") return GenSysRead(args_list, false, this);

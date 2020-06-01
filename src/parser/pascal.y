@@ -66,6 +66,7 @@ void yyerror(const char *str);
     ASTCaseExpr* ast_case_expr;
     ASTCaseExprList* ast_case_expr_list;
     ASTGotoStmt* ast_goto_stmt;
+    ASTExitStmt* ast_exit_stmt;
     ASTExpressionList* ast_expression_list;
     ASTExpr* ast_expr;
 }   
@@ -77,7 +78,7 @@ void yyerror(const char *str);
 %token SYM_ADD SYM_SUB SYM_MUL SYM_DIV SYM_EQ SYM_LT SYM_GT SYM_LBRAC SYM_RBRAC SYM_PERIOD SYM_COMMA SYM_COLON
 %token SYM_SEMICOLON SYM_AT SYM_CARET SYM_LPAREN SYM_RPAREN SYM_NE SYM_LE SYM_GE SYM_ASSIGN SYM_RANGE COMMENT
 %token KWD_AND KWD_ARRAY KWD_ASM KWD_BEGIN KWD_CASE KWD_CONST KWD_CONSTRUCTOR KWD_DESTRUCTOR KWD_DIV
-%token KWD_DO KWD_DOWNTO KWD_ELSE KWD_END KWD_FILE KWD_FOR KWD_FUNCTION KWD_GOTO KWD_IF KWD_IMPLEMENTATION KWD_IN 
+%token KWD_DO KWD_DOWNTO KWD_ELSE KWD_EXIT KWD_END KWD_FILE KWD_FOR KWD_FUNCTION KWD_GOTO KWD_IF KWD_IMPLEMENTATION KWD_IN 
 %token KWD_INHERITED KWD_INLINE KWD_INTERFACE KWD_LABEL KWD_MOD KWD_NIL KWD_NOT KWD_OBJECT KWD_OF KWD_OPERATOR KWD_OR
 %token KWD_PACKED KWD_PROCEDURE KWD_PROGRAM KWD_RECORD KWD_REINTRODUCE KWD_REPEAT KWD_SELF KWD_SET KWD_SHL KWD_SHR
 %token KWD_THEN KWD_TO KWD_TYPE KWD_UNIT KWD_UNTIL KWD_USES KWD_VAR KWD_WHILE KWD_WITH KWD_XOR
@@ -144,6 +145,7 @@ void yyerror(const char *str);
 %type<ast_case_expr_list> case_expr_list 
 %type<ast_case_expr> case_expr 
 %type<ast_goto_stmt> goto_stmt 
+%type<ast_exit_stmt> exit_stmt
 %type<ast_expression_list> expression_list
 %type<ast_expr> expression expr term factor
 
@@ -580,6 +582,9 @@ non_label_stmt:
     | goto_stmt{
         $$ = $1;
     }
+    | exit_stmt {
+        $$ = $1;
+    }
 ;
 
 assign_stmt:
@@ -698,6 +703,18 @@ goto_stmt:
     KWD_GOTO LITERAL_INT {
         // The construction arg is a string !!!
         $$ = new ASTGotoStmt($2);
+        SET_LOCATION($$);
+    }
+;
+
+exit_stmt:
+    KWD_EXIT SYM_LPAREN expression SYM_RPAREN {
+        $$ = new ASTExitStmt($3);
+        SET_LOCATION($$);
+    }
+    |
+    KWD_EXIT {
+        $$ = new ASTExitStmt();
         SET_LOCATION($$);
     }
 ;

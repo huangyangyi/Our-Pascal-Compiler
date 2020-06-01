@@ -146,6 +146,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     llvm::BasicBlock *start_block = llvm::BasicBlock::Create(this->context, "for_start", func);
     llvm::BasicBlock *body_block = llvm::BasicBlock::Create(this->context, "for_body", func);
     llvm::BasicBlock *cond_block = llvm::BasicBlock::Create(this->context, "for_cond", func);
+    llvm::BasicBlock *step_back_block = llvm::BasicBlock::Create(this->context, "for_step_back", func);
     llvm::BasicBlock *end_block = llvm::BasicBlock::Create(this->context, "for_end", func);
     builder.CreateBr(start_block);
     builder.SetInsertPoint(start_block);
@@ -153,30 +154,39 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     auto ast_id_expr = new ASTIDExpr(node->getId());
     auto ast_assign = new ASTAssignStmt(ast_id_expr, node->getForExpr());
     ast_assign->Accept(this);
-
-    this->builder.CreateBr(body_block);
+    auto ast_st_cmp = new ASTBinaryExpr(
+            node->getDir() == ASTForStmt::ForDir::TO ? ASTBinaryExpr::Oper::GT : ASTBinaryExpr::Oper::LT,
+            ast_id_expr,
+            node->getToExpr()
+    );
+    auto st_cmp_res = std::static_pointer_cast<ValueResult>(ast_st_cmp->Accept(this));
+    this->builder.CreateCondBr(st_cmp_res->getValue(), end_block, body_block);
     this->builder.SetInsertPoint(body_block);
     node->getStmt()->Accept(this);
 
     this->builder.CreateBr(cond_block);
     this->builder.SetInsertPoint(cond_block);
-    auto en = std::static_pointer_cast<ValueResult>(node->getToExpr()->Accept(this));
-    if (en == nullptr) return nullptr;
     std::string step = node->getDir() == ASTForStmt::ForDir::TO ? "1" : "-1";
 
     auto ast_const_value = new ASTConstValue(step, ASTConstValue::ValueType::INTEGER);
     auto ast_const_value_expr = new ASTConstValueExpr(ast_const_value);
     auto ast_step_add = new ASTBinaryExpr(ASTBinaryExpr::Oper::PLUS, ast_id_expr, ast_const_value_expr);
+    auto ast_step_assign = new ASTAssignStmt(ast_id_expr, ast_step_add);
+    ast_step_assign->Accept(this);
 
     auto ast_step_cmp = new ASTBinaryExpr(
         node->getDir() == ASTForStmt::ForDir::TO ? ASTBinaryExpr::Oper::GT : ASTBinaryExpr::Oper::LT,
-        ast_step_add,
+        ast_id_expr,
         node->getToExpr()
     );
+
     auto cmp_res = std::static_pointer_cast<ValueResult>(ast_step_cmp->Accept(this));
-    this->builder.CreateCondBr(cmp_res->getValue(), end_block, body_block);
-    auto ast_step_assign = new ASTAssignStmt(ast_id_expr, ast_step_add);
-    ast_step_add->Accept(this);
+    this->builder.CreateCondBr(cmp_res->getValue(), step_back_block, body_block);
+    this->builder.SetInsertPoint(step_back_block);
+    auto ast_end_sub = new ASTBinaryExpr(ASTBinaryExpr::Oper::MINUS, ast_id_expr, ast_const_value_expr);
+    auto ast_end_assign = new ASTAssignStmt(ast_id_expr, ast_end_sub);
+    ast_end_assign->Accept(this);
+    this->builder.CreateBr(end_block);
     this->builder.SetInsertPoint(end_block);
 
     delete ast_id_expr;
@@ -186,6 +196,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     delete ast_step_add;
     delete ast_step_assign;
     delete ast_step_cmp;
+    delete ast_end_sub;
+    delete ast_end_assign;
 
     return nullptr;
 }
@@ -228,4 +240,27 @@ std::shared_ptr<VisitorResult> Generator::VisitASTGotoStmt(ASTGotoStmt *node) {
     auto target_block = this->block_stack.back()->labels[atoi(node->getLabel().c_str())];
     this->builder.CreateBr(target_block);
     return nullptr;
+}
+
+shared_ptr<VisitorResult> Generator::VisitASTExitStmt(ASTExitStmt *node) {
+    std::shared_ptr<ValueResult> res;
+    if (node->getExpr() == nullptr) {
+        if (this->block_stack.size() == 1) {//is global
+            this->builder.CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(this->context), 0));
+        }
+        else if (!this->getCurrentBlock()->is_function) {
+            this->builder.CreateRetVoid();
+        }
+        else {
+            llvm::Value* ret = this->builder.CreateLoad(this->getCurrentBlock()->named_values[this->getCurrentBlock()->block_name], "ret");
+            this->builder.CreateRet(ret);
+        }
+        llvm::Function *func = this->builder.GetInsertBlock()->getParent();
+        llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "exit_cont", func);
+        this->builder.SetInsertPoint(cont_block);
+    }
+    else {
+        res = static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
+        this->builder.CreateRet(res->getValue());
+    }
 }
