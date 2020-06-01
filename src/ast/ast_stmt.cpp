@@ -298,3 +298,11 @@ std::shared_ptr<VisitorResult> ASTExitStmt::Accept(Visitor *visitor) {
 }
 
 
+void ASTBreakStmt::Print(GraphGenerator *g) {
+    g->AddNode("break", this->line(), this->col());
+    g->Pop();
+}
+
+std::shared_ptr<VisitorResult> ASTBreakStmt::Accept(Visitor *visitor) {
+    return visitor->VisitASTBreakStmt(this);
+}

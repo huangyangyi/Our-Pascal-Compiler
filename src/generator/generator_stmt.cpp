@@ -11,10 +11,18 @@ std::shared_ptr<VisitorResult> Generator::VisitASTNonLabelStmt(ASTNonLabelStmt *
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTStmt(ASTStmt *node) {
-    llvm::Function *func = this->builder.GetInsertBlock()->getParent();    
-    auto label_block = llvm::BasicBlock::Create(this->context, "label_" + node->getLabel(), func);
-    this->builder.CreateBr(label_block);
-    this->builder.SetInsertPoint(label_block);
+    if (node->getLabel() != "") {
+        int label = atoi(node->getLabel().c_str());
+        if (this->getCurrentBlock()->labels.count(label) > 0){
+            this->RecordErrorMessage("Duplicated label: " + node->getLabel(), node->get_location_pairs());
+        } else {
+            llvm::Function *func = this->builder.GetInsertBlock()->getParent();
+            auto label_block = llvm::BasicBlock::Create(this->context, "label_" + node->getLabel(), func);
+            this->builder.CreateBr(label_block);
+            this->builder.SetInsertPoint(label_block);
+            this->getCurrentBlock()->labels[label] = label_block;
+        }
+    }
     node->getNonLabelStmt()->Accept(this);
     return nullptr;
 }
@@ -96,6 +104,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRepeatStmt(ASTRepeatStmt *node
     llvm::BasicBlock *body_block = llvm::BasicBlock::Create(this->context, "repeat_body", func);
     llvm::BasicBlock *cond_block = llvm::BasicBlock::Create(this->context, "repeat_cond", func);
     llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "repeat_cont", func);
+    this->getCurrentBlock()->loop_breaks.push_back(cont_block);
 
     this->builder.CreateBr(body_block);
     this->builder.SetInsertPoint(body_block);
@@ -113,6 +122,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTRepeatStmt(ASTRepeatStmt *node
     this->builder.CreateCondBr(cond_res->getValue(), cont_block, body_block);
     this->builder.SetInsertPoint(cont_block);
 
+    this->getCurrentBlock()->loop_breaks.pop_back();
     return nullptr;
 }
 
@@ -121,7 +131,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTWhileStmt(ASTWhileStmt *node) 
     llvm::BasicBlock *cond_block = llvm::BasicBlock::Create(this->context, "while_cond", func);
     llvm::BasicBlock *body_block = llvm::BasicBlock::Create(this->context, "while_body", func);
     llvm::BasicBlock *end_block = llvm::BasicBlock::Create(this->context, "while_end", func);
-    
+    this->getCurrentBlock()->loop_breaks.push_back(end_block);
+
     this->builder.CreateBr(cond_block);
     this->builder.SetInsertPoint(cond_block);
 
@@ -135,7 +146,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTWhileStmt(ASTWhileStmt *node) 
     
     this->builder.CreateBr(cond_block);
     this->builder.SetInsertPoint(end_block);
-    
+
+    this->getCurrentBlock()->loop_breaks.pop_back();
     return nullptr;
 }
 
@@ -146,6 +158,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     llvm::BasicBlock *cond_block = llvm::BasicBlock::Create(this->context, "for_cond", func);
     llvm::BasicBlock *step_back_block = llvm::BasicBlock::Create(this->context, "for_step_back", func);
     llvm::BasicBlock *end_block = llvm::BasicBlock::Create(this->context, "for_end", func);
+    this->getCurrentBlock()->loop_breaks.push_back(end_block);
+
     builder.CreateBr(start_block);
     builder.SetInsertPoint(start_block);
 
@@ -186,6 +200,8 @@ std::shared_ptr<VisitorResult> Generator::VisitASTForStmt(ASTForStmt *node) {
     ast_end_assign->Accept(this);
     this->builder.CreateBr(end_block);
     this->builder.SetInsertPoint(end_block);
+
+    this->getCurrentBlock()->loop_breaks.pop_back();
 
     delete ast_id_expr;
     delete ast_assign;
@@ -236,7 +252,11 @@ std::shared_ptr<VisitorResult> Generator::VisitASTCaseExpr(ASTCaseExpr *node) {
 
 std::shared_ptr<VisitorResult> Generator::VisitASTGotoStmt(ASTGotoStmt *node) {
     auto target_block = this->block_stack.back()->labels[atoi(node->getLabel().c_str())];
+    std::cout<< atoi(node->getLabel().c_str()) << std::endl;
     this->builder.CreateBr(target_block);
+    llvm::Function *func = this->builder.GetInsertBlock()->getParent();
+    llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "goto_cont", func);
+    this->builder.SetInsertPoint(cont_block);
     return nullptr;
 }
 
@@ -253,12 +273,25 @@ shared_ptr<VisitorResult> Generator::VisitASTExitStmt(ASTExitStmt *node) {
             llvm::Value* ret = this->builder.CreateLoad(this->getCurrentBlock()->named_values[this->getCurrentBlock()->block_name], "ret");
             this->builder.CreateRet(ret);
         }
-        llvm::Function *func = this->builder.GetInsertBlock()->getParent();
-        llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "exit_cont", func);
-        this->builder.SetInsertPoint(cont_block);
     }
     else {
         res = static_pointer_cast<ValueResult>(node->getExpr()->Accept(this));
         this->builder.CreateRet(res->getValue());
     }
+    llvm::Function *func = this->builder.GetInsertBlock()->getParent();
+    llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "exit_cont", func);
+    this->builder.SetInsertPoint(cont_block);
+    return nullptr;
+}
+
+shared_ptr<VisitorResult> Generator::VisitASTBreakStmt(ASTBreakStmt *node) {
+    if (this->getCurrentBlock()->loop_breaks.empty()) {
+        this->RecordErrorMessage("Cannot use break statement out of loops", node->get_location_pairs());
+        return nullptr;
+    }
+    this->builder.CreateBr(this->getCurrentBlock()->loop_breaks.back());
+    llvm::Function *func = this->builder.GetInsertBlock()->getParent();
+    llvm::BasicBlock *cont_block = llvm::BasicBlock::Create(this->context, "break_cont", func);
+    this->builder.SetInsertPoint(cont_block);
+    return nullptr;
 }

@@ -24,6 +24,7 @@ KWD_AND and
 KWD_ARRAY array
 KWD_ASM asm
 KWD_BEGIN begin
+KWD_BREAK break
 KWD_CASE case
 KWD_CONST const
 KWD_CONSTRUCTOR constructor
@@ -142,6 +143,10 @@ IDENTIFIER [a-zA-Z_][a-zA-Z0-9_]*
 
 {KWD_BEGIN} {
     RETURN_TOKEN(KWD_BEGIN)
+}
+
+{KWD_BREAK} {
+    RETURN_TOKEN(KWD_BREAK)
 }
 
 {KWD_CASE} {

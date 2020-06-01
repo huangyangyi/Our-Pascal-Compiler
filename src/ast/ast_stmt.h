@@ -281,4 +281,11 @@ public:
 private:
     ASTExpr *expr_;
 };
+
+class ASTBreakStmt : public ASTNonLabelStmt {
+public:
+    ASTBreakStmt() = default;
+    virtual void Print(GraphGenerator *);
+    virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
+};
 #endif //OPC_AST_AST_STMT_H

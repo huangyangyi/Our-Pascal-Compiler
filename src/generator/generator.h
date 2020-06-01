@@ -45,6 +45,7 @@ class CodeBlock {
     std::map<int, llvm::BasicBlock *> labels;
     std::string block_name;
     bool is_function;
+    std::vector<llvm::BasicBlock *> loop_breaks;
     bool isType(std::string id, bool check_defined=false){
         return named_types.find(id) != named_types.end() && 
              ( named_values.find(id) == named_values.end() || check_defined );
@@ -174,6 +175,8 @@ public:
     virtual std::shared_ptr<VisitorResult> VisitASTGotoStmt(ASTGotoStmt *node);
 
     virtual shared_ptr<VisitorResult> VisitASTExitStmt(ASTExitStmt *node);
+
+    virtual shared_ptr<VisitorResult> VisitASTBreakStmt(ASTBreakStmt *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTType(ASTType *node);
 
