@@ -8,62 +8,76 @@
 
 namespace OurType {
     class EnumType;
+
     class PascalType;
-    extern PascalType* const VOID_TYPE;
+
+    extern PascalType *const VOID_TYPE;
 };
 
 class ValueResult;
 
-class FuncSign{
+class FuncSign {
 public:
-    FuncSign(int n_local, std::vector<std::string> name_list, std::vector<OurType::PascalType*> type_list, std::vector<bool> is_var, OurType::PascalType* return_type = nullptr)
-        :name_list_(name_list), type_list_(type_list), is_var_(is_var), return_type_(return_type), n_local_variables(n_local) {
-            if (return_type == nullptr)
-                return_type_ = OurType::VOID_TYPE;
-        }
+    FuncSign(int n_local, std::vector<std::string> name_list, std::vector<OurType::PascalType *> type_list,
+             std::vector<bool> is_var, OurType::PascalType *return_type = nullptr)
+            : name_list_(name_list), type_list_(type_list), is_var_(is_var), return_type_(return_type),
+              n_local_variables(n_local) {
+        if (return_type == nullptr)
+            return_type_ = OurType::VOID_TYPE;
+    }
 
 
-    std::vector<OurType::PascalType*> getTypeList(){return type_list_;}
-    std::vector<std::string> getNameList(){return name_list_;}
-    std::vector<bool> getVarList(){return is_var_;}
-    OurType::PascalType* getReturnType(){return return_type_;}
+    std::vector<OurType::PascalType *> getTypeList() { return type_list_; }
+
+    std::vector<std::string> getNameList() { return name_list_; }
+
+    std::vector<bool> getVarList() { return is_var_; }
+
+    OurType::PascalType *getReturnType() { return return_type_; }
+
     int getLocalVariablesNum() { return this->n_local_variables; }
+
 private:
     int n_local_variables; // used for parameter passing
-    std::vector<OurType::PascalType*> type_list_;
+    std::vector<OurType::PascalType *> type_list_;
     std::vector<std::string> name_list_;
     std::vector<bool> is_var_;
-    OurType::PascalType* return_type_;
+    OurType::PascalType *return_type_;
 };
 
 class CodeBlock {
-    public:
-    std::map<std::string, llvm::Value*> named_values;
-    std::map<std::string, OurType::PascalType*> named_types;
-    std::map<std::string, llvm::Function*> named_functions;
-    std::map<std::string, FuncSign*> named_funcsigns;
+public:
+    std::map<std::string, llvm::Value *> named_values;
+    std::map<std::string, OurType::PascalType *> named_types;
+    std::map<std::string, llvm::Function *> named_functions;
+    std::map<std::string, FuncSign *> named_funcsigns;
     std::map<int, llvm::BasicBlock *> labels;
     std::string block_name;
     bool is_function;
     std::vector<llvm::BasicBlock *> loop_breaks;
-    bool isType(std::string id, bool check_defined=false){
-        return named_types.find(id) != named_types.end() && 
-             ( named_values.find(id) == named_values.end() || check_defined );
+
+    bool isType(std::string id, bool check_defined = false) {
+        return named_types.find(id) != named_types.end() &&
+               (named_values.find(id) == named_values.end() || check_defined);
     }
-    bool isValue(std::string id){
+
+    bool isValue(std::string id) {
         return named_values.find(id) != named_values.end();
     }
-    llvm::Function *find_function(std::string id){
+
+    llvm::Function *find_function(std::string id) {
         if (named_functions.find(id) == named_functions.end())
             return nullptr;
         return named_functions[id];
     }
-    FuncSign *find_funcsign(std::string id){
+
+    FuncSign *find_funcsign(std::string id) {
         if (named_funcsigns.find(id) == named_funcsigns.end())
             return nullptr;
         return named_funcsigns[id];
     }
-    void set_function(std::string id, llvm::Function *function, FuncSign *funcsign){
+
+    void set_function(std::string id, llvm::Function *function, FuncSign *funcsign) {
         named_funcsigns[id] = funcsign;
         named_functions[id] = function;
     }
@@ -75,29 +89,32 @@ public:
     llvm::LLVMContext context;
     llvm::IRBuilder<> builder;
     std::unique_ptr<llvm::Module> module;
-    std::vector<CodeBlock*> block_stack;
-    std::map<std::string, llvm::Constant*> named_constants;
+    std::vector<CodeBlock *> block_stack;
+    std::map<std::string, llvm::Constant *> named_constants;
     std::vector<std::string> error_message;
     std::vector<std::pair<int, int> > error_position;
+
     friend class OurType::EnumType;
 
 public:
     Generator();
 
     ~Generator();
-    
+
     void Save(std::string path);
 
-    void genAssign(llvm::Value* dest_ptr, OurType::PascalType *dest_type, llvm::Value* src, OurType::PascalType *src_type);
+    void
+    genAssign(llvm::Value *dest_ptr, OurType::PascalType *dest_type, llvm::Value *src, OurType::PascalType *src_type);
 
-    llvm::Value* genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
+    llvm::Value *genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
 
-    std::shared_ptr<VisitorResult> RecordErrorMessage(std::string cur_error_message, std::pair<int, int> location = std::make_pair(-1, -1));
+    std::shared_ptr<VisitorResult>
+    RecordErrorMessage(std::string cur_error_message, std::pair<int, int> location = std::make_pair(-1, -1));
 
     bool hasError();
 
     void printError();
-    
+
     bool isSysFunc(std::string id);
 
     virtual std::shared_ptr<VisitorResult> VisitASTNode(ASTNode *node);
@@ -133,6 +150,10 @@ public:
     virtual std::shared_ptr<VisitorResult> VisitASTRoutinePart(ASTRoutinePart *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTFuncProcBase(ASTFuncProcBase *node);
+
+    virtual std::shared_ptr<VisitorResult> VisitASTFunctionDecl(ASTFunctionDecl *node);
+
+    virtual std::shared_ptr<VisitorResult> VisitASTProcedureDecl(ASTProcedureDecl *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTFunctionHead(ASTFunctionHead *node);
 
@@ -174,9 +195,9 @@ public:
 
     virtual std::shared_ptr<VisitorResult> VisitASTGotoStmt(ASTGotoStmt *node);
 
-    virtual shared_ptr<VisitorResult> VisitASTExitStmt(ASTExitStmt *node);
+    shared_ptr<VisitorResult> VisitASTExitStmt(ASTExitStmt *node);
 
-    virtual shared_ptr<VisitorResult> VisitASTBreakStmt(ASTBreakStmt *node);
+    shared_ptr<VisitorResult> VisitASTBreakStmt(ASTBreakStmt *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTType(ASTType *node);
 
@@ -209,6 +230,7 @@ public:
     virtual std::shared_ptr<VisitorResult> VisitASTVarDeclList(ASTVarDeclList *node);
 
     virtual std::shared_ptr<VisitorResult> VisitASTVarDecl(ASTVarDecl *node);
+
 
     CodeBlock *getCurrentBlock(void);
 

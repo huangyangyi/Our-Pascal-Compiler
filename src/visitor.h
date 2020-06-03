@@ -124,6 +124,10 @@ public:
     virtual shared_ptr<VisitorResult> VisitASTExitStmt(ASTExitStmt *node) = 0;
 
     virtual shared_ptr<VisitorResult> VisitASTBreakStmt(ASTBreakStmt *node) = 0;
+
+    virtual shared_ptr<VisitorResult> VisitASTFunctionDecl(ASTFunctionDecl *node) = 0;
+
+    virtual shared_ptr<VisitorResult> VisitASTProcedureDecl(ASTProcedureDecl *node) = 0;
 };
 
 

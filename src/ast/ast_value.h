@@ -37,19 +37,19 @@ public:
 
     ASTConstValue(std::string, ValueType);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     ValueType getValueType() const;
 
     const std::string &getContent() const;
+    std::string getValueTypeName(ValueType value_type);
 
 private:
     ValueType value_type;
     std::string content;
 
-    std::string _value_type_name(ValueType value_type);
 };
 
 class ASTConstExprList : public ASTNode {
@@ -58,7 +58,7 @@ public:
 
     void add_const_expr(ASTConstExpr *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -72,7 +72,7 @@ class ASTConstExpr : public ASTNode {
 public:
     ASTConstExpr(std::string, ASTExpr *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -89,7 +89,7 @@ class ASTConstPart : public ASTNode {
 public:
     ASTConstPart(ASTConstExprList *const_expr_list);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -103,7 +103,7 @@ class ASTVarPart : public ASTNode {
 public:
     ASTVarPart(ASTVarDeclList *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -117,7 +117,7 @@ class ASTVarDeclList : public ASTNode {
 public:
     ASTVarDeclList(ASTVarDecl *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -133,7 +133,7 @@ class ASTVarDecl : public ASTNode {
 public:
     ASTVarDecl(ASTNameList *, ASTTypeDecl *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 

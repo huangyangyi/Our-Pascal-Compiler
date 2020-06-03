@@ -38,7 +38,6 @@ class ASTCaseExpr;
 class ASTGotoStmt;
 
 class ASTNonLabelStmt : public ASTNode {
-    // virtual void Print(GraphGenerator *graph); //Do not implement print() in this class.
 };
 
 class ASTStmt : public ASTNode {
@@ -48,8 +47,6 @@ private:
 
 public:
     ASTStmt(ASTNonLabelStmt *non_label_stmt, std::string label = "");
-
-    virtual void Print(GraphGenerator *graph);
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -64,8 +61,6 @@ public:
 
     void addStmt(ASTStmt *);
 
-    virtual void Print(GraphGenerator *graph);
-
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     const std::vector<ASTStmt *> &getStmtList() const;
@@ -78,7 +73,7 @@ class ASTAssignStmt : public ASTNonLabelStmt {
 public:
     ASTAssignStmt(ASTExpr *, ASTExpr *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -95,7 +90,7 @@ class ASTProcStmt : public ASTNonLabelStmt {
 public:
     ASTProcStmt(std::string id, ASTExpressionList *expr = nullptr);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -112,7 +107,7 @@ class ASTIfStmt : public ASTNonLabelStmt {
 public:
     ASTIfStmt(ASTExpr *, ASTStmt *, ASTElseClause *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -132,7 +127,7 @@ class ASTElseClause : public ASTNonLabelStmt {
 public:
     ASTElseClause(ASTStmt *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -146,7 +141,7 @@ class ASTRepeatStmt : public ASTNonLabelStmt {
 public:
     ASTRepeatStmt(ASTStmtList *, ASTExpr *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -163,7 +158,7 @@ class ASTWhileStmt : public ASTNonLabelStmt {
 public:
     ASTWhileStmt(ASTExpr *, ASTStmt *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -185,7 +180,7 @@ public:
     ASTForStmt(std::string id, ASTExpr *for_expr, ForDir dir, ASTExpr *to_expr,
                ASTStmt *stmt);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -210,7 +205,7 @@ class ASTCaseStmt : public ASTNonLabelStmt {
 public:
     ASTCaseStmt(ASTExpr *, ASTCaseExprList *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -229,7 +224,7 @@ public:
 
     void add_case_expr(ASTCaseExpr *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -243,7 +238,7 @@ class ASTCaseExpr : public ASTNonLabelStmt {
 public:
     ASTCaseExpr(ASTExpr *, ASTStmt *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -260,7 +255,7 @@ class ASTGotoStmt : public ASTNonLabelStmt {
 public:
     ASTGotoStmt(std::string label);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -273,7 +268,7 @@ private:
 class ASTExitStmt : public ASTNonLabelStmt {
 public:
     ASTExitStmt(ASTExpr *expr = nullptr);
-    virtual void Print(GraphGenerator *);
+
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     ASTExpr *getExpr() const;
@@ -285,7 +280,7 @@ private:
 class ASTBreakStmt : public ASTNonLabelStmt {
 public:
     ASTBreakStmt() = default;
-    virtual void Print(GraphGenerator *);
+
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
 #endif //OPC_AST_AST_STMT_H

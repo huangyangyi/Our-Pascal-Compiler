@@ -295,3 +295,11 @@ shared_ptr<VisitorResult> Generator::VisitASTBreakStmt(ASTBreakStmt *node) {
     this->builder.SetInsertPoint(cont_block);
     return nullptr;
 }
+
+std::shared_ptr<VisitorResult> Generator::VisitASTFunctionDecl(ASTFunctionDecl *node) {
+    return VisitASTFuncProcBase(node);
+}
+
+std::shared_ptr<VisitorResult> Generator::VisitASTProcedureDecl(ASTProcedureDecl *node) {
+    return VisitASTFuncProcBase(node);
+}

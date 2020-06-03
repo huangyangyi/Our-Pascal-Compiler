@@ -40,7 +40,7 @@ public:
 
     ASTType(TypeName type_name);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -65,7 +65,6 @@ public:
     ASTSimpleTypeDecl(std::string low_name, std::string high_name);
     ASTSimpleTypeDecl(std::string defined_id);
     ASTSimpleTypeDecl(ASTNameList *name_list);
-    virtual void Print(GraphGenerator *g);
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -92,7 +91,7 @@ class ASTArrayTypeDecl : public ASTTypeDecl {
 public:
     ASTArrayTypeDecl(ASTSimpleTypeDecl *, ASTTypeDecl *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -109,7 +108,7 @@ class ASTFieldDecl : public ASTNode {
 public:
     ASTFieldDecl(ASTNameList *, ASTTypeDecl *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -130,8 +129,6 @@ public:
 
     void addFieldDecl(ASTFieldDecl *);
 
-    virtual void Print(GraphGenerator *g);
-
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     const std::vector<ASTFieldDecl *> &getFielddeclList() const;
@@ -147,7 +144,7 @@ class ASTRecordTypeDecl : public ASTTypeDecl {
 public:
     ASTRecordTypeDecl(ASTFieldDeclList *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -161,7 +158,7 @@ class ASTTypeDefinition : public ASTNode {
 public:
     ASTTypeDefinition(std::string, ASTTypeDecl *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -180,7 +177,7 @@ public:
 
     void addASTTypeDefinition(ASTTypeDefinition *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -194,7 +191,7 @@ class ASTTypePart : public ASTNode {
 public:
     ASTTypePart(ASTTypeDeclList *);
 
-    virtual void Print(GraphGenerator *);
+
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     ASTTypeDeclList *getTypeDeclList() const;

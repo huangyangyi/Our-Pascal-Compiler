@@ -1,5 +1,6 @@
 #include "ast_base.h"
 #include "../visitor.h"
+
 #include <stdlib.h>
 
 int ASTNode::line() { return this->line_; }
@@ -24,14 +25,6 @@ std::shared_ptr<VisitorResult> ASTNode::Accept(Visitor *visitor) { return visito
 
 void ASTNameList::AddIdentifier(std::string id) {
     this->identifier_list_.push_back(id);
-}
-
-void ASTNameList::Print(GraphGenerator *g) {
-    g->AddNode("name_list", line(), col());
-    for (auto id : identifier_list_) {
-        g->AddIdentifier(id);
-    }
-    g->Pop();
 }
 
 std::shared_ptr<VisitorResult> ASTNameList::Accept(Visitor *visitor) { return visitor->VisitASTNameList(this); }

@@ -43,7 +43,7 @@ class ASTProgramHead : public ASTNode {
 public:
     ASTProgramHead(std::string id);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -60,7 +60,7 @@ public:
     ASTRoutineHead(ASTConstPart *const_part, ASTTypePart *type_part,
                    ASTVarPart *var_part, ASTRoutinePart *routine_part);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -85,8 +85,6 @@ class ASTRoutineBody : public ASTNode {
 public:
     ASTRoutineBody(ASTStmtList *compound_stmt);
 
-    virtual void Print(GraphGenerator *);
-
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     ASTStmtList *getCompoundStmt();
@@ -99,7 +97,7 @@ class ASTRoutine : public ASTNode {
 public:
     ASTRoutine(ASTRoutineHead *routine_head, ASTRoutineBody *routine_body);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -116,7 +114,7 @@ class ASTProgram : public ASTNode {
 public:
     ASTProgram(ASTProgramHead *, ASTRoutine *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -133,7 +131,7 @@ class ASTRoutinePart : public ASTNode {
 public:
     ASTRoutinePart(ASTFuncProcBase *);
 
-    virtual void Print(GraphGenerator *);
+
 
     void addFuncProcDecl(ASTFuncProcBase *);
 
@@ -156,8 +154,6 @@ public:
 
     ASTFuncProcBase(FuncType whoami) : iam(whoami) {}
 
-    virtual void Print(GraphGenerator *) {}
-
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
 
@@ -165,7 +161,7 @@ class ASTFunctionDecl : public ASTFuncProcBase {
 public:
     ASTFunctionDecl(ASTFunctionHead *, ASTRoutine *);
 
-    virtual void Print(GraphGenerator *);
+    virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     ASTFunctionHead *getFunctionHead() const;
 
@@ -180,7 +176,7 @@ class ASTFunctionHead : public ASTNode {
 public:
     ASTFunctionHead(std::string, ASTParaDeclList *, ASTSimpleTypeDecl *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -200,7 +196,7 @@ class ASTProcedureDecl : public ASTFuncProcBase {
 public:
     ASTProcedureDecl(ASTProcedureHead *, ASTRoutine *);
 
-    virtual void Print(GraphGenerator *);
+    virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
     ASTProcedureHead *getProcedureHead() const;
 
@@ -215,7 +211,7 @@ class ASTProcedureHead : public ASTNode {
 public:
     ASTProcedureHead(std::string proc_name, ASTParaDeclList *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -234,7 +230,7 @@ private:
 class ASTParameters : public ASTNode {
    public:
     ASTParameters(ASTParaDeclList *);
-    virtual void Print(GraphGenerator *);
+
 
    private:
     ASTParaDeclList *para_dec_list;
@@ -247,7 +243,7 @@ public:
 
     void addParaTypeList(ASTParaTypeList *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -261,7 +257,7 @@ class ASTParaTypeList : public ASTNode {
 public:
     ASTParaTypeList(ASTParaList *, ASTSimpleTypeDecl *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -290,7 +286,7 @@ class ASTVarParaList : public ASTParaList {
 public:
     ASTVarParaList(ASTNameList *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -304,7 +300,7 @@ class ASTValParaList : public ASTParaList {
 public:
     ASTValParaList(ASTNameList *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 

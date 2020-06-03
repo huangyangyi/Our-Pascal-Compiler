@@ -5,7 +5,7 @@
 #include <string>
 #include <assert.h>
 #include <memory>
-#include "graph_generator.h"
+
 
 class VisitorResult;
 
@@ -33,8 +33,6 @@ public:
     std::string get_location();
     std::pair<int, int> get_location_pairs();
 
-    virtual void Print(GraphGenerator *) = 0;
-
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
 
@@ -43,8 +41,6 @@ public:
     ASTNameList() = default;
 
     void AddIdentifier(std::string);
-
-    virtual void Print(GraphGenerator *);
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 

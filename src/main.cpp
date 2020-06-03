@@ -5,7 +5,7 @@
 #include <getopt.h>
 #include <sys/stat.h>
 #include "pascal.y.hpp"
-#include "ast/graph_generator.h"
+#include "vis/graph_generator.h"
 #include "generator/generator.h"
 
 using namespace std;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     if (gen_graph) {
         GraphGenerator *g = new GraphGenerator();
 
-        ast_root->Print(g);
+        ast_root->Accept(g);
         if (output_dot_fname == "") output_dot_fname = input_fname + ".dot";
         g->Save(output_dot_fname);
     }

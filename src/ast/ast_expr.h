@@ -31,7 +31,7 @@ public:
 
     void AddExpr(ASTExpr *expr);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 
@@ -68,17 +68,17 @@ public:
 
 public:
     Oper getOp() const;
+    static std::string getOpName(Oper op_);
 
 private:
     Oper op_;
     ASTExpr *l_expr_, *r_expr_;
 
-    static std::string _op_name(Oper op_);
 
 public:
     ASTBinaryExpr(Oper op, ASTExpr *l_expr, ASTExpr *r_expr);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
@@ -100,7 +100,7 @@ private:
 public:
     ASTUnaryExpr(Oper, ASTExpr *);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
@@ -116,7 +116,7 @@ public:
 public:
     ASTPropExpr(std::string id, std::string prop_id);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
@@ -128,7 +128,7 @@ private:
 public:
     ASTConstValueExpr(ASTConstValue *);
 
-    virtual void Print(GraphGenerator *);
+
 
     ASTConstValue *getConstValue() const;
 
@@ -149,7 +149,7 @@ private:
 public:
     ASTFuncCall(std::string func_id, ASTExpressionList *arg_list);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 };
@@ -161,7 +161,7 @@ private:
 public:
     ASTIDExpr(std::string id);
 
-    virtual void Print(GraphGenerator *);
+
 
     const std::string &getId() const;
 
@@ -176,7 +176,7 @@ private:
 public:
     ASTArrayExpr(std::string id, ASTExpr *expr);
 
-    virtual void Print(GraphGenerator *);
+
 
     virtual std::shared_ptr<VisitorResult> Accept(Visitor *visitor);
 

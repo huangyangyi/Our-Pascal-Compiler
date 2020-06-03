@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 aux_source_directory(ast AST_SOURCE)
 aux_source_directory(generator GEN_SOURCE)
+aux_source_directory(vis VIS_SOURCE)
 
 add_custom_command(
         OUTPUT pascal.l.cpp
@@ -28,7 +29,7 @@ llvm_map_components_to_libnames(LLVM_LINK_LIBRARIES core)
 
 add_executable(
         opc
-        main.cpp ${AST_SOURCE} ${GEN_SOURCE} pascal.l.cpp
+        main.cpp ${AST_SOURCE} ${GEN_SOURCE} ${VIS_SOURCE} pascal.l.cpp
         pascal.y.cpp pascal.y.hpp
         type/type.cpp)
 
