@@ -38,8 +38,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
                 ret = block->named_types[node->defined_id];
             }
         }
-        if (ret == nullptr) return nullptr;
-        else return std::make_shared<TypeResult>(ret);
+        if (ret == nullptr) 
+            return RecordErrorMessage("Can not find the definition of type '" + node->defined_id + "'.", node->get_location_pairs());
+        return std::make_shared<TypeResult>(ret);
     } else if (node->my_type == ASTSimpleTypeDecl::MyType::VALUE_RANGE) {
         std::shared_ptr<ValueResult> low_ret = std::static_pointer_cast<ValueResult>(node->low->Accept(this));
         std::shared_ptr<ValueResult> high_ret = std::static_pointer_cast<ValueResult>(node->high->Accept(this));
@@ -48,12 +49,12 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
         if (llvm::ConstantInt *CI = llvm::dyn_cast<llvm::ConstantInt>(low_ret->getValue())) {
             low = CI->getSExtValue();
         } else {
-            return nullptr;
+            return RecordErrorMessage("The low number in range is incorrect.", node->get_location_pairs());
         }
         if (llvm::ConstantInt *CI = llvm::dyn_cast<llvm::ConstantInt>(high_ret->getValue())) {
             high = CI->getSExtValue();
         } else {
-            return nullptr;
+            return RecordErrorMessage("The high number in range is incorrect.", node->get_location_pairs());
         }
 
         if (node->neg_low) low *= -1;
@@ -71,12 +72,12 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
         if (this->named_constants.find(low_id) != this->named_constants.end()) {
             low = this->named_constants[low_id];
         } else {
-            return nullptr;
+            return RecordErrorMessage("The low ID in range is incorrect.", node->get_location_pairs());
         }
         if (this->named_constants.find(high_id) != this->named_constants.end()) {
             high = this->named_constants[high_id];
         } else {
-            return nullptr;
+             return RecordErrorMessage("The high ID in range is incorrect.", node->get_location_pairs());
         }
 
         // grab int from ConstantInt*
@@ -84,14 +85,13 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
         if (llvm::ConstantInt *CI = llvm::dyn_cast<llvm::ConstantInt>(low)) {
             low_int = CI->getSExtValue();
         } else {
-            return nullptr;
+            return RecordErrorMessage("The low ID in range is incorrect.", node->get_location_pairs());
         }
         if (llvm::ConstantInt *CI = llvm::dyn_cast<llvm::ConstantInt>(high)) {
             high_int = CI->getSExtValue();
         } else {
-            return nullptr;
+            return RecordErrorMessage("The high ID in range is incorrect.", node->get_location_pairs());
         }
-
         OurType::PascalType *range = new OurType::SubRangeType(low_int, high_int);
         return std::make_shared<TypeResult>(range);
 
@@ -100,12 +100,13 @@ std::shared_ptr<VisitorResult> Generator::VisitASTSimpleTypeDecl(ASTSimpleTypeDe
         std::vector<std::string> name_list;
         if (list_ret = std::static_pointer_cast<NameList>(node->name_list->Accept(this))) {
             name_list = list_ret->getNameList();
-        } else {
-            std::cout << node->get_location() << " not a name list." << endl;
+        } else{
+            return RecordErrorMessage("Enum type does not has a name list.", node->get_location_pairs());
         }
         OurType::EnumType *new_enum = new OurType::EnumType(name_list, this);
         return std::make_shared<TypeResult>(new_enum);
     }
+    return RecordErrorMessage("Can not recognize the current type.", node->get_location_pairs());
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTArrayTypeDecl(ASTArrayTypeDecl *node) {

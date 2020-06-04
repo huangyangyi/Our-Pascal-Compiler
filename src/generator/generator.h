@@ -103,8 +103,7 @@ public:
 
     void Save(std::string path);
 
-    void
-    genAssign(llvm::Value *dest_ptr, OurType::PascalType *dest_type, llvm::Value *src, OurType::PascalType *src_type);
+    bool genAssign(llvm::Value *dest_ptr, OurType::PascalType *dest_type, llvm::Value *src, OurType::PascalType *src_type);
 
     llvm::Value *genSysFunc(std::string id, const std::vector<std::shared_ptr<ValueResult>> &args_list);
 

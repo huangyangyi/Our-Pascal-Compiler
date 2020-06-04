@@ -103,8 +103,8 @@ namespace OurType {
     }
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context, PascalType *const p_type) {
+        
         if (p_type->tg == PascalType::TypeGroup::BUILT_IN) {
-
             if (isEqual(p_type, INT_TYPE))
                 return llvm::Type::getInt32Ty(context);
             else if (isEqual(p_type, REAL_TYPE))
@@ -119,12 +119,10 @@ namespace OurType {
                 return nullptr;
 
         } else if (p_type->tg == PascalType::TypeGroup::STR) {
-
             StrType *str = (StrType *) p_type;
             return llvm::ArrayType::get(getLLVMType(context, CHAR_TYPE), (uint64_t) (str->dim));
 
         } else if (p_type->tg == PascalType::TypeGroup::ARRAY) {
-
             ArrayType *array = (ArrayType *) p_type;
             llvm::ArrayType *ret = nullptr;
             int len = array->range.second - array->range.first + 1;
@@ -133,7 +131,6 @@ namespace OurType {
             return ret;
 
         } else if (p_type->tg == PascalType::TypeGroup::RECORD) {
-
             RecordType *record = (RecordType *) p_type;
             std::vector<llvm::Type *> llvm_type_vec;
             for (auto t : record->type_vec) {
@@ -142,7 +139,6 @@ namespace OurType {
             return llvm::StructType::get(context, llvm_type_vec);
 
         } else if (p_type->tg == PascalType::TypeGroup::ENUM) {
-
             // does not mean that enum type does not exist
             // it means that we do not consider it as a basic type
             return llvm::Type::getInt32Ty(context);

@@ -32,28 +32,37 @@ std::shared_ptr<VisitorResult> Generator::VisitASTStmtList(ASTStmtList *node) {
     return nullptr;
 }
 
-void Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Value* src, PascalType *src_type) {
+bool Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Value* src, PascalType *src_type) {
     if (dest_type->isSimple()) {
         if (!isEqual(dest_type, src_type)) {
             //Type conversions
             if (src_type->isIntegerTy() && dest_type->isFloatingPointTy()) {
                 src = this->builder.CreateSIToFP(src, llvm::Type::getFloatTy(this->context));
                 this->builder.CreateStore(src, dest_ptr);
+                return true;
             }
+            return false;
         }
-        else this->builder.CreateStore(src, dest_ptr);
+        else {
+            this->builder.CreateStore(src, dest_ptr);
+            return false;
+        }
     }
     else if (dest_type->isStringTy()) {
         this->builder.CreateStore(src, dest_ptr);
+        return true;
     }
     else if (dest_type->isArrayTy()) {
         this->builder.CreateStore(src, dest_ptr);
+        return true;
         //TODO: implement array assignment
     }
     else if (dest_type->isRecordTy()) {
         this->builder.CreateStore(src, dest_ptr);
+        return true;
         //TODO: implement record assignment
     }
+    return false;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTAssignStmt(ASTAssignStmt *node) {
@@ -62,8 +71,9 @@ std::shared_ptr<VisitorResult> Generator::VisitASTAssignStmt(ASTAssignStmt *node
     auto right = std::static_pointer_cast<ValueResult>(node->getExpr2()->Accept(this));
     if (left == nullptr || right == nullptr) return nullptr;
     if (left->getMem() == nullptr) 
-        return RecordErrorMessage("Invalid left expression.", node->get_location_pairs());
-    genAssign(left->getMem(), left->getType(), right->getValue(), right->getType());
+        return RecordErrorMessage("Invalid l-value.", node->get_location_pairs());
+    if (!genAssign(left->getMem(), left->getType(), right->getValue(), right->getType()))
+        return RecordErrorMessage("Can not do assignment between different types.", node->get_location_pairs());
     return nullptr;
 }
 

@@ -50,6 +50,7 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstValue(ASTConstValue *node
         int tmp_len = tmp.size();
         if (tmp_len > 255) {
             std::cerr << node->get_location() << "this string constant is too long, use first 255 characters instead." << std::endl;
+            //This is not error but just warning. Maybe we can add a 'warning type' to report all warnings.
             tmp = tmp.substr(0, 255);
             tmp_len = tmp.size();
         }
@@ -102,22 +103,22 @@ std::shared_ptr<VisitorResult> Generator::VisitASTConstExpr(ASTConstExpr *node) 
 
 std::shared_ptr<VisitorResult> Generator::VisitASTConstPart(ASTConstPart *node) {
     return node->getConstExprList()->Accept(this);
-    return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTVarPart(ASTVarPart *node) {
     return node->getVarDeclList()->Accept(this);
-    return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTVarDeclList(ASTVarDeclList *node) {
-    for (auto expr: node->getVarDeclList()) expr->Accept(this);
+    for (auto expr: node->getVarDeclList())
+        expr->Accept(this);
     return nullptr;
 }
 
 std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
     auto res = std::static_pointer_cast<TypeResult>(node->getTypeDecl()->Accept(this));
     auto name_list = std::static_pointer_cast<NameList>(node->getNameList()->Accept(this));
+    if (res == nullptr) return nullptr; //The error has been reported.
     for (auto id: name_list->getNameList()) {
         llvm::Type *ty = OurType::getLLVMType(this->context, res->getType());
         if (this->block_stack.size() == 1) {
@@ -149,6 +150,5 @@ std::shared_ptr<VisitorResult> Generator::VisitASTVarDecl(ASTVarDecl *node) {
             this->block_stack.back()->named_types[id] = res->getType();
         }
     }
-
     return nullptr;
 }
