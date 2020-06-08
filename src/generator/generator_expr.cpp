@@ -77,8 +77,6 @@ std::shared_ptr<VisitorResult> Generator::VisitASTBinaryExpr(ASTBinaryExpr *node
     }
     
     else if (nowOp == Op(AND) || nowOp == Op(OR)){
-        std::cout << isEqual(l->getType(), BOOLEAN_TYPE) << std::endl;
-        std::cout << isEqual(r->getType(), BOOLEAN_TYPE) << std::endl;
         if (!check_logic(l->getType(), r->getType()))
             return RecordErrorMessage("Both sides of the binary logic expression need to be BOOLEAN type.", node->get_location_pairs());
     }

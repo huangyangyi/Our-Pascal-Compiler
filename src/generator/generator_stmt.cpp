@@ -45,7 +45,7 @@ bool Generator::genAssign(llvm::Value* dest_ptr, PascalType *dest_type, llvm::Va
         }
         else {
             this->builder.CreateStore(src, dest_ptr);
-            return false;
+            return true;
         }
     }
     else if (dest_type->isStringTy()) {
