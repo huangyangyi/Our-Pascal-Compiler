@@ -7,13 +7,15 @@ begin
     write(a);
     write('->');
     writeln(b);
-    exit;
+  end
+  else
+  begin
+	  move(a,c,b,N-1);
+	  write(a);
+	  write('->');
+	  writeln(b);
+	  move(c,b,a,N-1);
   end;
-  move(a,c,b,N-1);
-  write(a);
-  write('->');
-  writeln(b);
-  move(c,b,a,N-1);
 end;
 
 begin
